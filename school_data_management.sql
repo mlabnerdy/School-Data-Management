@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 14, 2026 at 09:27 AM
+-- Generation Time: Aug 14, 2026 at 10:45 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -107,7 +107,8 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `lrn`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `parent_guardian`, `grade_section`, `other_info`, `created_at`, `updated_at`, `school_id`, `school_year`, `emergency_name`, `emergency_address`, `emergency_contact`) VALUES
-(2, '500223090129', 'uploads/student/9c8376caecfe8279f2b1de75.jpg', 'Juan Dela Cruz', '2018-08-14', 'Male', 'P-5 Brgy. V Doon St. Bacoor City', '09325010012', 'Maria Dela Cruz', 'Grade I - Wonderful', '', '2026-08-14 06:36:57', '2026-08-14 06:36:57', '500634', '2026-2027', 'Maria Dela Cruz', 'P-5 Brgy. V Doon St. Bacoor City', '09500093912');
+(2, '500223090129', 'uploads/student/9c8376caecfe8279f2b1de75.jpg', 'Juan Dela Cruz', '2018-08-14', 'Male', 'P-5 Brgy. V Doon St. Bacoor City', '09325010012', 'Maria Dela Cruz', 'Grade I - Wonderful', '', '2026-08-14 06:36:57', '2026-08-14 06:36:57', '500634', '2026-2027', 'Maria Dela Cruz', 'P-5 Brgy. V Doon St. Bacoor City', '09500093912'),
+(4, '213123124514', NULL, 'Pony Plum', NULL, '', '', '', '', '', '', '2026-08-14 07:31:17', '2026-08-14 07:31:17', '500634', '', '', '', '');
 
 -- --------------------------------------------------------
 
@@ -117,6 +118,7 @@ INSERT INTO `students` (`id`, `lrn`, `photo`, `full_name`, `date_of_birth`, `gen
 
 CREATE TABLE `teachers` (
   `id` int(10) UNSIGNED NOT NULL,
+  `user_id` int(10) UNSIGNED DEFAULT NULL,
   `employee_id` varchar(50) NOT NULL,
   `photo` varchar(255) DEFAULT NULL,
   `full_name` varchar(150) NOT NULL,
@@ -144,8 +146,9 @@ CREATE TABLE `teachers` (
 -- Dumping data for table `teachers`
 --
 
-INSERT INTO `teachers` (`id`, `employee_id`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `email`, `position_department`, `other_info`, `created_at`, `updated_at`, `plantilla_no`, `first_day_of_service`, `current_latest_appointment`, `deped_email`, `personal_email`, `degree_finished`, `specialization_prc_eligibility`, `tin_no`, `birthdate`) VALUES
-(1, '55-412341', 'uploads/teacher/ffb35fb6ddec4c728573261f.webp', 'Mila Milenio', '1995-06-01', 'Female', 'P2 Brgy. 4, Somewhere Anywhere', '09325010012', 'pogiako123@gmail.com', 'Teacher II', '', '2026-08-08 06:25:02', '2026-08-11 14:26:24', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `teachers` (`id`, `user_id`, `employee_id`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `email`, `position_department`, `other_info`, `created_at`, `updated_at`, `plantilla_no`, `first_day_of_service`, `current_latest_appointment`, `deped_email`, `personal_email`, `degree_finished`, `specialization_prc_eligibility`, `tin_no`, `birthdate`) VALUES
+(1, NULL, '55-412341', 'uploads/teacher/ffb35fb6ddec4c728573261f.webp', 'Mila Milenio', '1995-06-01', 'Female', 'P2 Brgy. 4, Somewhere Anywhere', '09325010012', 'pogiako123@gmail.com', 'Teacher II', '', '2026-08-08 06:25:02', '2026-08-11 14:26:24', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(4, 5, '55-412322', NULL, 'Maria Dela Cruz', NULL, NULL, NULL, '09325010012', NULL, NULL, NULL, '2026-08-14 08:35:21', '2026-08-14 08:35:21', '', '2026-08-09', 'Date Picker', 'sample@deped.gov.ph', 'sampleemail@email.com', 'Bachelor of Secondary Education', '2132158921839', '2348237482374', '2026-08-09');
 
 -- --------------------------------------------------------
 
@@ -170,7 +173,7 @@ INSERT INTO `users` (`id`, `full_name`, `username`, `password`, `role`, `created
 (2, 'John Doe', 'john', 'adminako123', 'Administrator', '2026-08-08 06:13:31'),
 (3, 'System Administrator', 'admin', '$2y$10$Ac8nA3ihwRwYAD79aVa0Cek8PoEntBVi52MfUFgGM2Glpj692PJcC', 'Administrator', '2026-08-08 06:15:44'),
 (4, 'Administrator 1', 'admin1', '$2y$10$81EtCRGSc.iPTmy8j./ddehsAVVV9gGqAdk3sfnL2T.TYjmSILf1O', 'Administrator', '2026-08-11 09:14:04'),
-(5, 'Teacher Account', 'teacher1', '$2y$10$wG7z.C4jaU3sl7L1DyGQo.cSfGUw5.ipzN8zMiLSQ5e1rKMXniOl.', 'Teacher', '2026-08-14 06:46:24');
+(5, 'Maria Dela Cruz', 'teacher1', '$2y$10$wG7z.C4jaU3sl7L1DyGQo.cSfGUw5.ipzN8zMiLSQ5e1rKMXniOl.', 'Teacher', '2026-08-14 06:46:24');
 
 --
 -- Indexes for dumped tables
@@ -201,7 +204,8 @@ ALTER TABLE `students`
 --
 ALTER TABLE `teachers`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `employee_id` (`employee_id`);
+  ADD UNIQUE KEY `employee_id` (`employee_id`),
+  ADD KEY `fk_teachers_user` (`user_id`);
 
 --
 -- Indexes for table `users`
@@ -230,19 +234,29 @@ ALTER TABLE `staff`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `teachers`
 --
 ALTER TABLE `teachers`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `teachers`
+--
+ALTER TABLE `teachers`
+  ADD CONSTRAINT `fk_teachers_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -7,540 +7,69 @@ require_login();
 $pageTitle = 'My Account';
 
 $userId = (int)($_SESSION['user_id'] ?? 0);
-$userRole = $_SESSION['role'] ?? '';
+$role   = $_SESSION['role'] ?? '';
 
-$isAdmin = ($userRole === 'Administrator');
+$isAdmin   = strcasecmp($role, 'Administrator') === 0;
+$isTeacher = strcasecmp($role, 'Teacher') === 0;
+$isStaff   = strcasecmp($role, 'Staff') === 0;
 
-$error = '';
-$success = '';
 
-/* Get current user */
+/*
+|--------------------------------------------------------------------------
+| Get Account
+|--------------------------------------------------------------------------
+*/
+
 $stmt = $pdo->prepare("
-    SELECT id, username, full_name, role
+    SELECT id, full_name, username, role
     FROM users
     WHERE id = ?
+    LIMIT 1
 ");
 
 $stmt->execute([$userId]);
 
-$user = $stmt->fetch();
+$account = $stmt->fetch();
 
-if (!$user) {
-    redirect('logout.php');
+if (!$account) {
+    exit('Account not found.');
 }
 
 
-/* Update own account */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_account'])) {
-
-    $fullName = trim($_POST['full_name'] ?? '');
-    $username = trim($_POST['username'] ?? '');
-    $currentPassword = $_POST['current_password'] ?? '';
-
-    if ($fullName === '' || $username === '') {
-
-        $error = 'Full Name and Username are required.';
-
-    } elseif ($currentPassword === '') {
-
-        $error = 'Enter your current password to save changes.';
-
-    } else {
-
-        $stmt = $pdo->prepare("
-            SELECT password
-            FROM users
-            WHERE id = ?
-        ");
-
-        $stmt->execute([$userId]);
-
-        $account = $stmt->fetch();
-
-        if (
-            !$account ||
-            !password_verify($currentPassword, $account['password'])
-        ) {
-
-            $error = 'Current password is incorrect.';
-
-        } else {
-
-            /* Check username */
-            $stmt = $pdo->prepare("
-                SELECT id
-                FROM users
-                WHERE username = ?
-                AND id != ?
-            ");
-
-            $stmt->execute([
-                $username,
-                $userId
-            ]);
-
-            if ($stmt->fetch()) {
-
-                $error = 'Username is already taken.';
-
-            } else {
-
-                $stmt = $pdo->prepare("
-                    UPDATE users
-                    SET
-                        full_name = ?,
-                        username = ?
-                    WHERE id = ?
-                ");
-
-                $stmt->execute([
-                    $fullName,
-                    $username,
-                    $userId
-                ]);
-
-                $_SESSION['full_name'] = $fullName;
-                $_SESSION['username'] = $username;
-
-                $user['full_name'] = $fullName;
-                $user['username'] = $username;
-
-                $success = 'Account information updated successfully.';
-            }
-        }
-    }
-}
-
-
-/* Change own password */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
-
-    $currentPassword = $_POST['current_password'] ?? '';
-    $newPassword = $_POST['new_password'] ?? '';
-    $confirmPassword = $_POST['confirm_password'] ?? '';
-
-    if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
-
-        $error = 'All password fields are required.';
-
-    } elseif (strlen($newPassword) < 6) {
-
-        $error = 'New password must be at least 6 characters.';
-
-    } elseif ($newPassword !== $confirmPassword) {
-
-        $error = 'New passwords do not match.';
-
-    } else {
-
-        $stmt = $pdo->prepare("
-            SELECT password
-            FROM users
-            WHERE id = ?
-        ");
-
-        $stmt->execute([$userId]);
-
-        $account = $stmt->fetch();
-
-        if (
-            !$account ||
-            !password_verify($currentPassword, $account['password'])
-        ) {
-
-            $error = 'Current password is incorrect.';
-
-        } else {
-
-            $hashedPassword = password_hash(
-                $newPassword,
-                PASSWORD_DEFAULT
-            );
-
-            $stmt = $pdo->prepare("
-                UPDATE users
-                SET password = ?
-                WHERE id = ?
-            ");
-
-            $stmt->execute([
-                $hashedPassword,
-                $userId
-            ]);
-
-            $success = 'Password changed successfully.';
-        }
-    }
-}
-
-
-/* Admin account management */
-if (
-    $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['account_action'])
-) {
-
-    if (!$isAdmin) {
-
-        $error = 'You do not have permission to manage accounts.';
-
-    } else {
-
-        $action = $_POST['account_action'];
-
-        $targetId = (int)($_POST['target_id'] ?? 0);
-
-        $adminPassword = $_POST['admin_password'] ?? '';
-
-
-        /* Verify Administrator password */
-        if ($adminPassword === '') {
-
-            $error = 'Administrator password is required.';
-
-        } else {
-
-            $stmt = $pdo->prepare("
-                SELECT password
-                FROM users
-                WHERE id = ?
-                AND role = 'Administrator'
-            ");
-
-            $stmt->execute([$userId]);
-
-            $adminAccount = $stmt->fetch();
-
-            if (
-                !$adminAccount ||
-                !password_verify(
-                    $adminPassword,
-                    $adminAccount['password']
-                )
-            ) {
-
-                $error = 'Administrator password is incorrect.';
-
-            } else {
-
-
-                /* ADD ACCOUNT */
-                if ($action === 'add') {
-
-                    $fullName = trim($_POST['new_full_name'] ?? '');
-                    $username = trim($_POST['new_username'] ?? '');
-                    $password = $_POST['new_password'] ?? '';
-                    $role = $_POST['new_role'] ?? '';
-
-
-                    if (
-                        $fullName === '' ||
-                        $username === '' ||
-                        $password === ''
-                    ) {
-
-                        $error = 'All account fields are required.';
-
-                    } elseif (
-                        !in_array(
-                            $role,
-                            ['Teacher', 'Staff'],
-                            true
-                        )
-                    ) {
-
-                        $error = 'Please select a valid role.';
-
-                    } elseif (strlen($password) < 6) {
-
-                        $error = 'Account password must be at least 6 characters.';
-
-                    } else {
-
-                        $stmt = $pdo->prepare("
-                            SELECT id
-                            FROM users
-                            WHERE username = ?
-                        ");
-
-                        $stmt->execute([$username]);
-
-                        if ($stmt->fetch()) {
-
-                            $error = 'Username is already taken.';
-
-                        } else {
-
-                            $hashedPassword = password_hash(
-                                $password,
-                                PASSWORD_DEFAULT
-                            );
-
-                            $stmt = $pdo->prepare("
-                                INSERT INTO users
-                                (
-                                    full_name,
-                                    username,
-                                    password,
-                                    role
-                                )
-                                VALUES (?, ?, ?, ?)
-                            ");
-
-                            $stmt->execute([
-                                $fullName,
-                                $username,
-                                $hashedPassword,
-                                $role
-                            ]);
-
-                            $success =
-                                $role .
-                                ' account added successfully.';
-                        }
-                    }
-                }
-
-
-                /* EDIT ACCOUNT */
-                elseif ($action === 'edit') {
-
-                    $fullName = trim(
-                        $_POST['edit_full_name'] ?? ''
-                    );
-
-                    $username = trim(
-                        $_POST['edit_username'] ?? ''
-                    );
-
-                    $role = $_POST['edit_role'] ?? '';
-
-                    $newPassword =
-                        $_POST['edit_password'] ?? '';
-
-
-                    if ($targetId <= 0) {
-
-                        $error = 'Invalid account.';
-
-                    } elseif (
-                        $fullName === '' ||
-                        $username === ''
-                    ) {
-
-                        $error =
-                            'Full Name and Username are required.';
-
-                    } elseif (
-                        !in_array(
-                            $role,
-                            ['Teacher', 'Staff'],
-                            true
-                        )
-                    ) {
-
-                        $error = 'Invalid account role.';
-
-                    } else {
-
-                        /* Get target account */
-                        $stmt = $pdo->prepare("
-                            SELECT id, role
-                            FROM users
-                            WHERE id = ?
-                        ");
-
-                        $stmt->execute([$targetId]);
-
-                        $target = $stmt->fetch();
-
-
-                        if (!$target) {
-
-                            $error = 'Account not found.';
-
-                        } elseif (
-                            $target['role'] === 'Administrator'
-                        ) {
-
-                            $error =
-                                'Administrator accounts cannot be edited here.';
-
-                        } else {
-
-                            /* Check username */
-                            $stmt = $pdo->prepare("
-                                SELECT id
-                                FROM users
-                                WHERE username = ?
-                                AND id != ?
-                            ");
-
-                            $stmt->execute([
-                                $username,
-                                $targetId
-                            ]);
-
-                            if ($stmt->fetch()) {
-
-                                $error =
-                                    'Username is already taken.';
-
-                            } else {
-
-
-                                /* Update password too */
-                                if ($newPassword !== '') {
-
-                                    if (strlen($newPassword) < 6) {
-
-                                        $error =
-                                            'New password must be at least 6 characters.';
-
-                                    } else {
-
-                                        $hashedPassword =
-                                            password_hash(
-                                                $newPassword,
-                                                PASSWORD_DEFAULT
-                                            );
-
-                                        $stmt = $pdo->prepare("
-                                            UPDATE users
-                                            SET
-                                                full_name = ?,
-                                                username = ?,
-                                                role = ?,
-                                                password = ?
-                                            WHERE id = ?
-                                            AND role IN ('Teacher', 'Staff')
-                                        ");
-
-                                        $stmt->execute([
-                                            $fullName,
-                                            $username,
-                                            $role,
-                                            $hashedPassword,
-                                            $targetId
-                                        ]);
-
-                                        $success =
-                                            'Account updated successfully.';
-                                    }
-
-                                } else {
-
-                                    /* Keep old password */
-                                    $stmt = $pdo->prepare("
-                                        UPDATE users
-                                        SET
-                                            full_name = ?,
-                                            username = ?,
-                                            role = ?
-                                        WHERE id = ?
-                                        AND role IN ('Teacher', 'Staff')
-                                    ");
-
-                                    $stmt->execute([
-                                        $fullName,
-                                        $username,
-                                        $role,
-                                        $targetId
-                                    ]);
-
-                                    $success =
-                                        'Account updated successfully.';
-                                }
-                            }
-                        }
-                    }
-                }
-
-
-                /* DELETE ACCOUNT */
-                elseif ($action === 'delete') {
-
-                    if ($targetId <= 0) {
-
-                        $error = 'Invalid account.';
-
-                    } elseif ($targetId === $userId) {
-
-                        $error =
-                            'You cannot delete your own account.';
-
-                    } else {
-
-                        /* Get target role */
-                        $stmt = $pdo->prepare("
-                            SELECT role
-                            FROM users
-                            WHERE id = ?
-                        ");
-
-                        $stmt->execute([$targetId]);
-
-                        $target = $stmt->fetch();
-
-
-                        if (!$target) {
-
-                            $error = 'Account not found.';
-
-                        } elseif (
-                            $target['role'] === 'Administrator'
-                        ) {
-
-                            $error =
-                                'Administrator accounts cannot be deleted.';
-
-                        } else {
-
-                            $stmt = $pdo->prepare("
-                                DELETE FROM users
-                                WHERE id = ?
-                                AND role IN ('Teacher', 'Staff')
-                            ");
-
-                            $stmt->execute([$targetId]);
-
-                            if ($stmt->rowCount() > 0) {
-
-                                $success =
-                                    'Account deleted successfully.';
-
-                            } else {
-
-                                $error =
-                                    'Unable to delete the account.';
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-/* Get Teacher and Staff accounts */
-$accounts = [];
-
-if ($isAdmin) {
-
-    $stmt = $pdo->query("
-        SELECT
-            id,
-            username,
-            full_name,
-            role,
-            created_at
-        FROM users
-        WHERE role IN ('Teacher', 'Staff')
-        ORDER BY role ASC, full_name ASC
+/*
+|--------------------------------------------------------------------------
+| Get Profile
+|--------------------------------------------------------------------------
+*/
+
+$profile = null;
+
+if ($isTeacher) {
+
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM teachers
+        WHERE user_id = ?
+        LIMIT 1
     ");
 
-    $accounts = $stmt->fetchAll();
+    $stmt->execute([$userId]);
+
+    $profile = $stmt->fetch();
+}
+
+if ($isStaff) {
+
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM staff
+        WHERE user_id = ?
+        LIMIT 1
+    ");
+
+    $stmt->execute([$userId]);
+
+    $profile = $stmt->fetch();
 }
 
 
@@ -553,335 +82,1146 @@ include 'header.php';
 
 <div class="account-page">
 
+    <!-- =========================================================
+         PAGE HEADER
+    ========================================================== -->
 
-    <!-- Page Header -->
     <div class="account-header">
 
-        <div>
+        <span class="account-label">
+            ACCOUNT SETTINGS
+        </span>
 
-            <div class="account-label">
-                ACCOUNT
-            </div>
+        <h2 class="fw-bold mb-1">
+            My Account
+        </h2>
 
-            <h2 class="fw-bold mb-1">
-                My Account
-            </h2>
-
-            <p class="text-muted mb-0">
-                Manage your account information and password.
-            </p>
-
-        </div>
-
-
-        <a
-            href="index.php"
-            class="btn btn-outline-secondary"
-        >
-            <i class="bi bi-arrow-left me-1"></i>
-            Dashboard
-        </a>
+        <p class="text-muted mb-0">
+            Manage your account and personal information.
+        </p>
 
     </div>
 
 
-    <!-- Messages -->
+    <!-- =========================================================
+         SUCCESS MESSAGE
+    ========================================================== -->
 
-    <?php if ($error): ?>
-
-        <div class="alert alert-danger">
-
-            <i class="bi bi-exclamation-circle me-2"></i>
-
-            <?= e($error) ?>
-
-        </div>
-
-    <?php endif; ?>
-
-
-    <?php if ($success): ?>
+    <?php if (!empty($_SESSION['success'])): ?>
 
         <div class="alert alert-success">
 
             <i class="bi bi-check-circle me-2"></i>
 
-            <?= e($success) ?>
+            <?= e($_SESSION['success']) ?>
+
+        </div>
+
+        <?php unset($_SESSION['success']); ?>
+
+    <?php endif; ?>
+
+
+    <!-- =========================================================
+         ERROR MESSAGE
+    ========================================================== -->
+
+    <?php if (!empty($_SESSION['error'])): ?>
+
+        <div class="alert alert-danger">
+
+            <i class="bi bi-exclamation-circle me-2"></i>
+
+            <?= e($_SESSION['error']) ?>
+
+        </div>
+
+        <?php unset($_SESSION['error']); ?>
+
+    <?php endif; ?>
+
+
+    <!-- =========================================================
+         ACCOUNT INFORMATION
+    ========================================================== -->
+
+    <div class="account-card mb-4">
+
+        <div class="account-card-header">
+
+            <div class="account-icon">
+                <i class="bi bi-person-circle"></i>
+            </div>
+
+            <div>
+
+                <h5 class="mb-1">
+                    Account Information
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Update your account information.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form method="POST" action="account_edit.php">
+
+            <input
+                type="hidden"
+                name="action"
+                value="update_account"
+            >
+
+
+            <div class="row g-3">
+
+                <!-- Full Name -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="full_name"
+                        class="form-control"
+                        value="<?= e($account['full_name']) ?>"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Username -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        name="username"
+                        class="form-control"
+                        value="<?= e($account['username']) ?>"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Role -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Role
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="<?= e($account['role']) ?>"
+                        readonly
+                    >
+
+                </div>
+
+
+                <!-- Current Password -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Current Password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="current_password"
+                        class="form-control"
+                        placeholder="Required only when changing password"
+                    >
+
+                </div>
+
+
+                <!-- New Password -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        New Password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="new_password"
+                        class="form-control"
+                        placeholder="Leave blank to keep current password"
+                    >
+
+                </div>
+
+
+                <!-- Confirm Password -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Confirm New Password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="confirm_password"
+                        class="form-control"
+                        placeholder="Confirm new password"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="mt-4">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+
+                    <i class="bi bi-check-circle me-1"></i>
+
+                    Save Account Changes
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- =========================================================
+         TEACHER INFORMATION
+    ========================================================== -->
+
+    <?php if ($isTeacher): ?>
+
+        <div class="account-card mb-4">
+
+            <div class="account-card-header">
+
+                <div class="account-icon">
+                    <i class="bi bi-person-workspace"></i>
+                </div>
+
+                <div>
+
+                    <h5 class="mb-1">
+                        Teacher Information
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        Update your teacher information.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form method="POST" action="account_edit.php">
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="update_profile"
+                >
+
+                <input
+                    type="hidden"
+                    name="profile_type"
+                    value="teacher"
+                >
+
+
+                <div class="row g-3">
+
+                    <!-- Employee No. -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Employee No.
+                        </label>
+
+                        <input
+                            type="text"
+                            name="employee_id"
+                            class="form-control"
+                            value="<?= e($profile['employee_id'] ?? '') ?>"
+                            placeholder="Enter employee number"
+                        >
+
+                    </div>
+
+
+                    <!-- Plantilla No. -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Plantilla No.
+                        </label>
+
+                        <input
+                            type="text"
+                            name="plantilla_no"
+                            class="form-control"
+                            value="<?= e($profile['plantilla_no'] ?? '') ?>"
+                            placeholder="Enter plantilla number"
+                        >
+
+                    </div>
+
+
+                    <!-- Full Name -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="<?= e($account['full_name']) ?>"
+                            readonly
+                        >
+
+                        <small class="text-muted">
+                            This is linked to your account name.
+                        </small>
+
+                    </div>
+
+
+                    <!-- First Day of Service -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            First Day of Service
+                        </label>
+
+                        <input
+                            type="date"
+                            name="first_day_of_service"
+                            class="form-control"
+                            value="<?= e($profile['first_day_of_service'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <!-- Current / Latest Appointment -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Current / Latest Appointment
+                        </label>
+
+                        <input
+                            type="text"
+                            name="current_latest_appointment"
+                            class="form-control"
+                            value="<?= e($profile['current_latest_appointment'] ?? '') ?>"
+                            placeholder="e.g. Teacher I"
+                        >
+
+                    </div>
+
+
+                    <!-- Position / Department -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Position / Department
+                        </label>
+
+                        <input
+                            type="text"
+                            name="position_department"
+                            class="form-control"
+                            value="<?= e($profile['position_department'] ?? '') ?>"
+                            placeholder="e.g. Teacher I / Mathematics"
+                        >
+
+                    </div>
+
+
+                    <!-- Contact Number -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Contact Number
+                        </label>
+
+                        <input
+                            type="text"
+                            name="contact_number"
+                            class="form-control"
+                            value="<?= e($profile['contact_number'] ?? '') ?>"
+                            placeholder="Enter contact number"
+                        >
+
+                    </div>
+
+
+                    <!-- DepEd Email -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            DepEd Email
+                        </label>
+
+                        <input
+                            type="email"
+                            name="deped_email"
+                            class="form-control"
+                            value="<?= e($profile['deped_email'] ?? '') ?>"
+                            placeholder="sample@deped.gov.ph"
+                        >
+
+                    </div>
+
+
+                    <!-- Personal Email -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Personal Email
+                        </label>
+
+                        <input
+                            type="email"
+                            name="personal_email"
+                            class="form-control"
+                            value="<?= e($profile['personal_email'] ?? '') ?>"
+                            placeholder="sample@email.com"
+                        >
+
+                    </div>
+
+
+                    <!-- Birthdate -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Birthdate
+                        </label>
+
+                        <input
+                            type="date"
+                            name="birthdate"
+                            class="form-control"
+                            value="<?= e($profile['birthdate'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <!-- Gender -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Gender
+                        </label>
+
+                        <select
+                            name="gender"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Select Gender
+                            </option>
+
+                            <option
+                                value="Male"
+                                <?= (($profile['gender'] ?? '') === 'Male') ? 'selected' : '' ?>
+                            >
+                                Male
+                            </option>
+
+                            <option
+                                value="Female"
+                                <?= (($profile['gender'] ?? '') === 'Female') ? 'selected' : '' ?>
+                            >
+                                Female
+                            </option>
+
+                            <option
+                                value="Other"
+                                <?= (($profile['gender'] ?? '') === 'Other') ? 'selected' : '' ?>
+                            >
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Address -->
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            Address
+                        </label>
+
+                        <textarea
+                            name="address"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Enter complete address"
+                        ><?= e($profile['address'] ?? '') ?></textarea>
+
+                    </div>
+
+
+                    <!-- Degree Finished -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Degree Finished
+                        </label>
+
+                        <input
+                            type="text"
+                            name="degree_finished"
+                            class="form-control"
+                            value="<?= e($profile['degree_finished'] ?? '') ?>"
+                            placeholder="e.g. Bachelor of Secondary Education"
+                        >
+
+                    </div>
+
+
+                    <!-- Specialization -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Specialization / PRC Eligibility
+                        </label>
+
+                        <input
+                            type="text"
+                            name="specialization_prc_eligibility"
+                            class="form-control"
+                            value="<?= e($profile['specialization_prc_eligibility'] ?? '') ?>"
+                            placeholder="Enter specialization or PRC eligibility"
+                        >
+
+                    </div>
+
+
+                    <!-- TIN -->
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            TIN No.
+                        </label>
+
+                        <input
+                            type="text"
+                            name="tin_no"
+                            class="form-control"
+                            value="<?= e($profile['tin_no'] ?? '') ?>"
+                            placeholder="Enter TIN number"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="mt-4">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="bi bi-check-circle me-1"></i>
+
+                        Save Teacher Information
+
+                    </button>
+
+                </div>
+
+            </form>
 
         </div>
 
     <?php endif; ?>
 
 
-    <!-- Own Account -->
+    <!-- =========================================================
+         STAFF INFORMATION
+    ========================================================== -->
 
-    <div class="row g-4">
+    <?php if ($isStaff): ?>
+
+        <div class="account-card mb-4">
+
+            <div class="account-card-header">
+
+                <div class="account-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+
+                <div>
+
+                    <h5 class="mb-1">
+                        Staff Information
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        Update your staff information.
+                    </p>
+
+                </div>
+
+            </div>
 
 
-        <!-- Account Information -->
+            <form method="POST" action="account_edit.php">
 
-        <div class="col-12 col-lg-7">
+                <input
+                    type="hidden"
+                    name="action"
+                    value="update_profile"
+                >
 
-            <div class="account-card">
+                <input
+                    type="hidden"
+                    name="profile_type"
+                    value="staff"
+                >
 
-                <div class="account-card-header">
 
-                    <div class="account-card-heading">
+                <div class="row g-3">
 
-                        <div class="account-icon">
-                            <i class="bi bi-person-vcard"></i>
-                        </div>
+                    <div class="col-md-6">
 
-                        <div>
+                        <label class="form-label">
+                            Employee No.
+                        </label>
 
-                            <h5 class="fw-bold mb-1">
-                                Account Information
-                            </h5>
+                        <input
+                            type="text"
+                            name="employee_id"
+                            class="form-control"
+                            value="<?= e($profile['employee_id'] ?? '') ?>"
+                            placeholder="Enter employee number"
+                        >
 
-                            <p class="text-muted small mb-0">
-                                Update your name and username.
-                            </p>
+                    </div>
 
-                        </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Plantilla No.
+                        </label>
+
+                        <input
+                            type="text"
+                            name="plantilla_no"
+                            class="form-control"
+                            value="<?= e($profile['plantilla_no'] ?? '') ?>"
+                            placeholder="Enter plantilla number"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="<?= e($account['full_name']) ?>"
+                            readonly
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            First Day of Service
+                        </label>
+
+                        <input
+                            type="date"
+                            name="first_day_of_service"
+                            class="form-control"
+                            value="<?= e($profile['first_day_of_service'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Current / Latest Appointment
+                        </label>
+
+                        <input
+                            type="text"
+                            name="current_latest_appointment"
+                            class="form-control"
+                            value="<?= e($profile['current_latest_appointment'] ?? '') ?>"
+                            placeholder="Enter appointment"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Position / Department
+                        </label>
+
+                        <input
+                            type="text"
+                            name="position_department"
+                            class="form-control"
+                            value="<?= e($profile['position_department'] ?? '') ?>"
+                            placeholder="e.g. Administrative Assistant"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Contact Number
+                        </label>
+
+                        <input
+                            type="text"
+                            name="contact_number"
+                            class="form-control"
+                            value="<?= e($profile['contact_number'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            DepEd Email
+                        </label>
+
+                        <input
+                            type="email"
+                            name="deped_email"
+                            class="form-control"
+                            value="<?= e($profile['deped_email'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Personal Email
+                        </label>
+
+                        <input
+                            type="email"
+                            name="personal_email"
+                            class="form-control"
+                            value="<?= e($profile['personal_email'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Birthdate
+                        </label>
+
+                        <input
+                            type="date"
+                            name="birthdate"
+                            class="form-control"
+                            value="<?= e($profile['birthdate'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Gender
+                        </label>
+
+                        <select
+                            name="gender"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                Select Gender
+                            </option>
+
+                            <option
+                                value="Male"
+                                <?= (($profile['gender'] ?? '') === 'Male') ? 'selected' : '' ?>
+                            >
+                                Male
+                            </option>
+
+                            <option
+                                value="Female"
+                                <?= (($profile['gender'] ?? '') === 'Female') ? 'selected' : '' ?>
+                            >
+                                Female
+                            </option>
+
+                            <option
+                                value="Other"
+                                <?= (($profile['gender'] ?? '') === 'Other') ? 'selected' : '' ?>
+                            >
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            Address
+                        </label>
+
+                        <textarea
+                            name="address"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Enter complete address"
+                        ><?= e($profile['address'] ?? '') ?></textarea>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Degree Finished
+                        </label>
+
+                        <input
+                            type="text"
+                            name="degree_finished"
+                            class="form-control"
+                            value="<?= e($profile['degree_finished'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Specialization / PRC Eligibility
+                        </label>
+
+                        <input
+                            type="text"
+                            name="specialization_prc_eligibility"
+                            class="form-control"
+                            value="<?= e($profile['specialization_prc_eligibility'] ?? '') ?>"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            TIN No.
+                        </label>
+
+                        <input
+                            type="text"
+                            name="tin_no"
+                            class="form-control"
+                            value="<?= e($profile['tin_no'] ?? '') ?>"
+                        >
 
                     </div>
 
                 </div>
 
 
-                <div class="account-card-body">
+                <div class="mt-4">
 
-                    <form method="post">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
 
-                        <div class="mb-3">
+                        <i class="bi bi-check-circle me-1"></i>
 
-                            <label class="form-label">
-                                Full Name
-                            </label>
+                        Save Staff Information
 
-                            <input
-                                type="text"
-                                name="full_name"
-                                class="form-control"
-                                value="<?= e($user['full_name']) ?>"
-                                maxlength="150"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-                                Username
-                            </label>
-
-                            <input
-                                type="text"
-                                name="username"
-                                class="form-control"
-                                value="<?= e($user['username']) ?>"
-                                maxlength="80"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="mb-3">
-
-                            <label class="form-label">
-                                Role
-                            </label>
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                value="<?= e($user['role']) ?>"
-                                readonly
-                            >
-
-                        </div>
-
-
-                        <div class="mb-4">
-
-                            <label class="form-label">
-                                Current Password
-                            </label>
-
-                            <input
-                                type="password"
-                                name="current_password"
-                                class="form-control"
-                                required
-                            >
-
-                            <div class="form-text">
-                                Required to save account changes.
-                            </div>
-
-                        </div>
-
-
-                        <button
-                            type="submit"
-                            name="update_account"
-                            value="1"
-                            class="btn btn-primary"
-                        >
-
-                            <i class="bi bi-check-lg me-1"></i>
-
-                            Save Changes
-
-                        </button>
-
-                    </form>
+                    </button>
 
                 </div>
+
+            </form>
+
+        </div>
+
+    <?php endif; ?>
+
+
+    <!-- =========================================================
+         EXPORT DATA
+    ========================================================== -->
+
+    <div class="account-card mb-4">
+
+        <div class="account-card-header">
+
+            <div class="account-icon">
+                <i class="bi bi-file-earmark-excel"></i>
+            </div>
+
+            <div>
+
+                <h5 class="mb-1">
+                    Export Data
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Export school records to an Excel-compatible file.
+                </p>
 
             </div>
 
         </div>
 
 
-        <!-- Change Password -->
+        <div class="row g-3">
 
-        <div class="col-12 col-lg-5">
+            <!-- Students -->
 
-            <div class="account-card">
+            <?php if ($isTeacher || $isStaff || $isAdmin): ?>
 
-                <div class="account-card-header">
+                <div class="col-md-4">
 
-                    <div class="account-card-heading">
+                    <div class="export-card">
 
-                        <div class="account-icon">
-                            <i class="bi bi-shield-lock"></i>
+                        <div class="export-icon">
+                            <i class="bi bi-mortarboard-fill"></i>
                         </div>
 
-                        <div>
+                        <h6>
+                            Export Students
+                        </h6>
 
-                            <h5 class="fw-bold mb-1">
-                                Change Password
-                            </h5>
+                        <p>
+                            Export all student information.
+                        </p>
 
-                            <p class="text-muted small mb-0">
-                                Update your login password.
-                            </p>
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm w-100"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exportStudentsModal"
+                        >
 
-                        </div>
+                            <i class="bi bi-download me-1"></i>
+
+                            Export Students
+
+                        </button>
 
                     </div>
 
                 </div>
 
+            <?php endif; ?>
 
-                <div class="account-card-body">
 
-                    <form method="post">
+            <!-- Teachers -->
 
-                        <div class="mb-3">
+            <?php if ($isStaff || $isAdmin): ?>
 
-                            <label class="form-label">
-                                Current Password
-                            </label>
+                <div class="col-md-4">
 
-                            <input
-                                type="password"
-                                name="current_password"
-                                class="form-control"
-                                required
-                            >
+                    <div class="export-card">
 
+                        <div class="export-icon">
+                            <i class="bi bi-person-workspace"></i>
                         </div>
 
+                        <h6>
+                            Export Teachers
+                        </h6>
 
-                        <div class="mb-3">
-
-                            <label class="form-label">
-                                New Password
-                            </label>
-
-                            <input
-                                type="password"
-                                name="new_password"
-                                class="form-control"
-                                minlength="6"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="mb-4">
-
-                            <label class="form-label">
-                                Confirm New Password
-                            </label>
-
-                            <input
-                                type="password"
-                                name="confirm_password"
-                                class="form-control"
-                                minlength="6"
-                                required
-                            >
-
-                        </div>
-
+                        <p>
+                            Export all teacher information.
+                        </p>
 
                         <button
-                            type="submit"
-                            name="change_password"
-                            value="1"
-                            class="btn btn-primary"
+                            type="button"
+                            class="btn btn-primary btn-sm w-100"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exportTeachersModal"
                         >
 
-                            <i class="bi bi-key me-1"></i>
+                            <i class="bi bi-download me-1"></i>
 
-                            Change Password
+                            Export Teachers
 
                         </button>
 
-                    </form>
+                    </div>
 
                 </div>
 
-            </div>
+            <?php endif; ?>
+
+
+            <!-- Staff -->
+
+            <?php if ($isAdmin): ?>
+
+                <div class="col-md-4">
+
+                    <div class="export-card">
+
+                        <div class="export-icon">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+
+                        <h6>
+                            Export Staff
+                        </h6>
+
+                        <p>
+                            Export all staff information.
+                        </p>
+
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm w-100"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exportStaffModal"
+                        >
+
+                            <i class="bi bi-download me-1"></i>
+
+                            Export Staff
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            <?php endif; ?>
 
         </div>
 
     </div>
 
 
+    <!-- =========================================================
+         SYSTEM BACKUP
+    ========================================================== -->
+
     <?php if ($isAdmin): ?>
 
-
-        <!-- Admin Account Management -->
-
-        <div class="account-card mt-4">
+        <div class="account-card mb-4">
 
             <div class="account-card-header">
 
-                <div class="account-card-heading">
+                <div class="account-icon">
+                    <i class="bi bi-database-fill-down"></i>
+                </div>
 
-                    <div class="account-icon">
-                        <i class="bi bi-people"></i>
-                    </div>
+                <div>
 
-                    <div>
+                    <h5 class="mb-1">
+                        System Backup
+                    </h5>
 
-                        <h5 class="fw-bold mb-1">
-                            Staff & Teacher Accounts
-                        </h5>
+                    <p class="text-muted mb-0">
+                        Create a backup of the school database.
+                    </p>
 
-                        <p class="text-muted small mb-0">
-                            Add, edit, and delete Staff and Teacher accounts.
-                        </p>
+                </div>
 
-                    </div>
+            </div>
+
+
+            <div class="backup-card">
+
+                <div>
+
+                    <h6 class="mb-1">
+                        Database Backup
+                    </h6>
+
+                    <p class="text-muted mb-0">
+                        Download an SQL backup of the system database.
+                    </p>
 
                 </div>
 
@@ -890,162 +1230,14 @@ include 'header.php';
                     type="button"
                     class="btn btn-primary"
                     data-bs-toggle="modal"
-                    data-bs-target="#addAccountModal"
+                    data-bs-target="#backupModal"
                 >
 
-                    <i class="bi bi-plus-lg me-1"></i>
+                    <i class="bi bi-database-down me-1"></i>
 
-                    Add Account
+                    Export SQL Backup
 
                 </button>
-
-            </div>
-
-
-            <div class="table-responsive">
-
-                <table class="table account-table align-middle mb-0">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Full Name
-                            </th>
-
-                            <th>
-                                Username
-                            </th>
-
-                            <th>
-                                Role
-                            </th>
-
-                            <th>
-                                Created
-                            </th>
-
-                            <th class="text-end">
-                                Actions
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        <?php foreach ($accounts as $account): ?>
-
-                            <tr>
-
-                                <td>
-                                    <?= e($account['full_name']) ?>
-                                </td>
-
-                                <td>
-                                    <?= e($account['username']) ?>
-                                </td>
-
-                                <td>
-
-                                    <?php if ($account['role'] === 'Teacher'): ?>
-
-                                        <span class="badge bg-primary">
-                                            Teacher
-                                        </span>
-
-                                    <?php else: ?>
-
-                                        <span class="badge bg-secondary">
-                                            Staff
-                                        </span>
-
-                                    <?php endif; ?>
-
-                                </td>
-
-                                <td>
-                                    <?= e($account['created_at']) ?>
-                                </td>
-
-                                <td>
-
-                                    <div class="d-flex justify-content-end gap-2">
-
-
-                                        <!-- Edit -->
-
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-primary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editAccountModal"
-                                            data-id="<?= (int)$account['id'] ?>"
-                                            data-name="<?= e($account['full_name']) ?>"
-                                            data-username="<?= e($account['username']) ?>"
-                                            data-role="<?= e($account['role']) ?>"
-                                        >
-
-                                            <i class="bi bi-pencil"></i>
-
-                                            Edit
-
-                                        </button>
-
-
-                                        <!-- Delete -->
-
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteAccountModal"
-                                            data-id="<?= (int)$account['id'] ?>"
-                                            data-name="<?= e($account['full_name']) ?>"
-                                        >
-
-                                            <i class="bi bi-trash"></i>
-
-                                            Delete
-
-                                        </button>
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                        <?php endforeach; ?>
-
-
-                        <?php if (!$accounts): ?>
-
-                            <tr>
-
-                                <td
-                                    colspan="5"
-                                    class="text-center py-5"
-                                >
-
-                                    <i class="bi bi-people fs-2 text-muted"></i>
-
-                                    <p class="text-muted mt-2 mb-0">
-                                        No Staff or Teacher accounts yet.
-                                    </p>
-
-                                </td>
-
-                            </tr>
-
-                        <?php endif; ?>
-
-                    </tbody>
-
-                </table>
 
             </div>
 
@@ -1053,36 +1245,33 @@ include 'header.php';
 
     <?php endif; ?>
 
-
 </div>
 
 
-<?php if ($isAdmin): ?>
+<!-- =========================================================
+     STUDENT EXPORT MODAL
+========================================================== -->
 
+<?php if ($isTeacher || $isStaff || $isAdmin): ?>
 
-<!-- Add Account Modal -->
-
-<div
-    class="modal fade"
-    id="addAccountModal"
-    tabindex="-1"
-    aria-hidden="true"
->
+<div class="modal fade" id="exportStudentsModal" tabindex="-1">
 
     <div class="modal-dialog modal-dialog-centered">
 
         <div class="modal-content">
 
-            <form method="post">
+            <form method="POST" action="export_excel.php">
+
+                <input
+                    type="hidden"
+                    name="type"
+                    value="students"
+                >
 
                 <div class="modal-header">
 
                     <h5 class="modal-title">
-
-                        <i class="bi bi-person-plus me-2"></i>
-
-                        Add Account
-
+                        Export Students
                     </h5>
 
                     <button
@@ -1096,407 +1285,20 @@ include 'header.php';
 
                 <div class="modal-body">
 
-                    <div class="alert alert-info small">
-
-                        <i class="bi bi-shield-lock me-1"></i>
-
-                        Administrator password is required.
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Full Name
-                        </label>
-
-                        <input
-                            type="text"
-                            name="new_full_name"
-                            class="form-control"
-                            maxlength="150"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Username
-                        </label>
-
-                        <input
-                            type="text"
-                            name="new_username"
-                            class="form-control"
-                            maxlength="80"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Role
-                        </label>
-
-                        <select
-                            name="new_role"
-                            class="form-select"
-                            required
-                        >
-
-                            <option value="">
-                                Select Role
-                            </option>
-
-                            <option value="Teacher">
-                                Teacher
-                            </option>
-
-                            <option value="Staff">
-                                Staff
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Account Password
-                        </label>
-
-                        <input
-                            type="password"
-                            name="new_password"
-                            class="form-control"
-                            minlength="6"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div>
-
-                        <label class="form-label">
-                            Administrator Password
-                        </label>
-
-                        <input
-                            type="password"
-                            name="admin_password"
-                            class="form-control"
-                            required
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-light"
-                        data-bs-dismiss="modal"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        name="account_action"
-                        value="add"
-                        class="btn btn-primary"
-                    >
-
-                        <i class="bi bi-plus-lg me-1"></i>
-
-                        Add Account
-
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- Edit Account Modal -->
-
-<div
-    class="modal fade"
-    id="editAccountModal"
-    tabindex="-1"
-    aria-hidden="true"
->
-
-    <div class="modal-dialog modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <form method="post">
-
-                <input
-                    type="hidden"
-                    name="target_id"
-                    id="edit_target_id"
-                >
-
-
-                <div class="modal-header">
-
-                    <h5 class="modal-title">
-
-                        <i class="bi bi-pencil-square me-2"></i>
-
-                        Edit Account
-
-                    </h5>
-
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                    ></button>
-
-                </div>
-
-
-                <div class="modal-body">
-
-                    <div class="alert alert-warning small">
-
-                        <i class="bi bi-shield-lock me-1"></i>
-
-                        Administrator password is required
-                        to edit this account.
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Full Name
-                        </label>
-
-                        <input
-                            type="text"
-                            name="edit_full_name"
-                            id="edit_full_name"
-                            class="form-control"
-                            maxlength="150"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Username
-                        </label>
-
-                        <input
-                            type="text"
-                            name="edit_username"
-                            id="edit_username"
-                            class="form-control"
-                            maxlength="80"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Role
-                        </label>
-
-                        <select
-                            name="edit_role"
-                            id="edit_role"
-                            class="form-select"
-                            required
-                        >
-
-                            <option value="Teacher">
-                                Teacher
-                            </option>
-
-                            <option value="Staff">
-                                Staff
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            New Password
-                        </label>
-
-                        <input
-                            type="password"
-                            name="edit_password"
-                            class="form-control"
-                            minlength="6"
-                        >
-
-                        <div class="form-text">
-                            Leave blank to keep the current password.
-                        </div>
-
-                    </div>
-
-
-                    <div>
-
-                        <label class="form-label">
-                            Administrator Password
-                        </label>
-
-                        <input
-                            type="password"
-                            name="admin_password"
-                            class="form-control"
-                            required
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-light"
-                        data-bs-dismiss="modal"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        name="account_action"
-                        value="edit"
-                        class="btn btn-primary"
-                    >
-
-                        <i class="bi bi-check-lg me-1"></i>
-
-                        Save Changes
-
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- Delete Account Modal -->
-
-<div
-    class="modal fade"
-    id="deleteAccountModal"
-    tabindex="-1"
-    aria-hidden="true"
->
-
-    <div class="modal-dialog modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <form method="post">
-
-                <input
-                    type="hidden"
-                    name="target_id"
-                    id="delete_target_id"
-                >
-
-
-                <div class="modal-header">
-
-                    <h5 class="modal-title text-danger">
-
-                        <i class="bi bi-trash me-2"></i>
-
-                        Delete Account
-
-                    </h5>
-
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                    ></button>
-
-                </div>
-
-
-                <div class="modal-body">
-
-                    <p>
-                        Are you sure you want to delete
-                        <strong id="delete_account_name"></strong>?
+                    <p class="text-muted">
+                        Enter your account password to confirm this export.
                     </p>
 
-
-                    <div class="alert alert-danger small">
-
-                        <i class="bi bi-exclamation-triangle me-1"></i>
-
-                        This action cannot be undone.
-
-                    </div>
-
-
                     <label class="form-label">
-                        Administrator Password
+                        Password
                     </label>
 
                     <input
                         type="password"
-                        name="admin_password"
+                        name="password"
                         class="form-control"
                         required
                     >
-
-                    <div class="form-text">
-                        Enter your Administrator password
-                        to confirm deletion.
-                    </div>
 
                 </div>
 
@@ -1513,15 +1315,10 @@ include 'header.php';
 
                     <button
                         type="submit"
-                        name="account_action"
-                        value="delete"
-                        class="btn btn-danger"
+                        class="btn btn-primary"
                     >
-
-                        <i class="bi bi-trash me-1"></i>
-
-                        Delete Account
-
+                        <i class="bi bi-download me-1"></i>
+                        Export
                     </button>
 
                 </div>
@@ -1537,66 +1334,265 @@ include 'header.php';
 <?php endif; ?>
 
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
+<!-- =========================================================
+     TEACHER EXPORT MODAL
+========================================================== -->
 
-    /* Edit modal */
+<?php if ($isStaff || $isAdmin): ?>
 
-    const editModal =
-        document.getElementById('editAccountModal');
+<div class="modal fade" id="exportTeachersModal" tabindex="-1">
 
-    if (editModal) {
+    <div class="modal-dialog modal-dialog-centered">
 
-        editModal.addEventListener(
-            'show.bs.modal',
-            function (event) {
+        <div class="modal-content">
 
-                const button = event.relatedTarget;
+            <form method="POST" action="export.php">
 
-                document.getElementById('edit_target_id').value =
-                    button.getAttribute('data-id');
+                <input
+                    type="hidden"
+                    name="type"
+                    value="teachers"
+                >
 
-                document.getElementById('edit_full_name').value =
-                    button.getAttribute('data-name');
+                <div class="modal-header">
 
-                document.getElementById('edit_username').value =
-                    button.getAttribute('data-username');
+                    <h5 class="modal-title">
+                        Export Teachers
+                    </h5>
 
-                document.getElementById('edit_role').value =
-                    button.getAttribute('data-role');
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
 
-            }
-        );
-
-    }
+                </div>
 
 
-    /* Delete modal */
+                <div class="modal-body">
 
-    const deleteModal =
-        document.getElementById('deleteAccountModal');
+                    <p class="text-muted">
+                        Enter your account password to confirm this export.
+                    </p>
 
-    if (deleteModal) {
+                    <label class="form-label">
+                        Password
+                    </label>
 
-        deleteModal.addEventListener(
-            'show.bs.modal',
-            function (event) {
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        required
+                    >
 
-                const button = event.relatedTarget;
+                </div>
 
-                document.getElementById('delete_target_id').value =
-                    button.getAttribute('data-id');
 
-                document.getElementById('delete_account_name').textContent =
-                    button.getAttribute('data-name');
+                <div class="modal-footer">
 
-            }
-        );
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
 
-    }
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-download me-1"></i>
+                        Export
+                    </button>
 
-});
-</script>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<?php endif; ?>
+
+
+<!-- =========================================================
+     STAFF EXPORT MODAL
+========================================================== -->
+
+<?php if ($isAdmin): ?>
+
+<div class="modal fade" id="exportStaffModal" tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <form method="POST" action="export.php">
+
+                <input
+                    type="hidden"
+                    name="type"
+                    value="staff"
+                >
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Export Staff
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <p class="text-muted">
+                        Enter your account password to confirm this export.
+                    </p>
+
+                    <label class="form-label">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-download me-1"></i>
+                        Export
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<?php endif; ?>
+
+
+<!-- =========================================================
+     DATABASE BACKUP MODAL
+========================================================== -->
+
+<?php if ($isAdmin): ?>
+
+<div class="modal fade" id="backupModal" tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <form method="POST" action="backup.php">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        System Backup
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="alert alert-warning">
+
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+
+                        This will download a backup of the
+                        school database.
+
+                    </div>
+
+
+                    <label class="form-label">
+                        Administrator Password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-light"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="bi bi-database-down me-1"></i>
+
+                        Download Backup
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<?php endif; ?>
 
 
 <?php include 'footer.php'; ?>
