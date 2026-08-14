@@ -1,0 +1,534 @@
+/* =========================================================
+   SCHOOL DATA MANAGEMENT SYSTEM
+   NAVBAR / HEADER
+   Blue & White Theme
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   BODY
+   --------------------------------------------------------- */
+
+.sdms-body {
+    background: #f5f8fc;
+
+    color: #1e293b;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}
+
+
+/* ---------------------------------------------------------
+   NAVBAR
+   --------------------------------------------------------- */
+
+.sdms-navbar {
+    min-height: 72px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #e2e8f0;
+
+    box-shadow:
+        0 2px 10px rgba(15, 55, 100, 0.05);
+
+    z-index: 1000;
+}
+
+
+/* ---------------------------------------------------------
+   BRAND
+   --------------------------------------------------------- */
+
+.sdms-brand {
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    color: #163a63 !important;
+
+    text-decoration: none;
+
+    margin-right: 30px;
+}
+
+
+.sdms-brand:hover {
+    color: #0d6efd !important;
+}
+
+
+/* Brand icon */
+
+.sdms-brand-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #e8f2ff;
+
+    color: #0d6efd;
+
+    border: 1px solid #d9e9fb;
+
+    border-radius: 11px;
+
+    font-size: 20px;
+
+    flex-shrink: 0;
+}
+
+
+/* Brand text */
+
+.sdms-brand-text {
+    display: flex;
+
+    flex-direction: column;
+
+    line-height: 1.1;
+}
+
+
+.brand-title {
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: #163a63;
+}
+
+
+.brand-subtitle {
+    margin-top: 3px;
+
+    font-size: 11px;
+
+    font-weight: 500;
+
+    color: #7b8da3;
+}
+
+
+/* ---------------------------------------------------------
+   NAVIGATION
+   --------------------------------------------------------- */
+
+.sdms-nav {
+    gap: 5px;
+}
+
+
+.sdms-nav-link {
+    position: relative;
+
+    display: flex !important;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 10px 14px !important;
+
+    border-radius: 9px;
+
+    color: #64748b !important;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+
+/* Icons */
+
+.sdms-nav-link i {
+    font-size: 16px;
+
+    color: #7b8da3;
+
+    transition: color 0.2s ease;
+}
+
+
+/* Hover */
+
+.sdms-nav-link:hover {
+    background: #f0f6ff;
+
+    color: #0d6efd !important;
+}
+
+
+.sdms-nav-link:hover i {
+    color: #0d6efd;
+}
+
+
+/* Active */
+
+.sdms-nav-link.active {
+    background: #eaf3ff;
+
+    color: #0d6efd !important;
+
+    font-weight: 600;
+}
+
+
+.sdms-nav-link.active i {
+    color: #0d6efd;
+}
+
+
+/* Active indicator */
+
+.sdms-nav-link.active::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+
+    bottom: -11px;
+
+    transform: translateX(-50%);
+
+    width: 22px;
+
+    height: 3px;
+
+    border-radius: 5px;
+
+    background: #0d6efd;
+}
+
+
+/* ---------------------------------------------------------
+   USER AREA
+   --------------------------------------------------------- */
+
+.sdms-user-area {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+
+/* User */
+
+.sdms-user {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+/* User icon */
+
+.sdms-user-icon {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #e8f2ff;
+
+    color: #0d6efd;
+
+    font-size: 16px;
+}
+
+
+/* User text */
+
+.sdms-user-info {
+    display: flex;
+
+    flex-direction: column;
+
+    line-height: 1.2;
+}
+
+
+.sdms-user-label {
+    font-size: 10px;
+
+    color: #94a3b8;
+}
+
+
+.sdms-user-name {
+    max-width: 150px;
+
+    margin-top: 3px;
+
+    color: #334155;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* ---------------------------------------------------------
+   DIVIDER
+   --------------------------------------------------------- */
+
+.sdms-divider {
+    width: 1px;
+
+    height: 32px;
+
+    background: #e2e8f0;
+}
+
+
+/* ---------------------------------------------------------
+   LOGOUT
+   --------------------------------------------------------- */
+
+.sdms-logout {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 8px 13px;
+
+    border: 1px solid #dbe5f0;
+
+    border-radius: 8px;
+
+    color: #64748b;
+
+    background: #ffffff;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+.sdms-logout i {
+    font-size: 15px;
+}
+
+
+.sdms-logout:hover {
+    color: #dc3545;
+
+    background: #fff5f5;
+
+    border-color: #f1c5ca;
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE TOGGLE
+   --------------------------------------------------------- */
+
+.sdms-toggler {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #dce6f1;
+
+    border-radius: 9px;
+
+    color: #0d6efd;
+
+    background: #ffffff;
+
+    font-size: 22px;
+}
+
+
+.sdms-toggler:focus {
+    box-shadow:
+        0 0 0 3px rgba(13, 110, 253, 0.10);
+}
+
+
+/* ---------------------------------------------------------
+   MAIN CONTENT
+   --------------------------------------------------------- */
+
+.sdms-main {
+    min-height: calc(100vh - 72px);
+}
+
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+   --------------------------------------------------------- */
+
+@media (max-width: 991.98px) {
+
+    .sdms-navbar {
+        min-height: 64px;
+    }
+
+
+    .sdms-brand {
+        margin-right: 0;
+    }
+
+
+    .sdms-nav {
+        gap: 3px;
+
+        padding-top: 15px;
+    }
+
+
+    .sdms-nav-link {
+        padding: 11px 14px !important;
+    }
+
+
+    .sdms-nav-link.active::after {
+        display: none;
+    }
+
+
+    .sdms-user-area {
+        margin-top: 12px;
+
+        padding: 15px 0;
+
+        border-top: 1px solid #e9eef5;
+
+        justify-content: space-between;
+    }
+
+
+    .sdms-user {
+        flex: 1;
+    }
+
+
+    .sdms-user-name {
+        max-width: 220px;
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 575.98px) {
+
+    .sdms-brand-text {
+        display: none;
+    }
+
+
+    .sdms-brand {
+        margin-right: auto;
+    }
+
+
+    .sdms-brand-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+
+    .sdms-user-info {
+        display: none;
+    }
+
+
+    .sdms-user-area {
+        gap: 10px;
+    }
+
+
+    .sdms-divider {
+        display: none;
+    }
+
+
+    .sdms-user {
+        flex: 0;
+    }
+
+
+    .sdms-logout {
+        flex: 1;
+
+        justify-content: center;
+    }
+
+
+    .sdms-main {
+        padding-top: 20px !important;
+    }
+
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+}

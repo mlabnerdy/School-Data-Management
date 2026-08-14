@@ -1,0 +1,308 @@
+/* ========================================
+   STUDENTS PAGE
+   Blue & White Theme
+======================================== */
+
+.students-header {
+    background: #ffffff;
+    border: 1px solid #e5eaf0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.students-page-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #eaf3ff;
+    color: #0d6efd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.students-add-btn {
+    padding: 10px 18px;
+    font-weight: 600;
+    border-radius: 9px;
+}
+
+
+/* ================================
+   STUDENT SEARCH
+================================ */
+
+.students-search-form {
+    align-items: center;
+}
+
+.students-search-col {
+    width: 360px;
+}
+
+.students-search-input {
+    position: relative;
+}
+
+.students-search-input i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    z-index: 2;
+}
+
+.students-search-input .form-control {
+    padding-left: 42px;
+    height: 42px;
+    border-radius: 8px;
+}
+
+.students-search-btn,
+.students-clear-btn {
+    height: 42px;
+    border-radius: 8px;
+}
+
+/* ================================
+   ACTION BUTTONS
+================================ */
+
+.student-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.student-actions .btn {
+    white-space: nowrap;
+}
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 767.98px) {
+
+    .students-search-col {
+        width: 100%;
+    }
+
+    .students-search-btn,
+    .students-clear-btn {
+        width: 100%;
+    }
+
+    .student-actions {
+        justify-content: flex-start;
+    }
+
+    .student-actions .btn {
+        flex: 1;
+    }
+}
+
+
+/* ========================================
+   TABLE CARD
+======================================== */
+
+.students-table-card {
+    background: #ffffff;
+    border: 1px solid #e5eaf0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+}
+
+.students-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.students-table-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #eaf3ff;
+    color: #0d6efd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* ========================================
+   TABLE
+======================================== */
+
+.students-table {
+    min-width: 850px;
+}
+
+.students-table thead th {
+    background: #f5f9ff;
+    color: #495057;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #dfe7f1;
+    white-space: nowrap;
+}
+
+.students-table tbody td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.students-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.students-table tbody tr:hover {
+    background-color: #f8fbff;
+}
+
+.students-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* ========================================
+   AVATAR
+======================================== */
+
+.students-avatar {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e5eef9;
+}
+
+.students-avatar-placeholder {
+    background: #eaf3ff;
+    color: #0d6efd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+
+/* ========================================
+   BADGES
+======================================== */
+
+.student-id-badge {
+    display: inline-block;
+    background: #f1f6fc;
+    color: #0d5bb5;
+    border: 1px solid #dbe8f7;
+    border-radius: 7px;
+    padding: 5px 9px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.grade-badge {
+    display: inline-block;
+    background: #eaf3ff;
+    color: #0d6efd;
+    border-radius: 7px;
+    padding: 5px 9px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.student-contact {
+    color: #495057;
+    white-space: nowrap;
+}
+
+
+/* ========================================
+   ACTIONS
+======================================== */
+
+.student-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.student-actions .btn {
+    border-radius: 7px;
+    font-weight: 500;
+}
+
+
+/* ========================================
+   EMPTY STATE
+======================================== */
+
+.students-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.students-empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    border-radius: 16px;
+    background: #eaf3ff;
+    color: #0d6efd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 767.98px) {
+
+    .students-header {
+        padding: 18px;
+    }
+
+    .students-header h2 {
+        font-size: 22px;
+    }
+
+    .students-add-btn {
+        width: 100%;
+    }
+
+    .students-search-card {
+        padding: 14px;
+    }
+
+    .students-table-header {
+        padding: 16px;
+    }
+
+    .student-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .student-actions .btn {
+        width: 100%;
+    }
+}
+

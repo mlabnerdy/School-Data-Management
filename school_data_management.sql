@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 14, 2026 at 08:57 AM
+-- Generation Time: Aug 14, 2026 at 09:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -56,15 +56,24 @@ CREATE TABLE `staff` (
   `position_department` varchar(150) DEFAULT NULL,
   `other_info` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `plantilla_no` varchar(50) DEFAULT NULL,
+  `first_day_of_service` date DEFAULT NULL,
+  `current_latest_appointment` varchar(255) DEFAULT NULL,
+  `deped_email` varchar(150) DEFAULT NULL,
+  `personal_email` varchar(150) DEFAULT NULL,
+  `degree_finished` varchar(255) DEFAULT NULL,
+  `specialization_prc_eligibility` varchar(255) DEFAULT NULL,
+  `tin_no` varchar(30) DEFAULT NULL,
+  `birthdate` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `staff`
 --
 
-INSERT INTO `staff` (`id`, `employee_id`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `email`, `position_department`, `other_info`, `created_at`, `updated_at`) VALUES
-(1, '55-412341', 'uploads/staff/1e195c3d04de8f8f758627d7.jpg', 'Pony Plum', '1989-05-10', 'Male', 'P5 Brgy. Dulo', '09091005012', '', 'Registrar', '', '2026-08-08 06:40:37', '2026-08-08 06:43:32');
+INSERT INTO `staff` (`id`, `employee_id`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `email`, `position_department`, `other_info`, `created_at`, `updated_at`, `plantilla_no`, `first_day_of_service`, `current_latest_appointment`, `deped_email`, `personal_email`, `degree_finished`, `specialization_prc_eligibility`, `tin_no`, `birthdate`) VALUES
+(1, '55-412341', 'uploads/staff/1e195c3d04de8f8f758627d7.jpg', 'Pony Plum', '1989-05-10', 'Male', 'P5 Brgy. Dulo', '09091005012', '', 'Registrar', '', '2026-08-08 06:40:37', '2026-08-08 06:43:32', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -161,7 +170,7 @@ INSERT INTO `users` (`id`, `full_name`, `username`, `password`, `role`, `created
 (2, 'John Doe', 'john', 'adminako123', 'Administrator', '2026-08-08 06:13:31'),
 (3, 'System Administrator', 'admin', '$2y$10$Ac8nA3ihwRwYAD79aVa0Cek8PoEntBVi52MfUFgGM2Glpj692PJcC', 'Administrator', '2026-08-08 06:15:44'),
 (4, 'Administrator 1', 'admin1', '$2y$10$81EtCRGSc.iPTmy8j./ddehsAVVV9gGqAdk3sfnL2T.TYjmSILf1O', 'Administrator', '2026-08-11 09:14:04'),
-(5, 'Teacher Account', 'teacher1', '$2y$10$example', 'Teacher', '2026-08-14 06:46:24');
+(5, 'Teacher Account', 'teacher1', '$2y$10$wG7z.C4jaU3sl7L1DyGQo.cSfGUw5.ipzN8zMiLSQ5e1rKMXniOl.', 'Teacher', '2026-08-14 06:46:24');
 
 --
 -- Indexes for dumped tables

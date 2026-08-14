@@ -1,0 +1,198 @@
+/* Account Page */
+
+.account-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+
+/* Header */
+
+.account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.account-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+
+/* Cards */
+
+.account-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.account-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #edf0f2;
+}
+
+.account-card-header > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.account-card-header h5 {
+    margin: 0;
+}
+
+.account-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #eef4ff;
+    color: #0d6efd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.account-card-body {
+    padding: 24px;
+}
+
+
+/* Forms */
+
+.account-card .form-label {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.account-card .form-control {
+    min-height: 44px;
+    border-radius: 10px;
+    border-color: #dee2e6;
+}
+
+.account-card .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+.account-card .btn {
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+
+/* User Table */
+
+.account-table {
+    margin: 0;
+}
+
+.account-table thead th {
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 24px;
+    border-bottom: 1px solid #e9ecef;
+    white-space: nowrap;
+}
+
+.account-table tbody td {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f1f2;
+    color: #343a40;
+}
+
+.account-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.account-table tbody tr:hover {
+    background: #fafbfc;
+}
+
+
+/* Role Badges */
+
+.account-table .badge {
+    padding: 6px 10px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+/* Buttons */
+
+.account-table .btn {
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* Alerts */
+
+.account-page .alert {
+    border: 0;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.account-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+
+/* Mobile */
+
+@media (max-width: 768px) {
+
+    .account-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .account-header .btn {
+        width: 100%;
+    }
+
+    .account-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .account-card-header .btn {
+        width: 100%;
+    }
+
+    .account-card-body {
+        padding: 18px;
+    }
+
+    .account-table thead th,
+    .account-table tbody td {
+        padding: 12px 16px;
+    }
+
+}

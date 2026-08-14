@@ -1,174 +1,397 @@
 <?php
+
 require_once __DIR__ . '/config.php';
 
 require_login();
 
 $pageTitle = 'Dashboard';
 
-$students = $pdo->query("SELECT COUNT(*) FROM students")->fetchColumn();
-$teachers = $pdo->query("SELECT COUNT(*) FROM teachers")->fetchColumn();
-$staff = $pdo->query("SELECT COUNT(*) FROM staff")->fetchColumn();
-$docs = $pdo->query("SELECT COUNT(*) FROM documents")->fetchColumn();
+$userRole = $_SESSION['role'] ?? '';
 
-$recent = $pdo->query("
-    SELECT student_id AS record_id, full_name, 'Student' AS type, created_at
+$isAdmin = ($userRole === 'Administrator');
+$isStaff = ($userRole === 'Staff');
+$isTeacher = ($userRole === 'Teacher');
+
+
+/* Statistics */
+
+$students = $pdo
+    ->query("SELECT COUNT(*) FROM students")
+    ->fetchColumn();
+
+
+$teachers = $pdo
+    ->query("SELECT COUNT(*) FROM teachers")
+    ->fetchColumn();
+
+
+$staff = $pdo
+    ->query("SELECT COUNT(*) FROM staff")
+    ->fetchColumn();
+
+
+$docs = $pdo
+    ->query("SELECT COUNT(*) FROM documents")
+    ->fetchColumn();
+
+
+/* Recent Students */
+
+$recentStudents = $pdo->query("
+    SELECT
+        lrn AS record_id,
+        full_name,
+        created_at
     FROM students
-
-    UNION ALL
-
-    SELECT employee_id AS record_id, full_name, 'Teacher' AS type, created_at
-    FROM teachers
-
-    UNION ALL
-
-    SELECT employee_id AS record_id, full_name, 'Staff' AS type, created_at
-    FROM staff
-
     ORDER BY created_at DESC
     LIMIT 8
 ")->fetchAll();
 
+
+/* Recent Teachers */
+
+$recentTeachers = [];
+
+if ($isAdmin || $isStaff) {
+
+    $recentTeachers = $pdo->query("
+        SELECT
+            employee_id AS record_id,
+            full_name,
+            created_at
+        FROM teachers
+        ORDER BY created_at DESC
+        LIMIT 8
+    ")->fetchAll();
+
+}
+
+
 include 'header.php';
+
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-1">Dashboard</h2>
-        <p class="text-muted mb-0">
-            Overview of stored school records.
-        </p>
-    </div>
+<link
+    rel="stylesheet"
+    href="assets/dashboard.css"
+>
+
+
+<!-- Dashboard Header -->
+
+<div class="mb-4">
+
+    <h2 class="fw-bold mb-1">
+        Dashboard
+    </h2>
+
+    <p class="text-muted mb-0">
+
+        Welcome back,
+        <?= e($_SESSION['full_name'] ?? 'User') ?>.
+
+    </p>
+
 </div>
 
-<div class="row g-3 mb-4">
+
+<!-- Statistics -->
+
+<div class="dashboard-stats row g-4 mb-4">
+
 
     <!-- Students -->
-    <div class="col-md-6 col-xl-3">
-        <a href="students.php" class="text-decoration-none text-dark">
-            <div class="card stat-card p-4">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="text-muted">Students</div>
-                        <div class="display-6 fw-bold">
-                            <?= $students ?>
-                        </div>
-                    </div>
 
-                    <i class="bi bi-mortarboard fs-2 text-success"></i>
+    <div class="col-12 col-sm-6 col-xl-3">
+
+        <a
+            href="students.php"
+            class="dashboard-stat-link"
+        >
+
+            <div class="dashboard-stat-card">
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Students
+                    </span>
+
+                    <span class="stat-number">
+                        <?= e($students) ?>
+                    </span>
+
+                    <span class="stat-description">
+                        Registered students
+                    </span>
+
                 </div>
+
+                <div class="stat-icon stat-icon-blue">
+
+                    <i class="bi bi-mortarboard-fill"></i>
+
+                </div>
+
             </div>
+
         </a>
+
     </div>
+
 
     <!-- Teachers -->
-    <div class="col-md-6 col-xl-3">
-        <a href="teachers.php" class="text-decoration-none text-dark">
-            <div class="card stat-card p-4">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="text-muted">Teachers</div>
-                        <div class="display-6 fw-bold">
-                            <?= $teachers ?>
-                        </div>
+
+    <?php if ($isAdmin || $isStaff): ?>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <a
+                href="teachers.php"
+                class="dashboard-stat-link"
+            >
+
+                <div class="dashboard-stat-card">
+
+                    <div class="stat-content">
+
+                        <span class="stat-label">
+                            Teachers
+                        </span>
+
+                        <span class="stat-number">
+                            <?= e($teachers) ?>
+                        </span>
+
+                        <span class="stat-description">
+                            Registered teachers
+                        </span>
+
                     </div>
 
-                    <i class="bi bi-person-workspace fs-2 text-success"></i>
+                    <div class="stat-icon stat-icon-blue">
+
+                        <i class="bi bi-person-workspace"></i>
+
+                    </div>
+
                 </div>
-            </div>
-        </a>
-    </div>
+
+            </a>
+
+        </div>
+
+    <?php endif; ?>
+
 
     <!-- Staff -->
-    <div class="col-md-6 col-xl-3">
-        <a href="staff.php" class="text-decoration-none text-dark">
-            <div class="card stat-card p-4">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="text-muted">Staff</div>
-                        <div class="display-6 fw-bold">
-                            <?= $staff ?>
-                        </div>
+
+    <?php if ($isAdmin): ?>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <a
+                href="staff.php"
+                class="dashboard-stat-link"
+            >
+
+                <div class="dashboard-stat-card">
+
+                    <div class="stat-content">
+
+                        <span class="stat-label">
+                            Staff
+                        </span>
+
+                        <span class="stat-number">
+                            <?= e($staff) ?>
+                        </span>
+
+                        <span class="stat-description">
+                            Registered staff
+                        </span>
+
                     </div>
 
-                    <i class="bi bi-people fs-2 text-success"></i>
+                    <div class="stat-icon stat-icon-blue">
+
+                        <i class="bi bi-people-fill"></i>
+
+                    </div>
+
                 </div>
-            </div>
-        </a>
-    </div>
+
+            </a>
+
+        </div>
+
+    <?php endif; ?>
+
 
     <!-- Documents -->
-    <div class="col-md-6 col-xl-3">
-        <div class="card stat-card p-4">
-            <div class="d-flex justify-content-between">
-                <div>
-                    <div class="text-muted">Documents</div>
-                    <div class="display-6 fw-bold">
-                        <?= $docs ?>
-                    </div>
+
+    <?php if ($isAdmin): ?>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="dashboard-stat-card">
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Documents
+                    </span>
+
+                    <span class="stat-number">
+                        <?= e($docs) ?>
+                    </span>
+
+                    <span class="stat-description">
+                        Stored documents
+                    </span>
+
                 </div>
 
-                <i class="bi bi-file-earmark-text fs-2 text-success"></i>
+                <div class="stat-icon stat-icon-blue">
+
+                    <i class="bi bi-file-earmark-text-fill"></i>
+
+                </div>
+
             </div>
+
         </div>
-    </div>
+
+    <?php endif; ?>
+
 
 </div>
 
-<!-- Recent Records -->
-<div class="card p-4">
 
-    <h5 class="fw-bold mb-3">
-        Recently Added Records
-    </h5>
+<!-- Recent Students -->
+
+<div class="dashboard-record-card mb-4">
+
+
+    <div class="records-header">
+
+        <div>
+
+            <h5 class="records-title">
+                Recent Students
+            </h5>
+
+            <p class="records-subtitle">
+                Latest student records
+            </p>
+
+        </div>
+
+
+        <div class="records-icon">
+
+            <i class="bi bi-mortarboard"></i>
+
+        </div>
+
+    </div>
+
 
     <div class="table-responsive">
 
-        <table class="table table-hover">
+        <table class="table dashboard-table">
 
             <thead>
+
                 <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Date Added</th>
+
+                    <th>
+                        LRN
+                    </th>
+
+                    <th>
+                        Name
+                    </th>
+
+                    <th>
+                        Date Added
+                    </th>
+
                 </tr>
+
             </thead>
+
 
             <tbody>
 
-                <?php foreach ($recent as $r): ?>
+                <?php foreach ($recentStudents as $r): ?>
 
                     <tr>
 
                         <td>
-                            <?= e($r['record_id']) ?>
-                        </td>
 
-                        <td>
-                            <?= e($r['full_name']) ?>
-                        </td>
+                            <span class="record-id">
 
-                        <td>
-                            <span class="badge text-bg-light">
-                                <?= e($r['type']) ?>
+                                <?= e($r['record_id']) ?>
+
                             </span>
+
                         </td>
 
+
                         <td>
-                            <?= e($r['created_at']) ?>
+
+                            <div class="record-name">
+
+                                <div class="record-avatar">
+
+                                    <?= strtoupper(
+                                        substr(
+                                            $r['full_name'],
+                                            0,
+                                            1
+                                        )
+                                    ) ?>
+
+                                </div>
+
+                                <?= e($r['full_name']) ?>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="record-date">
+
+                                <i class="bi bi-calendar3"></i>
+
+                                <?= e($r['created_at']) ?>
+
+                            </span>
+
                         </td>
 
                     </tr>
 
                 <?php endforeach; ?>
 
-                <?php if (!$recent): ?>
+
+                <?php if (!$recentStudents): ?>
 
                     <tr>
-                        <td colspan="4"
-                            class="text-center text-muted py-4">
-                            No records yet.
+
+                        <td
+                            colspan="3"
+                            class="text-center text-muted py-4"
+                        >
+
+                            No student records yet.
+
                         </td>
+
                     </tr>
 
                 <?php endif; ?>
@@ -180,5 +403,146 @@ include 'header.php';
     </div>
 
 </div>
+
+
+<!-- Recent Teachers -->
+
+<?php if ($isAdmin || $isStaff): ?>
+
+    <div class="dashboard-record-card">
+
+        <div class="records-header">
+
+            <div>
+
+                <h5 class="records-title">
+                    Recent Teachers
+                </h5>
+
+                <p class="records-subtitle">
+                    Latest teacher records
+                </p>
+
+            </div>
+
+
+            <div class="records-icon">
+
+                <i class="bi bi-person-workspace"></i>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table dashboard-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Employee No.
+                        </th>
+
+                        <th>
+                            Name
+                        </th>
+
+                        <th>
+                            Date Added
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <?php foreach ($recentTeachers as $r): ?>
+
+                        <tr>
+
+                            <td>
+
+                                <span class="record-id">
+
+                                    <?= e($r['record_id']) ?>
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="record-name">
+
+                                    <div class="record-avatar">
+
+                                        <?= strtoupper(
+                                            substr(
+                                                $r['full_name'],
+                                                0,
+                                                1
+                                            )
+                                        ) ?>
+
+                                    </div>
+
+                                    <?= e($r['full_name']) ?>
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="record-date">
+
+                                    <i class="bi bi-calendar3"></i>
+
+                                    <?= e($r['created_at']) ?>
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                    <?php endforeach; ?>
+
+
+                    <?php if (!$recentTeachers): ?>
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                class="text-center text-muted py-4"
+                            >
+
+                                No teacher records yet.
+
+                            </td>
+
+                        </tr>
+
+                    <?php endif; ?>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+<?php endif; ?>
+
 
 <?php include 'footer.php'; ?>

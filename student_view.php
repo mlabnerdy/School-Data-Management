@@ -6,11 +6,7 @@ require_login();
 
 $id = (int)($_GET['id'] ?? 0);
 
-/*
-|--------------------------------------------------------------------------
-| Get Student
-|--------------------------------------------------------------------------
-*/
+// Get student
 $stmt = $pdo->prepare("SELECT * FROM students WHERE id = ?");
 $stmt->execute([$id]);
 
@@ -20,12 +16,7 @@ if (!$r) {
     redirect('students.php');
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| Upload Document
-|--------------------------------------------------------------------------
-*/
+// Upload document
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_document'])) {
 
     if (!empty($_FILES['document']['name'])) {
@@ -61,12 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_document'])) {
     redirect("student_view.php?id=$id");
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| Get Student Documents
-|--------------------------------------------------------------------------
-*/
+// Get documents
 $stmt = $pdo->prepare("
     SELECT *
     FROM documents
@@ -85,34 +71,51 @@ include __DIR__ . '/header.php';
 
 ?>
 
+<link rel="stylesheet" href="assets/student-view.css">
+
+
 <!-- Page Header -->
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+<div class="student-view-header">
 
-    <div>
-        <h2 class="fw-bold mb-1">
-            <?= e($r['full_name']) ?>
-        </h2>
+    <div class="student-heading">
 
-        <p class="text-muted mb-0">
-            <?= e($r['student_id']) ?>
-        </p>
+        <div class="student-heading-icon">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+
+        <div>
+
+            <h2 class="student-title">
+                <?= e($r['full_name']) ?>
+            </h2>
+
+            <p class="student-subtitle">
+                LRN:
+                <strong>
+                    <?= !empty($r['lrn']) ? e($r['lrn']) : '—' ?>
+                </strong>
+            </p>
+
+        </div>
+
     </div>
 
-    <div>
+
+    <div class="student-header-actions">
 
         <a
-            class="btn btn-outline-secondary"
             href="students.php"
+            class="btn btn-outline-secondary"
         >
-            <i class="bi bi-arrow-left"></i>
+            <i class="bi bi-arrow-left me-1"></i>
             Back
         </a>
 
         <a
-            class="btn btn-primary"
             href="student_form.php?id=<?= $id ?>"
+            class="btn btn-primary"
         >
-            <i class="bi bi-pencil"></i>
+            <i class="bi bi-pencil me-1"></i>
             Edit
         </a>
 
@@ -121,99 +124,279 @@ include __DIR__ . '/header.php';
 </div>
 
 
-<!-- Student Information -->
+<!-- Student Profile -->
 <div class="row g-4">
+
 
     <!-- Information -->
     <div class="col-lg-8">
 
-        <div class="card p-4">
+        <div class="student-card">
 
-            <h5 class="fw-bold mb-4">
-                Student Information
-            </h5>
+            <div class="student-card-header">
 
-            <div class="row g-4">
+                <div>
 
-                <div class="col-md-6">
-                    <strong>Full Name</strong>
-                    <div>
+                    <h5>
+                        Student Information
+                    </h5>
+
+                    <p>
+                        Basic information about the student.
+                    </p>
+
+                </div>
+
+                <div class="student-card-icon">
+                    <i class="bi bi-person-vcard"></i>
+                </div>
+
+            </div>
+
+
+            <div class="student-info-grid">
+
+
+                <!-- LRN -->
+                <div class="student-info-item">
+
+                    <span class="student-info-label">
+                        LRN
+                    </span>
+
+                    <span class="student-info-value">
+                        <?= !empty($r['lrn'])
+                            ? e($r['lrn'])
+                            : '—' ?>
+                    </span>
+
+                </div>
+
+
+                <!-- School ID -->
+                <div class="student-info-item">
+
+                    <span class="student-info-label">
+                        School ID No.
+                    </span>
+
+                    <span class="student-info-value">
+
+                        <span class="student-id-badge">
+                            <?= e($r['school_id'] ?? '500634') ?>
+                        </span>
+
+                    </span>
+
+                </div>
+
+
+                <!-- Full Name -->
+                <div class="student-info-item student-info-full">
+
+                    <span class="student-info-label">
+                        Full Name
+                    </span>
+
+                    <span class="student-info-value">
                         <?= e($r['full_name']) ?>
-                    </div>
+                    </span>
+
                 </div>
 
-                <div class="col-md-6">
-                    <strong>Student ID</strong>
-                    <div>
-                        <?= e($r['student_id']) ?>
-                    </div>
-                </div>
 
-                <div class="col-md-4">
-                    <strong>Date of Birth</strong>
-                    <div>
+                <!-- Birthdate -->
+                <div class="student-info-item">
+
+                    <span class="student-info-label">
+                        Birthdate
+                    </span>
+
+                    <span class="student-info-value">
                         <?= !empty($r['date_of_birth'])
                             ? e($r['date_of_birth'])
                             : '—' ?>
-                    </div>
+                    </span>
+
                 </div>
 
-                <div class="col-md-4">
-                    <strong>Gender</strong>
-                    <div>
+
+                <!-- Gender -->
+                <div class="student-info-item">
+
+                    <span class="student-info-label">
+                        Gender
+                    </span>
+
+                    <span class="student-info-value">
                         <?= !empty($r['gender'])
                             ? e($r['gender'])
                             : '—' ?>
-                    </div>
+                    </span>
+
                 </div>
 
-                <div class="col-md-4">
-                    <strong>Contact Number</strong>
-                    <div>
-                        <?= !empty($r['contact_number'])
-                            ? e($r['contact_number'])
+
+                <!-- School Year -->
+                <div class="student-info-item">
+
+                    <span class="student-info-label">
+                        School Year
+                    </span>
+
+                    <span class="student-info-value">
+                        <?= !empty($r['school_year'])
+                            ? e($r['school_year'])
                             : '—' ?>
-                    </div>
+                    </span>
+
                 </div>
 
-                <div class="col-12">
-                    <strong>Address</strong>
 
-                    <div>
+                <!-- Grade Section -->
+                <div class="student-info-item">
+
+                    <span class="student-info-label">
+                        Grade & Section
+                    </span>
+
+                    <span class="student-info-value">
+
+                        <?php if (!empty($r['grade_section'])): ?>
+
+                            <span class="grade-badge">
+                                <?= e($r['grade_section']) ?>
+                            </span>
+
+                        <?php else: ?>
+
+                            —
+
+                        <?php endif; ?>
+
+                    </span>
+
+                </div>
+
+
+                <!-- Contact -->
+                <div class="student-info-item">
+
+                    <span class="student-info-label">
+                        Contact Number
+                    </span>
+
+                    <span class="student-info-value">
+
+                        <?php if (!empty($r['contact_number'])): ?>
+
+                            <span class="student-contact">
+                                <i class="bi bi-telephone"></i>
+                                <?= e($r['contact_number']) ?>
+                            </span>
+
+                        <?php else: ?>
+
+                            —
+
+                        <?php endif; ?>
+
+                    </span>
+
+                </div>
+
+
+                <!-- Address -->
+                <div class="student-info-item student-info-full">
+
+                    <span class="student-info-label">
+                        Address
+                    </span>
+
+                    <span class="student-info-value">
                         <?= !empty($r['address'])
                             ? nl2br(e($r['address']))
                             : '—' ?>
-                    </div>
+                    </span>
+
                 </div>
 
-                <div class="col-md-6">
-                    <strong>Parent/Guardian</strong>
 
-                    <div>
+                <!-- Parent Guardian -->
+                <div class="student-info-item student-info-full">
+
+                    <span class="student-info-label">
+                        Parent / Guardian
+                    </span>
+
+                    <span class="student-info-value">
                         <?= !empty($r['parent_guardian'])
                             ? e($r['parent_guardian'])
                             : '—' ?>
-                    </div>
+                    </span>
+
                 </div>
 
-                <div class="col-md-6">
-                    <strong>Grade/Section</strong>
 
-                    <div>
-                        <?= !empty($r['grade_section'])
-                            ? e($r['grade_section'])
-                            : '—' ?>
+                <!-- Emergency -->
+                <div class="student-info-item student-info-full">
+
+                    <span class="student-info-label">
+                        In Case of Emergency
+                    </span>
+
+                    <div class="student-info-value">
+
+                        <div class="mb-2">
+                            <strong>Name:</strong>
+                            <?= !empty($r['emergency_name'])
+                                ? e($r['emergency_name'])
+                                : '—' ?>
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Address:</strong>
+                            <?= !empty($r['emergency_address'])
+                                ? nl2br(e($r['emergency_address']))
+                                : '—' ?>
+                        </div>
+
+                        <div>
+                            <strong>Contact No.:</strong>
+
+                            <?php if (!empty($r['emergency_contact'])): ?>
+
+                                <span class="student-contact">
+                                    <i class="bi bi-telephone"></i>
+                                    <?= e($r['emergency_contact']) ?>
+                                </span>
+
+                            <?php else: ?>
+
+                                —
+
+                            <?php endif; ?>
+
+                        </div>
+
                     </div>
+
                 </div>
 
-                <div class="col-12">
-                    <strong>Other Relevant Information</strong>
 
-                    <div>
+                <!-- Other Information -->
+                <div class="student-info-item student-info-full">
+
+                    <span class="student-info-label">
+                        Other Relevant Information
+                    </span>
+
+                    <span class="student-info-value">
                         <?= !empty($r['other_info'])
                             ? nl2br(e($r['other_info']))
                             : '—' ?>
-                    </div>
+                    </span>
+
                 </div>
 
             </div>
@@ -226,33 +409,60 @@ include __DIR__ . '/header.php';
     <!-- Profile Photo -->
     <div class="col-lg-4">
 
-        <div class="card p-4 text-center">
+        <div class="student-card profile-card">
 
-            <?php if (!empty($r['photo'])): ?>
+            <div class="student-card-header">
 
-                <img
-                    src="<?= e($r['photo']) ?>"
-                    class="profile-photo mx-auto mb-3"
-                    alt="Student Photo"
-                >
+                <div>
 
-            <?php else: ?>
+                    <h5>
+                        Profile Photo
+                    </h5>
 
-                <div
-                    class="profile-photo mx-auto mb-3 d-flex align-items-center justify-content-center bg-light fs-1 text-muted"
-                >
-                    <i class="bi bi-person"></i>
+                    <p>
+                        Student profile picture.
+                    </p>
+
                 </div>
 
-            <?php endif; ?>
+                <div class="student-card-icon">
+                    <i class="bi bi-camera"></i>
+                </div>
 
-            <h6 class="fw-bold mb-0">
+            </div>
+
+
+            <div class="profile-photo-wrapper">
+
+                <?php if (!empty($r['photo'])): ?>
+
+                    <img
+                        src="<?= e($r['photo']) ?>"
+                        class="student-profile-photo"
+                        alt="<?= e($r['full_name']) ?>"
+                    >
+
+                <?php else: ?>
+
+                    <div class="student-profile-placeholder">
+                        <i class="bi bi-person"></i>
+                    </div>
+
+                <?php endif; ?>
+
+            </div>
+
+
+            <div class="profile-name">
                 <?= e($r['full_name']) ?>
-            </h6>
+            </div>
 
-            <small class="text-muted">
-                Profile Photo
-            </small>
+            <div class="profile-id">
+                LRN:
+                <?= !empty($r['lrn'])
+                    ? e($r['lrn'])
+                    : '—' ?>
+            </div>
 
         </div>
 
@@ -262,21 +472,39 @@ include __DIR__ . '/header.php';
 
 
 <!-- Documents -->
-<div class="card p-4 mt-4">
+<div class="student-card documents-card">
 
-    <h5 class="fw-bold mb-3">
-        Documents
-    </h5>
+    <div class="student-card-header">
+
+        <div>
+
+            <h5>
+                Documents
+            </h5>
+
+            <p>
+                Upload and manage student documents.
+            </p>
+
+        </div>
+
+        <div class="student-card-icon">
+            <i class="bi bi-folder2-open"></i>
+        </div>
+
+    </div>
 
 
     <!-- Upload Document -->
     <form
         method="post"
         enctype="multipart/form-data"
-        class="row g-2 mb-4"
+        class="document-upload-form"
     >
 
-        <div class="col-md-8">
+        <div class="document-input-wrapper">
+
+            <i class="bi bi-cloud-arrow-up"></i>
 
             <input
                 class="form-control"
@@ -288,103 +516,160 @@ include __DIR__ . '/header.php';
 
         </div>
 
-        <div class="col-md-4">
 
-            <button
-                type="submit"
-                class="btn btn-success w-100"
-                name="upload_document"
-                value="1"
-            >
-                <i class="bi bi-upload"></i>
-                Upload Document
-            </button>
-
-        </div>
+        <button
+            type="submit"
+            class="btn btn-primary document-upload-btn"
+            name="upload_document"
+            value="1"
+        >
+            <i class="bi bi-upload me-1"></i>
+            Upload Document
+        </button>
 
     </form>
 
 
-    <!-- Documents Table -->
-    <div class="table-responsive">
+    <div class="document-help">
+        Accepted files: PDF, DOC, DOCX, JPG, JPEG, PNG, WEBP.
+        Maximum file size: 10 MB.
+    </div>
 
-        <table class="table table-hover align-middle">
 
-            <thead>
+    <!-- Documents -->
+    <div class="documents-table-wrapper">
 
-                <tr>
-                    <th>Document</th>
-                    <th>Uploaded</th>
-                    <th class="text-end">Actions</th>
-                </tr>
+        <div class="table-responsive">
 
-            </thead>
+            <table class="table student-documents-table align-middle mb-0">
 
-            <tbody>
+                <thead>
 
-                <?php if (!empty($docs)): ?>
+                    <tr>
+                        <th>Document</th>
+                        <th>Uploaded</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
 
-                    <?php foreach ($docs as $d): ?>
+                </thead>
+
+
+                <tbody>
+
+                    <?php if (!empty($docs)): ?>
+
+                        <?php foreach ($docs as $d): ?>
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="document-name">
+
+                                        <div class="document-icon">
+                                            <i class="bi bi-file-earmark"></i>
+                                        </div>
+
+                                        <div>
+
+                                            <div class="fw-semibold">
+                                                <?= e($d['document_name']) ?>
+                                            </div>
+
+                                            <?php if (!empty($d['file_type'])): ?>
+
+                                                <small class="text-muted">
+                                                    <?= e($d['file_type']) ?>
+                                                </small>
+
+                                            <?php endif; ?>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="document-date">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        <?= e($d['uploaded_at']) ?>
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="document-actions">
+
+                                        <a
+                                            href="<?= e($d['file_path']) ?>"
+                                            target="_blank"
+                                            class="btn btn-sm btn-outline-primary"
+                                            title="View or Download"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                            <span>View</span>
+                                        </a>
+
+
+                                        <a
+                                            href="delete_document.php?id=<?= (int)$d['id'] ?>&return=student_view.php%3Fid%3D<?= $id ?>"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-confirm="Delete this document?"
+                                            title="Delete Document"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                            <span>Delete</span>
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        <?php endforeach; ?>
+
+                    <?php else: ?>
 
                         <tr>
 
-                            <td>
-                                <i class="bi bi-file-earmark me-1"></i>
-                                <?= e($d['document_name']) ?>
-                            </td>
+                            <td colspan="3">
 
-                            <td>
-                                <?= e($d['uploaded_at']) ?>
-                            </td>
+                                <div class="documents-empty">
 
-                            <td class="text-end">
+                                    <div class="documents-empty-icon">
+                                        <i class="bi bi-folder2-open"></i>
+                                    </div>
 
-                                <a
-                                    target="_blank"
-                                    class="btn btn-sm btn-outline-primary"
-                                    href="<?= e($d['file_path']) ?>"
-                                >
-                                    <i class="bi bi-eye"></i>
-                                    View / Download
-                                </a>
+                                    <h6>
+                                        No documents uploaded
+                                    </h6>
 
-                                <a
-                                    data-confirm="Delete this document?"
-                                    class="btn btn-sm btn-outline-danger"
-                                    href="delete_document.php?id=<?= (int)$d['id'] ?>&return=student_view.php%3Fid%3D<?= $id ?>"
-                                >
-                                    <i class="bi bi-trash"></i>
-                                    Delete
-                                </a>
+                                    <p>
+                                        Upload a document using the form above.
+                                    </p>
+
+                                </div>
 
                             </td>
 
                         </tr>
 
-                    <?php endforeach; ?>
+                    <?php endif; ?>
 
-                <?php else: ?>
+                </tbody>
 
-                    <tr>
+            </table>
 
-                        <td
-                            colspan="3"
-                            class="text-center text-muted py-4"
-                        >
-                            No documents uploaded.
-                        </td>
-
-                    </tr>
-
-                <?php endif; ?>
-
-            </tbody>
-
-        </table>
+        </div>
 
     </div>
 
 </div>
 
-
-<?php include __DIR__ . '/footer.php'; ?>
+<?php include 'footer.php'; ?>

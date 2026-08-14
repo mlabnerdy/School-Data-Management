@@ -4,7 +4,7 @@ require_once __DIR__ . '/config.php';
 
 require_login();
 
-$pageTitle = 'Student List';
+$pageTitle = 'Students';
 
 $q = trim($_GET['q'] ?? '');
 
@@ -26,37 +26,32 @@ $stmt->execute($params);
 
 $rows = $stmt->fetchAll();
 
+
 include 'header.php';
 ?>
-
+<link rel="stylesheet" href="assets/students.css">
 
 <!-- Page Header -->
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
         <h2 class="fw-bold mb-1">Student List</h2>
-
         <p class="text-muted mb-0">
-            Search, view, and edit stored student records.
+            Search, view, and manage student information.
         </p>
     </div>
 
-    <a href="student_form.php" class="btn btn-success">
-        <i class="bi bi-plus-lg"></i>
+    <a href="student_form.php" class="btn btn-primary students-add-btn">
+        <i class="bi bi-plus-lg me-1"></i>
         Add Student
     </a>
-
 </div>
 
+<!-- Search -->
+<form method="GET" class="students-search-form row g-2 mb-4">
 
-<!-- Student Table Card -->
-<div class="card p-4">
-
-
-    <!-- Search -->
-    <form method="GET" class="row g-2 mb-4">
-
-        <div class="col-md-6">
+    <div class="col-12 col-md-auto students-search-col">
+        <div class="students-search-input">
+            <i class="bi bi-search"></i>
 
             <input
                 type="text"
@@ -64,168 +59,242 @@ include 'header.php';
                 class="form-control"
                 value="<?= e($q) ?>"
                 placeholder="Search by Student ID or name"
+                aria-label="Search students"
             >
+        </div>
+    </div>
 
+    <div class="col-12 col-md-auto">
+        <button type="submit" class="btn btn-primary students-search-btn">
+            <i class="bi bi-search me-1"></i>
+            Search
+        </button>
+    </div>
+
+    <?php if ($q !== ''): ?>
+
+        <div class="col-12 col-md-auto">
+            <a href="students.php" class="btn btn-outline-secondary students-clear-btn">
+                <i class="bi bi-x-lg me-1"></i>
+                Clear
+            </a>
         </div>
 
+    <?php endif; ?>
 
-        <div class="col-auto">
+</form>
 
-            <button type="submit" class="btn btn-outline-secondary">
-                <i class="bi bi-search"></i>
-                Search
-            </button>
+<!-- Student Records -->
+<div class="students-table-header">
+    <div>
+        <h5 class="fw-bold mb-1">Student Records</h5>
 
-        </div>
+        <p class="text-muted small mb-0">
+            <?= count($rows) ?> student<?= count($rows) !== 1 ? 's' : '' ?> found
+        </p>
+    </div>
 
+    <div class="students-table-icon">
+        <i class="bi bi-people"></i>
+    </div>
+</div>
 
-        <?php if ($q !== ''): ?>
+<div class="table-responsive">
 
-            <div class="col-auto">
+    <table class="table students-table align-middle mb-0">
 
-                <a href="students.php" class="btn btn-outline-danger">
-                    <i class="bi bi-x-lg"></i>
-                    Clear
-                </a>
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Student ID</th>
+                <th>Contact</th>
+                <th>Grade / Section</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
 
-            </div>
+        <tbody>
 
-        <?php endif; ?>
+            <?php if (!empty($rows)): ?>
 
-    </form>
+                <?php foreach ($rows as $r): ?>
 
+                    <tr>
 
-    <!-- Student Table -->
-    <div class="table-responsive">
-
-        <table class="table table-hover align-middle">
-
-            <thead>
-
-                <tr>
-                    <th>Photo</th>
-                    <th>Student ID</th>
-                    <th>Full Name</th>
-                    <th>Contact</th>
-                    <th>Grade / Section</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                <?php if (!empty($rows)): ?>
-
-                    <?php foreach ($rows as $r): ?>
-
-                        <tr>
-
-                            <!-- Photo -->
-                            <td>
+                        <!-- Student -->
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
 
                                 <?php if (!empty($r['photo'])): ?>
 
                                     <img
                                         src="<?= e($r['photo']) ?>"
-                                        alt="Student Photo"
-                                        class="avatar"
+                                        alt="<?= e($r['full_name']) ?>"
+                                        class="students-avatar"
                                     >
 
                                 <?php else: ?>
 
-                                    <div class="avatar bg-light d-flex align-items-center justify-content-center">
-
-                                        <i class="bi bi-person text-muted"></i>
-
+                                    <div class="students-avatar students-avatar-placeholder">
+                                        <i class="bi bi-person"></i>
                                     </div>
 
                                 <?php endif; ?>
 
-                            </td>
+                                <div>
+                                    <div class="fw-semibold">
+                                        <?= e($r['full_name']) ?>
+                                    </div>
 
+                                    <small class="text-muted">
+                                        Student
+                                    </small>
+                                </div>
 
-                            <!-- Student ID -->
-                            <td>
-                                <?= e($r['student_id']) ?>
-                            </td>
+                            </div>
+                        </td>
 
+                        <!-- Student ID -->
+                        <td>
+                            <span class="student-id-badge">
+                                <?= e($r['lrn']) ?>
+                            </span>
+                        </td>
 
-                            <!-- Full Name -->
-                            <td>
-                                <strong>
-                                    <?= e($r['full_name']) ?>
-                                </strong>
-                            </td>
+                        <!-- Contact -->
+                        <td>
+                            <?php if (!empty($r['contact_number'])): ?>
 
+                                <div class="student-contact">
+                                    <i class="bi bi-telephone me-1"></i>
+                                    <?= e($r['contact_number']) ?>
+                                </div>
 
-                            <!-- Contact -->
-                            <td>
-                                <?= !empty($r['contact_number'])
-                                    ? e($r['contact_number'])
-                                    : '<span class="text-muted">—</span>' ?>
-                            </td>
+                            <?php else: ?>
 
+                                <span class="text-muted">—</span>
 
-                            <!-- Grade / Section -->
-                            <td>
-                                <?= !empty($r['grade_section'])
-                                    ? e($r['grade_section'])
-                                    : '<span class="text-muted">—</span>' ?>
-                            </td>
+                            <?php endif; ?>
+                        </td>
 
+                        <!-- Grade / Section -->
+                        <td>
 
-                            <!-- Actions -->
-                            <td class="text-end">
+                            <?php if (!empty($r['grade_section'])): ?>
 
+                                <span class="grade-badge">
+                                    <?= e($r['grade_section']) ?>
+                                </span>
+
+                            <?php else: ?>
+
+                                <span class="text-muted">—</span>
+
+                            <?php endif; ?>
+
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="text-end">
+
+                            <div class="student-actions">
+
+                                <!-- View -->
                                 <a
                                     href="student_view.php?id=<?= (int)$r['id'] ?>"
-                                    class="btn btn-sm btn-outline-success"
+                                    class="btn btn-sm btn-outline-primary"
+                                    title="View Student"
                                 >
                                     <i class="bi bi-eye"></i>
-                                    View
+                                    <span>View</span>
                                 </a>
 
+                                <!-- Edit -->
                                 <a
                                     href="student_form.php?id=<?= (int)$r['id'] ?>"
-                                    class="btn btn-sm btn-outline-primary"
+                                    class="btn btn-sm btn-primary"
+                                    title="Edit Student"
                                 >
                                     <i class="bi bi-pencil"></i>
-                                    Edit
+                                    <span>Edit</span>
                                 </a>
 
-                            </td>
+                                <!-- Delete -->
+                                <a
+                                    href="delete_student.php?id=<?= (int)$r['id'] ?>"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Delete Student"
+                                    onclick="return confirm('Are you sure you want to delete this student record?');"
+                                >
+                                    <i class="bi bi-trash"></i>
+                                    <span>Delete</span>
+                                </a>
 
-                        </tr>
-
-                    <?php endforeach; ?>
-
-                <?php else: ?>
-
-                    <!-- No Records -->
-                    <tr>
-
-                        <td
-                            colspan="6"
-                            class="text-center text-muted py-5"
-                        >
-
-                            <i class="bi bi-mortarboard fs-2 d-block mb-2"></i>
-
-                            No student records found.
+                            </div>
 
                         </td>
 
                     </tr>
 
-                <?php endif; ?>
+                <?php endforeach; ?>
 
-            </tbody>
+            <?php else: ?>
 
-        </table>
+                <!-- Empty State -->
+                <tr>
+                    <td colspan="5">
 
-    </div>
+                        <div class="students-empty-state">
+
+                            <div class="students-empty-icon">
+                                <i class="bi bi-mortarboard"></i>
+                            </div>
+
+                            <h5 class="fw-bold mb-1">
+                                No student records found
+                            </h5>
+
+                            <?php if ($q !== ''): ?>
+
+                                <p class="text-muted mb-3">
+                                    No students matched
+                                    "<strong><?= e($q) ?></strong>".
+                                </p>
+
+                                <a
+                                    href="students.php"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                    Clear Search
+                                </a>
+
+                            <?php else: ?>
+
+                                <p class="text-muted mb-3">
+                                    Start by adding your first student record.
+                                </p>
+
+                                <a
+                                    href="student_form.php"
+                                    class="btn btn-primary btn-sm"
+                                >
+                                    <i class="bi bi-plus-lg me-1"></i>
+                                    Add Student
+                                </a>
+
+                            <?php endif; ?>
+
+                        </div>
+
+                    </td>
+                </tr>
+
+            <?php endif; ?>
+
+        </tbody>
+
+    </table>
 
 </div>
 

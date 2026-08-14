@@ -31,30 +31,206 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Login - School Data Management System</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="assets/style.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - School Data Management System</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="assets/style.css" rel="stylesheet">
+    <link href="assets/login.css" rel="stylesheet">
 </head>
-<body class="bg-light">
-<div class="login-wrap">
-<div class="card login-card p-4">
-  <div class="text-center mb-4">
-    <div class="fs-1 text-success">🏫</div>
-    <h3 class="fw-bold mb-1">School Data Management</h3>
-    <p class="text-muted mb-0">Sign in to manage records</p>
-  </div>
-  <?php if ($error): ?><div class="alert alert-danger"><?= e($error) ?></div><?php endif; ?>
-  <form method="post">
-    <label class="form-label">Username</label>
-    <input class="form-control mb-3" name="username" required autofocus>
-    <label class="form-label">Password</label>
-    <input class="form-control mb-4" type="password" name="password" required>
-    <button class="btn btn-success w-100">Login</button>
-  </form>
-  <div class="text-center text-muted small mt-3">Default: admin / admin123</div>
-</div>
-</div>
+
+<body class="login-page">
+
+    <div class="login-container">
+
+        <div class="login-card">
+
+            <!-- Logo -->
+            <div class="login-logo">
+                <img
+                    src="assets/logo/logo.jpg"
+                    alt="School Logo"
+                >
+            </div>
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+
+                <h2 class="login-title">
+                    School Data Management
+                </h2>
+
+                <p class="login-subtitle">
+                    Sign in to manage school records
+                </p>
+
+            </div>
+
+            <!-- Error Message -->
+            <?php if ($error): ?>
+
+                <div class="alert alert-danger login-alert">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <?= e($error) ?>
+                </div>
+
+            <?php endif; ?>
+
+            <!-- Login Form -->
+            <form method="post">
+
+                <!-- Username -->
+                <div class="mb-3">
+
+                    <label for="username" class="form-label">
+                        Username
+                    </label>
+
+                    <div class="input-group login-input">
+
+                        <span class="input-group-text">
+                            <i class="bi bi-person"></i>
+                        </span>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            class="form-control"
+                            placeholder="Enter your username"
+                            autocomplete="username"
+                            required
+                            autofocus
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- Password -->
+                <div class="mb-4">
+
+                    <label for="password" class="form-label">
+                        Password
+                    </label>
+
+                    <div class="input-group login-input">
+
+                        <span class="input-group-text">
+                            <i class="bi bi-lock"></i>
+                        </span>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-control"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="btn password-toggle"
+                            id="togglePassword"
+                            aria-label="Show password"
+                        >
+                            <i class="bi bi-eye" id="passwordIcon"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Login Button -->
+                <button
+                    type="submit"
+                    class="btn login-btn w-100"
+                >
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Sign In
+                </button>
+
+            </form>
+
+
+            <!-- Default Account -->
+            <div class="login-help">
+
+                <i class="bi bi-info-circle me-1"></i>
+
+                <span>
+                    Default account:
+                    <strong>admin</strong> /
+                    <strong>adminako123</strong>
+                </span>
+
+            </div>
+
+
+            <!-- Footer -->
+            <div class="login-footer">
+                School Data Management System
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Password Toggle -->
+    <script>
+
+        const togglePassword =
+            document.getElementById('togglePassword');
+
+        const password =
+            document.getElementById('password');
+
+        const passwordIcon =
+            document.getElementById('passwordIcon');
+
+
+        togglePassword.addEventListener('click', function () {
+
+            const isPassword =
+                password.getAttribute('type') === 'password';
+
+            password.setAttribute(
+                'type',
+                isPassword ? 'text' : 'password'
+            );
+
+            passwordIcon.classList.toggle(
+                'bi-eye',
+                !isPassword
+            );
+
+            passwordIcon.classList.toggle(
+                'bi-eye-slash',
+                isPassword
+            );
+
+            togglePassword.setAttribute(
+                'aria-label',
+                isPassword
+                    ? 'Hide password'
+                    : 'Show password'
+            );
+
+        });
+
+    </script>
 </body>
 </html>
+
