@@ -6,65 +6,89 @@ require_login();
 
 $id = (int) ($_GET['id'] ?? 0);
 
-/*
-|--------------------------------------------------------------------------
-| Get Staff Record
-|--------------------------------------------------------------------------
-*/
-$stmt = $pdo->prepare("SELECT * FROM staff WHERE id = ?");
+
+/* =========================================================
+   GET STAFF RECORD
+========================================================= */
+
+$stmt = $pdo->prepare("
+    SELECT *
+    FROM staff
+    WHERE id = ?
+");
+
 $stmt->execute([$id]);
 
-$r = $stmt->fetch();
+$staff = $stmt->fetch();
 
-if (!$r) {
+if (!$staff) {
     redirect('staff.php');
 }
 
-/*
-|--------------------------------------------------------------------------
-| Upload Document
-|--------------------------------------------------------------------------
-*/
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_document'])) {
 
-    if (!empty($_FILES['document']['name'])) {
+/* =========================================================
+   UPLOAD DOCUMENT
+========================================================= */
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['upload_document'])
+) {
+
+    if (
+        isset($_FILES['document']) &&
+        $_FILES['document']['error'] !== UPLOAD_ERR_NO_FILE
+    ) {
 
         $path = upload_file(
             'document',
             'documents',
-            ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp'],
+            [
+                'pdf',
+                'doc',
+                'docx',
+                'jpg',
+                'jpeg',
+                'png',
+                'webp'
+            ],
             10485760
         );
 
         if ($path) {
 
-            $name = $_FILES['document']['name'];
-            $type = $_FILES['document']['type'] ?? '';
+            $documentName = $_FILES['document']['name'];
+            $documentType = $_FILES['document']['type'] ?? '';
 
             $stmt = $pdo->prepare("
-                INSERT INTO documents
-                (owner_type, owner_id, document_name, file_path, file_type)
+                INSERT INTO documents (
+                    owner_type,
+                    owner_id,
+                    document_name,
+                    file_path,
+                    file_type
+                )
                 VALUES (?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
                 'staff',
                 $id,
-                $name,
+                $documentName,
                 $path,
-                $type
+                $documentType
             ]);
         }
     }
 
-    redirect("staff_view.php?id=$id");
+    redirect("staff_view.php?id=" . $id);
 }
 
-/*
-|--------------------------------------------------------------------------
-| Get Staff Documents
-|--------------------------------------------------------------------------
-*/
+
+/* =========================================================
+   GET STAFF DOCUMENTS
+========================================================= */
+
 $stmt = $pdo->prepare("
     SELECT *
     FROM documents
@@ -73,15 +97,17 @@ $stmt = $pdo->prepare("
     ORDER BY uploaded_at DESC
 ");
 
-$stmt->execute(['staff', $id]);
+$stmt->execute([
+    'staff',
+    $id
+]);
 
-$docs = $stmt->fetchAll();
+$documents = $stmt->fetchAll();
 
-/*
-|--------------------------------------------------------------------------
-| Page
-|--------------------------------------------------------------------------
-*/
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 $pageTitle = 'Staff Details';
 
@@ -89,33 +115,47 @@ include __DIR__ . '/header.php';
 
 ?>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+<link rel="stylesheet" href="assets/staff_view.css">
 
-    <div>
-        <h2 class="fw-bold mb-1">
-            <?= e($r['full_name']) ?>
-        </h2>
 
-        <p class="text-muted mb-0">
-            <?= e($r['employee_id']) ?>
-        </p>
+<!-- =========================================================
+     PAGE HEADER
+========================================================= -->
+
+<div class="staff-view-header">
+
+    <div class="staff-header-left">
+
+        <div class="staff-page-icon">
+            <i class="bi bi-person-badge"></i>
+        </div>
+
+        <div>
+            <h2 class="fw-bold mb-1">Staff Details</h2>
+
+            <p class="text-muted mb-0">
+                View and manage staff information.
+            </p>
+        </div>
+
     </div>
 
-    <div>
+
+    <div class="staff-header-actions">
 
         <a
-            class="btn btn-outline-secondary"
             href="staff.php"
+            class="btn btn-outline-secondary"
         >
-            <i class="bi bi-arrow-left"></i>
+            <i class="bi bi-arrow-left me-1"></i>
             Back
         </a>
 
         <a
+            href="staff_form.php?id=<?= (int) $id ?>"
             class="btn btn-primary"
-            href="staff_form.php?id=<?= $id ?>"
         >
-            <i class="bi bi-pencil"></i>
+            <i class="bi bi-pencil me-1"></i>
             Edit
         </a>
 
@@ -125,202 +165,457 @@ include __DIR__ . '/header.php';
 
 
 <!-- =========================================================
-     STAFF INFORMATION
+     STAFF PROFILE
 ========================================================= -->
 
-<div class="row g-4">
+<div class="staff-profile-card">
 
-    <!-- Information -->
-    <div class="col-lg-8">
+    <div class="staff-profile-photo">
 
-        <div class="card p-4">
+        <?php if (!empty($staff['photo'])): ?>
 
-            <h5 class="fw-bold mb-4">
-                Staff Information
+            <img
+                src="<?= e($staff['photo']) ?>"
+                alt="<?= e($staff['full_name'] ?? 'Staff') ?>"
+            >
+
+        <?php else: ?>
+
+            <div class="staff-photo-placeholder">
+                <i class="bi bi-person"></i>
+            </div>
+
+        <?php endif; ?>
+
+    </div>
+
+
+    <div class="staff-profile-info">
+
+        <h3 class="fw-bold mb-1">
+            <?= e($staff['full_name'] ?? 'Staff Member') ?>
+        </h3>
+
+        <p class="text-muted mb-2">
+            <?= !empty($staff['position_department'])
+                ? e($staff['position_department'])
+                : 'Staff' ?>
+        </p>
+
+        <span class="staff-id-badge">
+            <i class="bi bi-person-badge me-1"></i>
+            Employee No.
+            <?= !empty($staff['employee_id'])
+                ? e($staff['employee_id'])
+                : '—' ?>
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BASIC INFORMATION
+========================================================= -->
+
+<div class="staff-info-card mt-4">
+
+    <div class="staff-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Basic Information
             </h5>
 
-            <div class="row g-4">
+            <p class="text-muted small mb-0">
+                Personal information and basic details.
+            </p>
+        </div>
 
-                <!-- Full Name -->
-                <div class="col-md-6">
-                    <div class="text-muted small">
-                        Full Name
-                    </div>
+        <div class="staff-card-icon">
+            <i class="bi bi-person-vcard"></i>
+        </div>
 
-                    <div class="fw-semibold">
-                        <?= e($r['full_name']) ?>
-                    </div>
-                </div>
+    </div>
 
 
-                <!-- Employee ID -->
-                <div class="col-md-6">
-                    <div class="text-muted small">
-                        Staff / Employee ID
-                    </div>
+    <div class="staff-info-grid">
 
-                    <div class="fw-semibold">
-                        <?= e($r['employee_id']) ?>
-                    </div>
-                </div>
+        <!-- Contact Number -->
+        <div class="staff-info-item">
 
+            <div class="staff-info-label">
+                <i class="bi bi-telephone"></i>
+                Contact Number
+            </div>
 
-                <!-- Date of Birth -->
-                <div class="col-md-4">
+            <div class="staff-info-value">
+                <?= !empty($staff['contact_number'])
+                    ? e($staff['contact_number'])
+                    : '—' ?>
+            </div>
 
-                    <div class="text-muted small">
-                        Date of Birth
-                    </div>
-
-                    <div>
-                        <?= !empty($r['date_of_birth'])
-                            ? e($r['date_of_birth'])
-                            : '—'
-                        ?>
-                    </div>
-
-                </div>
+        </div>
 
 
-                <!-- Gender -->
-                <div class="col-md-4">
+        <!-- Birthdate -->
+        <div class="staff-info-item">
 
-                    <div class="text-muted small">
-                        Gender
-                    </div>
+            <div class="staff-info-label">
+                <i class="bi bi-calendar-event"></i>
+                Birthdate
+            </div>
 
-                    <div>
-                        <?= !empty($r['gender'])
-                            ? e($r['gender'])
-                            : '—'
-                        ?>
-                    </div>
+            <div class="staff-info-value">
+                <?= !empty($staff['date_of_birth'])
+                    ? e($staff['date_of_birth'])
+                    : '—' ?>
+            </div>
 
-                </div>
-
-
-                <!-- Contact -->
-                <div class="col-md-4">
-
-                    <div class="text-muted small">
-                        Contact Number
-                    </div>
-
-                    <div>
-                        <?= !empty($r['contact_number'])
-                            ? e($r['contact_number'])
-                            : '—'
-                        ?>
-                    </div>
-
-                </div>
+        </div>
 
 
-                <!-- Address -->
-                <div class="col-12">
+        <!-- Gender -->
+        <div class="staff-info-item">
 
-                    <div class="text-muted small">
-                        Address
-                    </div>
+            <div class="staff-info-label">
+                <i class="bi bi-gender-ambiguous"></i>
+                Gender
+            </div>
 
-                    <div>
-                        <?= !empty($r['address'])
-                            ? nl2br(e($r['address']))
-                            : '—'
-                        ?>
-                    </div>
+            <div class="staff-info-value">
+                <?= !empty($staff['gender'])
+                    ? e($staff['gender'])
+                    : '—' ?>
+            </div>
 
-                </div>
-
-
-                <!-- Email -->
-                <div class="col-md-6">
-
-                    <div class="text-muted small">
-                        Email
-                    </div>
-
-                    <div>
-                        <?= !empty($r['email'])
-                            ? e($r['email'])
-                            : '—'
-                        ?>
-                    </div>
-
-                </div>
+        </div>
 
 
-                <!-- Position -->
-                <div class="col-md-6">
+        <!-- Address -->
+        <div class="staff-info-item">
 
-                    <div class="text-muted small">
-                        Position / Department
-                    </div>
+            <div class="staff-info-label">
+                <i class="bi bi-geo-alt"></i>
+                Address
+            </div>
 
-                    <div>
-                        <?= !empty($r['position_department'])
-                            ? e($r['position_department'])
-                            : '—'
-                        ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Other Information -->
-                <div class="col-12">
-
-                    <div class="text-muted small">
-                        Other Relevant Information
-                    </div>
-
-                    <div>
-                        <?= !empty($r['other_info'])
-                            ? nl2br(e($r['other_info']))
-                            : '—'
-                        ?>
-                    </div>
-
-                </div>
-
+            <div class="staff-info-value">
+                <?= !empty($staff['address'])
+                    ? nl2br(e($staff['address']))
+                    : '—' ?>
             </div>
 
         </div>
 
     </div>
 
-
-    <!-- Profile Photo -->
-    <div class="col-lg-4">
-
-        <div class="card p-4 text-center">
-
-            <?php if (!empty($r['photo'])): ?>
-
-                <img
-                    src="<?= e($r['photo']) ?>"
-                    class="profile-photo mx-auto mb-3"
-                    alt="Staff Photo"
-                >
-
-            <?php else: ?>
-
-                <div
-                    class="profile-photo mx-auto mb-3 d-flex align-items-center justify-content-center bg-light fs-1 text-muted"
-                >
-                    <i class="bi bi-person"></i>
-                </div>
-
-            <?php endif; ?>
+</div>
 
 
-            <h6 class="fw-bold mb-1">
-                <?= e($r['full_name']) ?>
-            </h6>
+<!-- =========================================================
+     EMPLOYMENT INFORMATION
+========================================================= -->
 
-            <small class="text-muted">
-                Staff Profile
-            </small>
+<div class="staff-info-card mt-4">
+
+    <div class="staff-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Employment Information
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Staff employment and appointment details.
+            </p>
+        </div>
+
+        <div class="staff-card-icon">
+            <i class="bi bi-briefcase"></i>
+        </div>
+
+    </div>
+
+
+    <div class="staff-info-grid">
+
+        <!-- Employee No. -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-person-badge"></i>
+                Employee No.
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['employee_id'])
+                    ? e($staff['employee_id'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+
+        <!-- Plantilla No. -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-card-list"></i>
+                Plantilla No.
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['plantilla_no'])
+                    ? e($staff['plantilla_no'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+
+        <!-- TIN No. -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-credit-card"></i>
+                TIN No.
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['tin_no'])
+                    ? e($staff['tin_no'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+
+        <!-- First Day of Service -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-calendar-check"></i>
+                First Day of Service
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['first_day_of_service'])
+                    ? e($staff['first_day_of_service'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+
+        <!-- Position / Department -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-building"></i>
+                Position / Department
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['position_department'])
+                    ? e($staff['position_department'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+
+        <!-- Current / Latest Appointment -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-briefcase"></i>
+                Current / Latest Appointment
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['current_latest_appointment'])
+                    ? e($staff['current_latest_appointment'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     EDUCATION & ELIGIBILITY
+========================================================= -->
+
+<div class="staff-info-card mt-4">
+
+    <div class="staff-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Education & Eligibility
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Educational background and eligibility information.
+            </p>
+        </div>
+
+        <div class="staff-card-icon">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+
+    </div>
+
+
+    <div class="staff-info-grid">
+
+        <!-- Degree Finished -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-mortarboard"></i>
+                Degree Finished
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['degree_finished'])
+                    ? e($staff['degree_finished'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+
+        <!-- Specialization / PRC Eligibility -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-award"></i>
+                Specialization / PRC Eligibility
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['specialization_prc_eligibility'])
+                    ? nl2br(e($staff['specialization_prc_eligibility']))
+                    : '—' ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     CONTACT INFORMATION
+========================================================= -->
+
+<div class="staff-info-card mt-4">
+
+    <div class="staff-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Contact Information
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Official and personal contact details.
+            </p>
+        </div>
+
+        <div class="staff-card-icon">
+            <i class="bi bi-envelope"></i>
+        </div>
+
+    </div>
+
+
+    <div class="staff-info-grid">
+
+        <!-- DepEd Email -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-envelope"></i>
+                DepEd Email
+            </div>
+
+            <div class="staff-info-value staff-email">
+                <?= !empty($staff['deped_email'])
+                    ? e($staff['deped_email'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+
+        <!-- Personal Email -->
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-envelope-at"></i>
+                Personal Email
+            </div>
+
+            <div class="staff-info-value staff-email">
+                <?= !empty($staff['personal_email'])
+                    ? e($staff['personal_email'])
+                    : '—' ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ADDITIONAL INFORMATION
+========================================================= -->
+
+<div class="staff-info-card mt-4">
+
+    <div class="staff-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Additional Information
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Other relevant staff information.
+            </p>
+        </div>
+
+        <div class="staff-card-icon">
+            <i class="bi bi-info-circle"></i>
+        </div>
+
+    </div>
+
+
+    <div class="staff-additional-info">
+
+        <div class="staff-additional-item">
+
+            <div class="staff-info-label">
+                <i class="bi bi-card-text"></i>
+                Other Relevant Information
+            </div>
+
+            <div class="staff-info-value">
+                <?= !empty($staff['other_info'])
+                    ? nl2br(e($staff['other_info']))
+                    : '—' ?>
+            </div>
 
         </div>
 
@@ -333,37 +628,40 @@ include __DIR__ . '/header.php';
      DOCUMENTS
 ========================================================= -->
 
-<div class="card p-4 mt-4">
+<div class="staff-info-card mt-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="staff-card-header">
 
         <div>
             <h5 class="fw-bold mb-1">
                 Documents
             </h5>
 
-            <small class="text-muted">
+            <p class="text-muted small mb-0">
                 Upload and manage staff documents.
-            </small>
+            </p>
+        </div>
+
+        <div class="staff-card-icon">
+            <i class="bi bi-folder"></i>
         </div>
 
     </div>
 
 
-    <!-- Upload Form -->
-
+    <!-- Upload -->
     <form
-        method="post"
+        method="POST"
         enctype="multipart/form-data"
-        class="row g-2 mb-4"
+        class="staff-upload-form"
     >
 
-        <div class="col-md-8">
+        <div class="staff-file-input">
 
             <input
-                class="form-control"
                 type="file"
                 name="document"
+                class="form-control"
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
                 required
             >
@@ -375,94 +673,83 @@ include __DIR__ . '/header.php';
         </div>
 
 
-        <div class="col-md-4">
-
-            <button
-                type="submit"
-                class="btn btn-success w-100"
-                name="upload_document"
-                value="1"
-            >
-                <i class="bi bi-upload"></i>
-                Upload Document
-            </button>
-
-        </div>
+        <button
+            type="submit"
+            name="upload_document"
+            value="1"
+            class="btn btn-primary staff-upload-btn"
+        >
+            <i class="bi bi-upload me-1"></i>
+            Upload Document
+        </button>
 
     </form>
 
 
-    <!-- Documents Table -->
+    <!-- Documents -->
+    <div class="staff-documents-table table-responsive">
 
-    <div class="table-responsive">
-
-        <table class="table table-hover align-middle">
+        <table class="table align-middle mb-0">
 
             <thead>
-
                 <tr>
-
-                    <th>
-                        Document
-                    </th>
-
-                    <th>
-                        Uploaded
-                    </th>
-
-                    <th class="text-end">
-                        Actions
-                    </th>
-
+                    <th>Document</th>
+                    <th>Uploaded</th>
+                    <th class="text-end">Actions</th>
                 </tr>
-
             </thead>
-
 
             <tbody>
 
-                <?php if ($docs): ?>
+                <?php if (!empty($documents)): ?>
 
-                    <?php foreach ($docs as $d): ?>
+                    <?php foreach ($documents as $document): ?>
 
                         <tr>
 
                             <td>
 
-                                <i class="bi bi-file-earmark-text me-2"></i>
+                                <div class="staff-document-name">
 
-                                <?= e($d['document_name']) ?>
+                                    <div class="staff-document-icon">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+
+                                    <span>
+                                        <?= e($document['document_name']) ?>
+                                    </span>
+
+                                </div>
 
                             </td>
-
 
                             <td>
-
-                                <?= e($d['uploaded_at']) ?>
-
+                                <?= e($document['uploaded_at']) ?>
                             </td>
-
 
                             <td class="text-end">
 
-                                <a
-                                    target="_blank"
-                                    class="btn btn-sm btn-outline-primary"
-                                    href="<?= e($d['file_path']) ?>"
-                                >
-                                    <i class="bi bi-eye"></i>
-                                    View
-                                </a>
+                                <div class="staff-document-actions">
 
+                                    <a
+                                        href="<?= e($document['file_path']) ?>"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-primary"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                        <span>View</span>
+                                    </a>
 
-                                <a
-                                    data-confirm="Delete this document?"
-                                    class="btn btn-sm btn-outline-danger"
-                                    href="delete_document.php?id=<?= (int)$d['id'] ?>&return=<?= urlencode('staff_view.php?id=' . $id) ?>"
-                                >
-                                    <i class="bi bi-trash"></i>
-                                    Delete
-                                </a>
+                                    <a
+                                        href="delete_document.php?id=<?= (int)$document['id'] ?>&return=<?= urlencode('staff_view.php?id=' . $id) ?>"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-confirm="Delete this document?"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                        <span>Delete</span>
+                                    </a>
+
+                                </div>
 
                             </td>
 
@@ -474,13 +761,23 @@ include __DIR__ . '/header.php';
 
                     <tr>
 
-                        <td
-                            colspan="3"
-                            class="text-center text-muted py-4"
-                        >
-                            <i class="bi bi-folder2-open fs-3 d-block mb-2"></i>
+                        <td colspan="3">
 
-                            No documents uploaded.
+                            <div class="staff-empty-documents text-center">
+
+                                <div class="staff-empty-icon">
+                                    <i class="bi bi-folder2-open"></i>
+                                </div>
+
+                                <h6 class="fw-bold mb-1">
+                                    No documents uploaded
+                                </h6>
+
+                                <p class="text-muted small mb-0">
+                                    Staff documents will appear here.
+                                </p>
+
+                            </div>
 
                         </td>
 

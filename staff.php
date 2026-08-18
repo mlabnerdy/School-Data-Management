@@ -4,7 +4,7 @@ require_once __DIR__ . '/config.php';
 
 require_login();
 
-$pageTitle = 'Staff List';
+$pageTitle = 'Staff';
 
 $q = trim($_GET['q'] ?? '');
 
@@ -30,32 +30,44 @@ include 'header.php';
 
 ?>
 
+<link rel="stylesheet" href="assets/staff.css">
+
+
 <!-- Page Header -->
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
     <div>
-        <h2 class="fw-bold mb-1">Staff List</h2>
+
+        <h2 class="fw-bold mb-1">
+            Staff List
+        </h2>
 
         <p class="text-muted mb-0">
-            Search, view, and edit stored staff records.
+            Search, view, and manage staff information.
         </p>
+
     </div>
 
-    <a href="staff_form.php" class="btn btn-success">
-        <i class="bi bi-plus-lg"></i>
+
+    <a
+        href="staff_form.php"
+        class="btn btn-primary staff-add-btn"
+    >
+        <i class="bi bi-plus-lg me-1"></i>
         Add Staff
     </a>
 
 </div>
 
 
-<!-- Staff Table Card -->
-<div class="card p-4">
+<!-- Search -->
+<form method="GET" class="staff-search-form row g-2 mb-4">
 
-    <!-- Search -->
-    <form method="GET" class="row g-2 mb-4">
+    <div class="col-12 col-md-auto staff-search-col">
 
-        <div class="col-md-6">
+        <div class="staff-search-input">
+
+            <i class="bi bi-search"></i>
 
             <input
                 type="text"
@@ -63,178 +75,349 @@ include 'header.php';
                 class="form-control"
                 value="<?= e($q) ?>"
                 placeholder="Search by Employee ID or name"
+                aria-label="Search staff"
             >
 
         </div>
 
-        <div class="col-auto">
+    </div>
 
-            <button type="submit" class="btn btn-outline-secondary">
-                <i class="bi bi-search"></i>
-                Search
-            </button>
+
+    <div class="col-12 col-md-auto">
+
+        <button
+            type="submit"
+            class="btn btn-primary staff-search-btn"
+        >
+            <i class="bi bi-search me-1"></i>
+            Search
+        </button>
+
+    </div>
+
+
+    <?php if ($q !== ''): ?>
+
+        <div class="col-12 col-md-auto">
+
+            <a
+                href="staff.php"
+                class="btn btn-outline-secondary staff-clear-btn"
+            >
+                <i class="bi bi-x-lg me-1"></i>
+                Clear
+            </a>
 
         </div>
 
-        <?php if ($q !== ''): ?>
+    <?php endif; ?>
 
-            <div class="col-auto">
-
-                <a href="staff.php" class="btn btn-outline-danger">
-                    <i class="bi bi-x-lg"></i>
-                    Clear
-                </a>
-
-            </div>
-
-        <?php endif; ?>
-
-    </form>
+</form>
 
 
-    <!-- Staff Table -->
-    <div class="table-responsive">
+<!-- Staff Records Header -->
+<div class="staff-table-header">
 
-        <table class="table table-hover align-middle">
+    <div>
 
-            <thead>
+        <h5 class="fw-bold mb-1">
+            Staff Records
+        </h5>
 
-                <tr>
-                    <th>Photo</th>
-                    <th>Employee ID</th>
-                    <th>Full Name</th>
-                    <th>Contact</th>
-                    <th>Position / Department</th>
-                    <th class="text-end">Actions</th>
-                </tr>
+        <p class="text-muted small mb-0">
 
-            </thead>
+            <?= count($rows) ?>
+            staff<?= count($rows) !== 1 ? ' members' : ' member' ?>
+            found
 
-            <tbody>
+        </p>
 
-                <?php if (!empty($rows)): ?>
+    </div>
 
-                    <?php foreach ($rows as $r): ?>
 
-                        <tr>
+    <div class="staff-table-icon">
 
-                            <!-- Photo -->
-                            <td>
+        <i class="bi bi-person-badge"></i>
+
+    </div>
+
+</div>
+
+
+<!-- Staff Table -->
+<div class="table-responsive">
+
+    <table class="table staff-table align-middle mb-0">
+
+        <thead>
+
+            <tr>
+
+                <th>Staff</th>
+
+                <th>Employee ID</th>
+
+                <th>Contact</th>
+
+                <th>Position / Department</th>
+
+                <th>Plantilla No.</th>
+
+                <th class="text-end">
+                    Actions
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            <?php if (!empty($rows)): ?>
+
+                <?php foreach ($rows as $r): ?>
+
+                    <tr>
+
+                        <!-- Staff -->
+                        <td>
+
+                            <div class="d-flex align-items-center gap-3">
 
                                 <?php if (!empty($r['photo'])): ?>
 
                                     <img
                                         src="<?= e($r['photo']) ?>"
-                                        alt="Staff Photo"
-                                        class="avatar"
+                                        alt="<?= e($r['full_name']) ?>"
+                                        class="staff-avatar"
                                     >
 
                                 <?php else: ?>
 
-                                    <div class="avatar bg-light d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-person text-muted"></i>
+                                    <div class="staff-avatar staff-avatar-placeholder">
+
+                                        <i class="bi bi-person"></i>
+
                                     </div>
 
                                 <?php endif; ?>
 
-                            </td>
+
+                                <div>
+
+                                    <div class="fw-semibold">
+
+                                        <?= e($r['full_name']) ?>
+
+                                    </div>
+
+                                    <small class="text-muted">
+                                        Staff
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </td>
 
 
-                            <!-- Employee ID -->
-                            <td>
+                        <!-- Employee ID -->
+                        <td>
+
+                            <span class="staff-id-badge">
+
                                 <?= e($r['employee_id']) ?>
-                            </td>
+
+                            </span>
+
+                        </td>
 
 
-                            <!-- Full Name -->
-                            <td>
-                                <strong>
-                                    <?= e($r['full_name']) ?>
-                                </strong>
-                            </td>
+                        <!-- Contact -->
+                        <td>
 
+                            <?php if (!empty($r['contact_number'])): ?>
 
-                            <!-- Contact -->
-                            <td>
+                                <div class="staff-contact">
 
-                                <?php if (!empty($r['contact_number'])): ?>
+                                    <i class="bi bi-telephone me-1"></i>
 
                                     <?= e($r['contact_number']) ?>
 
-                                <?php else: ?>
+                                </div>
 
-                                    <span class="text-muted">—</span>
+                            <?php else: ?>
 
-                                <?php endif; ?>
+                                <span class="text-muted">
+                                    —
+                                </span>
 
-                            </td>
+                            <?php endif; ?>
+
+                        </td>
 
 
-                            <!-- Position / Department -->
-                            <td>
+                        <!-- Position / Department -->
+                        <td>
 
-                                <?php if (!empty($r['position_department'])): ?>
+                            <?php if (!empty($r['position_department'])): ?>
+
+                                <span class="staff-position-badge">
 
                                     <?= e($r['position_department']) ?>
 
-                                <?php else: ?>
+                                </span>
 
-                                    <span class="text-muted">—</span>
+                            <?php else: ?>
 
-                                <?php endif; ?>
+                                <span class="text-muted">
+                                    —
+                                </span>
 
-                            </td>
+                            <?php endif; ?>
+
+                        </td>
 
 
-                            <!-- Actions -->
-                            <td class="text-end">
+                        <!-- Plantilla No. -->
+                        <td>
 
+                            <?php if (!empty($r['plantilla_no'])): ?>
+
+                                <span class="staff-plantilla-badge">
+
+                                    <?= e($r['plantilla_no']) ?>
+
+                                </span>
+
+                            <?php else: ?>
+
+                                <span class="text-muted">
+                                    —
+                                </span>
+
+                            <?php endif; ?>
+
+                        </td>
+
+
+                        <!-- Actions -->
+                        <td class="text-end">
+
+                            <div class="staff-actions">
+
+                                <!-- View -->
                                 <a
                                     href="staff_view.php?id=<?= (int)$r['id'] ?>"
-                                    class="btn btn-sm btn-outline-success"
+                                    class="btn btn-sm btn-outline-primary"
+                                    title="View Staff"
                                 >
                                     <i class="bi bi-eye"></i>
-                                    View
+                                    <span>View</span>
                                 </a>
 
+
+                                <!-- Edit -->
                                 <a
                                     href="staff_form.php?id=<?= (int)$r['id'] ?>"
-                                    class="btn btn-sm btn-outline-primary"
+                                    class="btn btn-sm btn-primary"
+                                    title="Edit Staff"
                                 >
                                     <i class="bi bi-pencil"></i>
-                                    Edit
+                                    <span>Edit</span>
                                 </a>
 
-                            </td>
 
-                        </tr>
+                                <!-- Delete -->
+                                <a
+                                    href="delete_staff.php?id=<?= (int)$r['id'] ?>"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Delete Staff"
+                                    onclick="return confirm('Are you sure you want to delete this staff record?');"
+                                >
+                                    <i class="bi bi-trash"></i>
+                                    <span>Delete</span>
+                                </a>
 
-                    <?php endforeach; ?>
-
-                <?php else: ?>
-
-                    <tr>
-
-                        <td
-                            colspan="6"
-                            class="text-center text-muted py-5"
-                        >
-
-                            <i class="bi bi-people fs-2 d-block mb-2"></i>
-
-                            No staff records found.
+                            </div>
 
                         </td>
 
                     </tr>
 
-                <?php endif; ?>
+                <?php endforeach; ?>
 
-            </tbody>
 
-        </table>
+            <?php else: ?>
 
-    </div>
+                <!-- Empty State -->
+                <tr>
+
+                    <td colspan="6">
+
+                        <div class="staff-empty-state">
+
+                            <div class="staff-empty-icon">
+
+                                <i class="bi bi-person-badge"></i>
+
+                            </div>
+
+
+                            <h5 class="fw-bold mb-1">
+                                No staff records found
+                            </h5>
+
+
+                            <?php if ($q !== ''): ?>
+
+                                <p class="text-muted mb-3">
+
+                                    No staff members matched
+                                    "<strong><?= e($q) ?></strong>".
+
+                                </p>
+
+
+                                <a
+                                    href="staff.php"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                    Clear Search
+                                </a>
+
+
+                            <?php else: ?>
+
+                                <p class="text-muted mb-3">
+                                    Start by adding your first staff record.
+                                </p>
+
+
+                                <a
+                                    href="staff_form.php"
+                                    class="btn btn-primary btn-sm"
+                                >
+                                    <i class="bi bi-plus-lg me-1"></i>
+                                    Add Staff
+                                </a>
+
+                            <?php endif; ?>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            <?php endif; ?>
+
+        </tbody>
+
+    </table>
 
 </div>
 

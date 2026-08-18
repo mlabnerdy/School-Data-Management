@@ -6,7 +6,7 @@ require_login();
 
 $pageTitle = 'Teacher Form';
 
-$id = (int) ($_GET['id'] ?? 0);
+$id = (int)($_GET['id'] ?? 0);
 $isEdit = $id > 0;
 
 $record = [];
@@ -42,16 +42,38 @@ if ($isEdit) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $data = [
+
         'employee_id' => trim($_POST['employee_id'] ?? ''),
         'full_name' => trim($_POST['full_name'] ?? ''),
+
         'date_of_birth' => !empty($_POST['date_of_birth'])
             ? $_POST['date_of_birth']
             : null,
+
         'gender' => trim($_POST['gender'] ?? ''),
-        'address' => trim($_POST['address'] ?? ''),
         'contact_number' => trim($_POST['contact_number'] ?? ''),
-        'email' => trim($_POST['email'] ?? ''),
+        'address' => trim($_POST['address'] ?? ''),
+
+        'plantilla_no' => trim($_POST['plantilla_no'] ?? ''),
+        'tin_no' => trim($_POST['tin_no'] ?? ''),
+        'first_day_of_service' => !empty($_POST['first_day_of_service'])
+            ? $_POST['first_day_of_service']
+            : null,
+
         'position_department' => trim($_POST['position_department'] ?? ''),
+        'current_latest_appointment' => trim(
+            $_POST['current_latest_appointment'] ?? ''
+        ),
+
+        'degree_finished' => trim($_POST['degree_finished'] ?? ''),
+
+        'specialization_prc_eligibility' => trim(
+            $_POST['specialization_prc_eligibility'] ?? ''
+        ),
+
+        'deped_email' => trim($_POST['deped_email'] ?? ''),
+        'personal_email' => trim($_POST['personal_email'] ?? ''),
+
         'other_info' => trim($_POST['other_info'] ?? '')
     ];
 
@@ -62,11 +84,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($data['employee_id'] === '') {
 
-        $error = 'Teacher/Employee ID is required.';
+        $error = 'Teacher / Employee ID is required.';
 
     } elseif ($data['full_name'] === '') {
 
-        $error = 'Full name is required.';
+        $error = 'Full Name is required.';
+
+    } elseif (
+        $data['full_name'] !== '' &&
+        !preg_match("/^[A-Za-zÀ-ÿ .'-]+$/", $data['full_name'])
+    ) {
+
+        $error = 'Full Name must not contain numbers or invalid characters.';
+
+    } elseif (
+        $data['contact_number'] !== '' &&
+        !preg_match('/^09[0-9]{9}$/', $data['contact_number'])
+    ) {
+
+        $error = 'Contact Number must be a valid Philippine mobile number.';
+
+    } elseif (
+        $data['deped_email'] !== '' &&
+        !filter_var($data['deped_email'], FILTER_VALIDATE_EMAIL)
+    ) {
+
+        $error = 'Please enter a valid DepEd Email.';
+
+    } elseif (
+        $data['personal_email'] !== '' &&
+        !filter_var($data['personal_email'], FILTER_VALIDATE_EMAIL)
+    ) {
+
+        $error = 'Please enter a valid Personal Email.';
 
     }
 
@@ -83,28 +133,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $sql = "
                     UPDATE teachers SET
+
                         employee_id = ?,
                         full_name = ?,
                         date_of_birth = ?,
                         gender = ?,
-                        address = ?,
                         contact_number = ?,
-                        email = ?,
+                        address = ?,
+
+                        plantilla_no = ?,
+                        tin_no = ?,
+                        first_day_of_service = ?,
                         position_department = ?,
+                        current_latest_appointment = ?,
+
+                        degree_finished = ?,
+                        specialization_prc_eligibility = ?,
+
+                        deped_email = ?,
+                        personal_email = ?,
+
                         other_info = ?
+
                     WHERE id = ?
                 ";
 
                 $params = [
+
                     $data['employee_id'],
                     $data['full_name'],
                     $data['date_of_birth'],
                     $data['gender'],
-                    $data['address'],
                     $data['contact_number'],
-                    $data['email'],
+                    $data['address'],
+
+                    $data['plantilla_no'],
+                    $data['tin_no'],
+                    $data['first_day_of_service'],
                     $data['position_department'],
+                    $data['current_latest_appointment'],
+
+                    $data['degree_finished'],
+                    $data['specialization_prc_eligibility'],
+
+                    $data['deped_email'],
+                    $data['personal_email'],
+
                     $data['other_info'],
+
                     $id
                 ];
 
@@ -115,35 +191,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $sql = "
                     INSERT INTO teachers (
+
                         employee_id,
                         full_name,
                         date_of_birth,
                         gender,
-                        address,
                         contact_number,
-                        email,
+                        address,
+
+                        plantilla_no,
+                        tin_no,
+                        first_day_of_service,
                         position_department,
+                        current_latest_appointment,
+
+                        degree_finished,
+                        specialization_prc_eligibility,
+
+                        deped_email,
+                        personal_email,
+
                         other_info
+
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (
+                        ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?,
+                        ?, ?,
+                        ?, ?,
+                        ?
+                    )
                 ";
 
                 $params = [
+
                     $data['employee_id'],
                     $data['full_name'],
                     $data['date_of_birth'],
                     $data['gender'],
-                    $data['address'],
                     $data['contact_number'],
-                    $data['email'],
+                    $data['address'],
+
+                    $data['plantilla_no'],
+                    $data['tin_no'],
+                    $data['first_day_of_service'],
                     $data['position_department'],
+                    $data['current_latest_appointment'],
+
+                    $data['degree_finished'],
+                    $data['specialization_prc_eligibility'],
+
+                    $data['deped_email'],
+                    $data['personal_email'],
+
                     $data['other_info']
                 ];
 
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute($params);
 
-                $id = (int) $pdo->lastInsertId();
+                $id = (int)$pdo->lastInsertId();
                 $isEdit = true;
             }
 
@@ -166,12 +273,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($newPhoto) {
 
-                    // Delete old photo
                     if (!empty($record['photo'])) {
                         delete_upload($record['photo']);
                     }
 
-                    // Save new photo
                     $stmt = $pdo->prepare("
                         UPDATE teachers
                         SET photo = ?
@@ -187,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
             // ==================================================
-            // REDIRECT AFTER SUCCESS
+            // REDIRECT
             // ==================================================
 
             redirect("teacher_view.php?id=" . $id);
@@ -197,253 +302,592 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($e->getCode() === '23000') {
 
-                $error = 'Teacher/Employee ID already exists. Please use a different ID.';
+                $error =
+                    'Teacher/Employee ID already exists. Please use a different ID.';
 
             } else {
 
-                $error = 'Unable to save the teacher record.';
+                $error =
+                    'Unable to save the teacher record.';
             }
         }
     }
 
 
-    // Keep entered values if validation fails
+    // Keep entered values
     $record = array_merge($record, $data);
 }
 
+include 'header.php';
+
 ?>
 
-<?php include 'header.php'; ?>
+<link rel="stylesheet" href="assets/teacher_form.css">
 
 
-<!-- ==========================================================
-     PAGE HEADER
-========================================================== -->
+<div class="teacher-form-page">
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <!-- ======================================================
+         PAGE HEADER
+    ======================================================= -->
 
-    <div>
+    <div class="teacher-form-header">
 
-        <h2 class="fw-bold mb-1">
-            <?= $isEdit ? 'Edit Teacher' : 'Add Teacher' ?>
-        </h2>
+        <div>
 
-        <p class="text-muted mb-0">
-            Store the basic teacher record information.
-        </p>
+            <div class="teacher-form-label">
+                TEACHER RECORD
+            </div>
+
+            <h2 class="teacher-title">
+                <?= $isEdit ? 'Edit Teacher' : 'Add Teacher' ?>
+            </h2>
+
+            <p class="teacher-subtitle">
+                <?= $isEdit
+                    ? 'Update the teacher information below.'
+                    : 'Add a new teacher record to the system.' ?>
+            </p>
+
+        </div>
+
+
+        <a
+            href="teachers.php"
+            class="btn btn-outline-secondary"
+        >
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to List
+        </a>
 
     </div>
 
 
-    <a
-        href="teachers.php"
-        class="btn btn-outline-secondary"
+    <!-- ======================================================
+         ERROR
+    ======================================================= -->
+
+    <?php if ($error): ?>
+
+        <div class="alert alert-danger teacher-form-alert">
+
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+
+            <?= e($error) ?>
+
+        </div>
+
+    <?php endif; ?>
+
+
+    <!-- ======================================================
+         FORM
+    ======================================================= -->
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
     >
-        <i class="bi bi-arrow-left"></i>
-        Back to List
-    </a>
 
-</div>
+        <div class="row g-4">
 
 
-<!-- ==========================================================
-     ERROR MESSAGE
-========================================================== -->
+            <!-- ==================================================
+                 LEFT COLUMN
+            =================================================== -->
 
-<?php if ($error): ?>
-
-    <div class="alert alert-danger">
-        <i class="bi bi-exclamation-circle me-2"></i>
-        <?= e($error) ?>
-    </div>
-
-<?php endif; ?>
+            <div class="col-12 col-lg-8">
 
 
-<!-- ==========================================================
-     TEACHER FORM
-========================================================== -->
+                <!-- ==================================================
+                     BASIC INFORMATION
+                =================================================== -->
 
-<form
-    method="POST"
-    enctype="multipart/form-data"
->
+                <div class="teacher-form-card">
 
-    <div class="row g-4">
+                    <div class="teacher-form-card-header">
 
+                        <div class="teacher-section-icon">
+                            <i class="bi bi-person-vcard"></i>
+                        </div>
 
-        <!-- ==================================================
-             TEACHER INFORMATION
-        =================================================== -->
+                        <div>
 
-        <div class="col-lg-8">
+                            <h5>
+                                Basic Information
+                            </h5>
 
-            <div class="card p-4">
+                            <p>
+                                Personal information of the teacher.
+                            </p>
 
-                <h5 class="fw-bold mb-4">
-                    Teacher Information
-                </h5>
-
-
-                <div class="row g-3">
-
-
-                    <!-- Employee ID -->
-                    <div class="col-md-6">
-
-                        <label class="form-label">
-                            Teacher / Employee ID
-                            <span class="text-danger">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            name="employee_id"
-                            class="form-control"
-                            value="<?= e($record['employee_id'] ?? '') ?>"
-                            required
-                        >
+                        </div>
 
                     </div>
 
 
-                    <!-- Full Name -->
-                    <div class="col-md-6">
+                    <div class="teacher-form-card-body">
 
-                        <label class="form-label">
-                            Full Name
-                            <span class="text-danger">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            name="full_name"
-                            class="form-control"
-                            value="<?= e($record['full_name'] ?? '') ?>"
-                            required
-                        >
-
-                    </div>
+                        <div class="row g-3">
 
 
-                    <!-- Date of Birth -->
-                    <div class="col-md-4">
+                            <!-- FULL NAME -->
 
-                        <label class="form-label">
-                            Date of Birth
-                        </label>
+                            <div class="col-12">
 
-                        <input
-                            type="date"
-                            name="date_of_birth"
-                            class="form-control"
-                            value="<?= e($record['date_of_birth'] ?? '') ?>"
-                        >
+                                <label class="form-label">
+                                    Full Name
+                                    <span class="text-danger">*</span>
+                                </label>
 
-                    </div>
-
-
-                    <!-- Gender -->
-                    <div class="col-md-4">
-
-                        <label class="form-label">
-                            Gender
-                        </label>
-
-                        <select
-                            name="gender"
-                            class="form-select"
-                        >
-
-                            <option value="">
-                                Select
-                            </option>
-
-                            <?php foreach (['Male', 'Female', 'Other'] as $gender): ?>
-
-                                <option
-                                    value="<?= e($gender) ?>"
-                                    <?= (($record['gender'] ?? '') === $gender) ? 'selected' : '' ?>
+                                <input
+                                    type="text"
+                                    name="full_name"
+                                    id="full_name"
+                                    class="form-control"
+                                    value="<?= e($record['full_name'] ?? '') ?>"
+                                    maxlength="100"
+                                    required
+                                    placeholder="e.g. Juan Dela Cruz"
                                 >
-                                    <?= e($gender) ?>
-                                </option>
 
-                            <?php endforeach; ?>
+                            </div>
 
-                        </select>
+
+                            <!-- BIRTHDATE -->
+
+                            <div class="col-12 col-md-4">
+
+                                <label class="form-label">
+                                    Birthdate
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="date_of_birth"
+                                    class="form-control"
+                                    value="<?= e($record['date_of_birth'] ?? '') ?>"
+                                >
+
+                            </div>
+
+
+                            <!-- GENDER -->
+
+                            <div class="col-12 col-md-4">
+
+                                <label class="form-label">
+                                    Gender
+                                </label>
+
+                                <select
+                                    name="gender"
+                                    class="form-select"
+                                >
+
+                                    <option value="">
+                                        Select Gender
+                                    </option>
+
+                                    <?php foreach (
+                                        ['Male', 'Female', 'Other']
+                                        as $gender
+                                    ): ?>
+
+                                        <option
+                                            value="<?= e($gender) ?>"
+                                            <?= (($record['gender'] ?? '') === $gender)
+                                                ? 'selected'
+                                                : '' ?>
+                                        >
+                                            <?= e($gender) ?>
+                                        </option>
+
+                                    <?php endforeach; ?>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- CONTACT NUMBER -->
+
+                            <div class="col-12 col-md-4">
+
+                                <label class="form-label">
+                                    Contact Number
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    name="contact_number"
+                                    id="contact_number"
+                                    class="form-control"
+                                    value="<?= e($record['contact_number'] ?? '') ?>"
+                                    maxlength="11"
+                                    pattern="09[0-9]{9}"
+                                    inputmode="numeric"
+                                    placeholder="09XXXXXXXXX"
+                                >
+
+                            </div>
+
+
+                            <!-- ADDRESS -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Address
+                                </label>
+
+                                <textarea
+                                    name="address"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Enter complete address"
+                                ><?= e($record['address'] ?? '') ?></textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     EMPLOYMENT INFORMATION
+                =================================================== -->
+
+                <div class="teacher-form-card mt-4">
+
+                    <div class="teacher-form-card-header">
+
+                        <div class="teacher-section-icon">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+
+                        <div>
+
+                            <h5>
+                                Employment Information
+                            </h5>
+
+                            <p>
+                                Employment and appointment details.
+                            </p>
+
+                        </div>
 
                     </div>
 
 
-                    <!-- Contact Number -->
-                    <div class="col-md-4">
+                    <div class="teacher-form-card-body">
 
-                        <label class="form-label">
-                            Contact Number
-                        </label>
+                        <div class="row g-3">
 
-                        <input
-                            type="text"
-                            name="contact_number"
-                            class="form-control"
-                            value="<?= e($record['contact_number'] ?? '') ?>"
-                        >
+
+                            <!-- EMPLOYEE NO -->
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label">
+                                    Employee No.
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="employee_id"
+                                    class="form-control"
+                                    value="<?= e($record['employee_id'] ?? '') ?>"
+                                    required
+                                    placeholder="Employee number"
+                                >
+
+                            </div>
+
+
+                            <!-- PLANTILLA -->
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label">
+                                    Plantilla No.
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="plantilla_no"
+                                    class="form-control"
+                                    value="<?= e($record['plantilla_no'] ?? '') ?>"
+                                    placeholder="Plantilla number"
+                                >
+
+                            </div>
+
+
+                            <!-- TIN -->
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label">
+                                    TIN No.
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="tin_no"
+                                    class="form-control"
+                                    value="<?= e($record['tin_no'] ?? '') ?>"
+                                    placeholder="TIN number"
+                                >
+
+                            </div>
+
+
+                            <!-- FIRST DAY -->
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label">
+                                    First Day of Service
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="first_day_of_service"
+                                    class="form-control"
+                                    value="<?= e($record['first_day_of_service'] ?? '') ?>"
+                                >
+
+                            </div>
+
+
+                            <!-- POSITION / DEPARTMENT -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Position / Department
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="position_department"
+                                    class="form-control"
+                                    value="<?= e($record['position_department'] ?? '') ?>"
+                                    placeholder="e.g. Teacher III / Senior High School"
+                                >
+
+                            </div>
+
+
+                            <!-- CURRENT APPOINTMENT -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Current / Latest Appointment
+                                </label>
+
+                                <textarea
+                                    name="current_latest_appointment"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Enter current or latest appointment"
+                                ><?= e($record['current_latest_appointment'] ?? '') ?></textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     EDUCATION & ELIGIBILITY
+                =================================================== -->
+
+                <div class="teacher-form-card mt-4">
+
+                    <div class="teacher-form-card-header">
+
+                        <div class="teacher-section-icon">
+                            <i class="bi bi-mortarboard"></i>
+                        </div>
+
+                        <div>
+
+                            <h5>
+                                Education & Eligibility
+                            </h5>
+
+                            <p>
+                                Educational background and professional eligibility.
+                            </p>
+
+                        </div>
 
                     </div>
 
 
-                    <!-- Address -->
-                    <div class="col-12">
+                    <div class="teacher-form-card-body">
 
-                        <label class="form-label">
-                            Address
-                        </label>
+                        <div class="row g-3">
 
-                        <textarea
-                            name="address"
-                            class="form-control"
-                            rows="2"
-                        ><?= e($record['address'] ?? '') ?></textarea>
+
+                            <!-- DEGREE -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Degree Finished
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="degree_finished"
+                                    class="form-control"
+                                    value="<?= e($record['degree_finished'] ?? '') ?>"
+                                    placeholder="e.g. Bachelor of Secondary Education"
+                                >
+
+                            </div>
+
+
+                            <!-- SPECIALIZATION -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Specialization / PRC Eligibility
+                                </label>
+
+                                <textarea
+                                    name="specialization_prc_eligibility"
+                                    class="form-control"
+                                    rows="4"
+                                    placeholder="Enter specialization, PRC eligibility, license details, etc."
+                                ><?= e($record['specialization_prc_eligibility'] ?? '') ?></textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     CONTACT INFORMATION
+                =================================================== -->
+
+                <div class="teacher-form-card mt-4">
+
+                    <div class="teacher-form-card-header">
+
+                        <div class="teacher-section-icon">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+
+                        <div>
+
+                            <h5>
+                                Contact Information
+                            </h5>
+
+                            <p>
+                                Official and personal contact details.
+                            </p>
+
+                        </div>
 
                     </div>
 
 
-                    <!-- Email -->
-                    <div class="col-md-6">
+                    <div class="teacher-form-card-body">
 
-                        <label class="form-label">
-                            Email
-                        </label>
+                        <div class="row g-3">
 
-                        <input
-                            type="email"
-                            name="email"
-                            class="form-control"
-                            value="<?= e($record['email'] ?? '') ?>"
-                        >
+
+                            <!-- DEPED EMAIL -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    DepEd Email
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="deped_email"
+                                    class="form-control"
+                                    value="<?= e($record['deped_email'] ?? '') ?>"
+                                    placeholder="teacher@deped.gov.ph"
+                                >
+
+                            </div>
+
+
+                            <!-- PERSONAL EMAIL -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Personal Email
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="personal_email"
+                                    class="form-control"
+                                    value="<?= e($record['personal_email'] ?? '') ?>"
+                                    placeholder="personal@email.com"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ADDITIONAL INFORMATION
+                =================================================== -->
+
+                <div class="teacher-form-card mt-4">
+
+                    <div class="teacher-form-card-header">
+
+                        <div class="teacher-section-icon">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+
+                        <div>
+
+                            <h5>
+                                Additional Information
+                            </h5>
+
+                            <p>
+                                Other relevant teacher information.
+                            </p>
+
+                        </div>
 
                     </div>
 
 
-                    <!-- Position / Department -->
-                    <div class="col-md-6">
-
-                        <label class="form-label">
-                            Position / Department
-                        </label>
-
-                        <input
-                            type="text"
-                            name="position_department"
-                            class="form-control"
-                            value="<?= e($record['position_department'] ?? '') ?>"
-                        >
-
-                    </div>
-
-
-                    <!-- Other Information -->
-                    <div class="col-12">
+                    <div class="teacher-form-card-body">
 
                         <label class="form-label">
                             Other Relevant Information
@@ -452,7 +896,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <textarea
                             name="other_info"
                             class="form-control"
-                            rows="3"
+                            rows="5"
+                            placeholder="Additional information..."
                         ><?= e($record['other_info'] ?? '') ?></textarea>
 
                     </div>
@@ -461,75 +906,150 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             </div>
 
-        </div>
 
+            <!-- ==================================================
+                 RIGHT COLUMN - PHOTO
+            =================================================== -->
 
-        <!-- ==================================================
-             PROFILE PHOTO
-        =================================================== -->
+            <div class="col-12 col-lg-4">
 
-        <div class="col-lg-4">
+                <div class="teacher-form-card teacher-photo-card">
 
-            <div class="card p-4">
+                    <div class="teacher-form-card-header">
 
-                <h5 class="fw-bold mb-4">
-                    Profile Photo
-                </h5>
+                        <div class="teacher-section-icon">
+                            <i class="bi bi-camera"></i>
+                        </div>
 
+                        <div>
 
-                <?php if (!empty($record['photo'])): ?>
+                            <h5>
+                                Profile Photo
+                            </h5>
 
-                    <img
-                        src="<?= e($record['photo']) ?>"
-                        alt="Teacher Photo"
-                        class="profile-photo mb-3 d-block"
-                    >
+                            <p>
+                                Upload a teacher profile picture.
+                            </p>
 
-                <?php else: ?>
-
-                    <div class="text-center text-muted py-4">
-
-                        <i class="bi bi-person-circle fs-1"></i>
-
-                        <p class="mb-0 mt-2">
-                            No photo uploaded
-                        </p>
+                        </div>
 
                     </div>
 
-                <?php endif; ?>
+
+                    <div class="teacher-photo-body">
 
 
-                <input
-                    type="file"
-                    name="photo"
-                    class="form-control"
-                    accept=".jpg,.jpeg,.png,.webp"
-                >
+                        <?php if (!empty($record['photo'])): ?>
 
-                <div class="form-text">
-                    JPG, JPEG, PNG, or WEBP. Maximum 5 MB.
+                            <img
+                                src="<?= e($record['photo']) ?>"
+                                alt="Teacher Photo"
+                                class="teacher-profile-preview"
+                            >
+
+                        <?php else: ?>
+
+                            <div class="teacher-photo-placeholder">
+
+                                <i class="bi bi-person"></i>
+
+                                <span>
+                                    No photo uploaded
+                                </span>
+
+                            </div>
+
+                        <?php endif; ?>
+
+
+                        <input
+                            type="file"
+                            name="photo"
+                            class="form-control"
+                            accept=".jpg,.jpeg,.png,.webp"
+                        >
+
+
+                        <div class="form-text">
+                            JPG, JPEG, PNG, or WEBP.
+                            Maximum file size: 5 MB.
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100 teacher-save-btn"
+                        >
+
+                            <i class="bi bi-check-lg me-1"></i>
+
+                            <?= $isEdit
+                                ? 'Update Teacher'
+                                : 'Save Teacher' ?>
+
+                        </button>
+
+                    </div>
+
                 </div>
-
-
-                <button
-                    type="submit"
-                    class="btn btn-success w-100 mt-4"
-                >
-
-                    <i class="bi bi-check-lg"></i>
-
-                    <?= $isEdit ? 'Update Teacher' : 'Save Teacher' ?>
-
-                </button>
 
             </div>
 
         </div>
 
-    </div>
+    </form>
 
-</form>
+</div>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const fullName =
+        document.getElementById('full_name');
+
+    const contactNumber =
+        document.getElementById('contact_number');
+
+
+    // ======================================================
+    // CLEAN NAME
+    // ======================================================
+
+    if (fullName) {
+
+        fullName.addEventListener('input', function () {
+
+            this.value = this.value.replace(
+                /[^A-Za-zÀ-ÿ .'-]/g,
+                ''
+            );
+
+        });
+
+    }
+
+
+    // ======================================================
+    // CLEAN PHONE NUMBER
+    // ======================================================
+
+    if (contactNumber) {
+
+        contactNumber.addEventListener('input', function () {
+
+            this.value = this.value
+                .replace(/\D/g, '')
+                .slice(0, 11);
+
+        });
+
+    }
+
+});
+
+</script>
 
 
 <?php include 'footer.php'; ?>

@@ -9,9 +9,9 @@ $pageTitle = 'Teacher Details';
 $id = (int) ($_GET['id'] ?? 0);
 
 
-// ==========================================================
-// GET TEACHER
-// ==========================================================
+/* =========================================================
+   GET TEACHER
+========================================================= */
 
 $stmt = $pdo->prepare("
     SELECT *
@@ -28,9 +28,9 @@ if (!$teacher) {
 }
 
 
-// ==========================================================
-// UPLOAD DOCUMENT
-// ==========================================================
+/* =========================================================
+   UPLOAD DOCUMENT
+========================================================= */
 
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
@@ -87,9 +87,9 @@ if (
 }
 
 
-// ==========================================================
-// GET TEACHER DOCUMENTS
-// ==========================================================
+/* =========================================================
+   GET TEACHER DOCUMENTS
+========================================================= */
 
 $stmt = $pdo->prepare("
     SELECT *
@@ -107,42 +107,59 @@ $stmt->execute([
 $documents = $stmt->fetchAll();
 
 
-// ==========================================================
-// HEADER
-// ==========================================================
+/* =========================================================
+   HELPER FOR EMPTY VALUES
+========================================================= */
 
-include 'header.php';
+function teacher_value($value)
+{
+    return !empty($value) ? e($value) : '—';
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+include __DIR__ . '/header.php';
 
 ?>
 
+<link rel="stylesheet" href="assets/teacher_view.css">
 
-<!-- ==========================================================
+
+<!-- =========================================================
      PAGE HEADER
-========================================================== -->
+========================================================= -->
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+<div class="teacher-view-header">
 
-    <div>
+    <div class="teacher-header-left">
 
-        <h2 class="fw-bold mb-1">
-            <?= e($teacher['full_name']) ?>
-        </h2>
+        <div class="teacher-page-icon">
+            <i class="bi bi-person-vcard"></i>
+        </div>
 
-        <p class="text-muted mb-0">
-            Employee ID:
-            <?= e($teacher['employee_id']) ?>
-        </p>
+        <div>
+            <h2 class="fw-bold mb-1">
+                Teacher Details
+            </h2>
+
+            <p class="text-muted mb-0">
+                View and manage teacher information.
+            </p>
+        </div>
 
     </div>
 
 
-    <div>
+    <div class="teacher-header-actions">
 
         <a
             href="teachers.php"
             class="btn btn-outline-secondary"
         >
-            <i class="bi bi-arrow-left"></i>
+            <i class="bi bi-arrow-left me-1"></i>
             Back
         </a>
 
@@ -150,7 +167,7 @@ include 'header.php';
             href="teacher_form.php?id=<?= (int) $id ?>"
             class="btn btn-primary"
         >
-            <i class="bi bi-pencil"></i>
+            <i class="bi bi-pencil me-1"></i>
             Edit
         </a>
 
@@ -159,206 +176,148 @@ include 'header.php';
 </div>
 
 
-<!-- ==========================================================
-     TEACHER INFORMATION + PHOTO
-========================================================== -->
+<!-- =========================================================
+     TEACHER PROFILE
+========================================================= -->
 
-<div class="row g-4">
+<div class="teacher-profile-card">
 
+    <!-- Profile Picture -->
 
-    <!-- Teacher Information -->
-    <div class="col-lg-8">
+    <div class="teacher-profile-photo">
 
-        <div class="card p-4">
+        <?php if (!empty($teacher['photo'])): ?>
 
-            <h5 class="fw-bold mb-4">
-                Teacher Information
-            </h5>
+            <img
+                src="<?= e($teacher['photo']) ?>"
+                alt="<?= e($teacher['full_name']) ?>"
+            >
 
+        <?php else: ?>
 
-            <div class="row g-4">
-
-
-                <!-- Full Name -->
-                <div class="col-md-6">
-
-                    <div class="text-muted small">
-                        Full Name
-                    </div>
-
-                    <div class="fw-semibold">
-                        <?= e($teacher['full_name']) ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Employee ID -->
-                <div class="col-md-6">
-
-                    <div class="text-muted small">
-                        Teacher / Employee ID
-                    </div>
-
-                    <div class="fw-semibold">
-                        <?= e($teacher['employee_id']) ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Date of Birth -->
-                <div class="col-md-4">
-
-                    <div class="text-muted small">
-                        Date of Birth
-                    </div>
-
-                    <div>
-                        <?= !empty($teacher['date_of_birth'])
-                            ? e($teacher['date_of_birth'])
-                            : '—' ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Gender -->
-                <div class="col-md-4">
-
-                    <div class="text-muted small">
-                        Gender
-                    </div>
-
-                    <div>
-                        <?= !empty($teacher['gender'])
-                            ? e($teacher['gender'])
-                            : '—' ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Contact Number -->
-                <div class="col-md-4">
-
-                    <div class="text-muted small">
-                        Contact Number
-                    </div>
-
-                    <div>
-                        <?= !empty($teacher['contact_number'])
-                            ? e($teacher['contact_number'])
-                            : '—' ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Address -->
-                <div class="col-12">
-
-                    <div class="text-muted small">
-                        Address
-                    </div>
-
-                    <div>
-                        <?= !empty($teacher['address'])
-                            ? nl2br(e($teacher['address']))
-                            : '—' ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Email -->
-                <div class="col-md-6">
-
-                    <div class="text-muted small">
-                        Email
-                    </div>
-
-                    <div>
-                        <?= !empty($teacher['email'])
-                            ? e($teacher['email'])
-                            : '—' ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Position / Department -->
-                <div class="col-md-6">
-
-                    <div class="text-muted small">
-                        Position / Department
-                    </div>
-
-                    <div>
-                        <?= !empty($teacher['position_department'])
-                            ? e($teacher['position_department'])
-                            : '—' ?>
-                    </div>
-
-                </div>
-
-
-                <!-- Other Information -->
-                <div class="col-12">
-
-                    <div class="text-muted small">
-                        Other Relevant Information
-                    </div>
-
-                    <div>
-                        <?= !empty($teacher['other_info'])
-                            ? nl2br(e($teacher['other_info']))
-                            : '—' ?>
-                    </div>
-
-                </div>
-
+            <div class="teacher-photo-placeholder">
+                <i class="bi bi-person"></i>
             </div>
 
+        <?php endif; ?>
+
+    </div>
+
+
+    <!-- Profile Information -->
+
+    <div class="teacher-profile-info">
+
+        <div class="teacher-profile-label">
+            TEACHER PROFILE
+        </div>
+
+        <h3 class="fw-bold mb-1">
+            <?= teacher_value($teacher['full_name']) ?>
+        </h3>
+
+        <p class="text-muted mb-2">
+            <?= teacher_value($teacher['position_department']) ?>
+        </p>
+
+        <span class="teacher-id-badge">
+            <i class="bi bi-person-badge me-1"></i>
+            Employee No.
+            <?= teacher_value($teacher['employee_id']) ?>
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BASIC INFORMATION
+========================================================= -->
+
+<div class="teacher-info-card mt-4">
+
+    <div class="teacher-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Basic Information
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Personal information of the teacher.
+            </p>
+        </div>
+
+        <div class="teacher-card-icon">
+            <i class="bi bi-person"></i>
         </div>
 
     </div>
 
 
-    <!-- ======================================================
-         PROFILE PHOTO
-    ======================================================= -->
+    <div class="teacher-info-grid">
 
-    <div class="col-lg-4">
+        <!-- Contact Number -->
+        <div class="teacher-info-item">
 
-        <div class="card p-4 text-center">
+            <div class="teacher-info-label">
+                <i class="bi bi-telephone"></i>
+                Contact Number
+            </div>
 
-            <?php if (!empty($teacher['photo'])): ?>
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['contact_number']) ?>
+            </div>
 
-                <img
-                    src="<?= e($teacher['photo']) ?>"
-                    alt="Teacher Photo"
-                    class="profile-photo mx-auto mb-3"
-                >
-
-            <?php else: ?>
-
-                <div
-                    class="profile-photo mx-auto mb-3 d-flex align-items-center justify-content-center bg-light fs-1 text-muted"
-                >
-                    <i class="bi bi-person"></i>
-                </div>
-
-            <?php endif; ?>
+        </div>
 
 
-            <h6 class="fw-bold mb-1">
-                <?= e($teacher['full_name']) ?>
-            </h6>
+        <!-- Birthdate -->
+        <div class="teacher-info-item">
 
-            <small class="text-muted">
-                Profile Photo
-            </small>
+            <div class="teacher-info-label">
+                <i class="bi bi-calendar-event"></i>
+                Birthdate
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['date_of_birth']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Gender -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-gender-ambiguous"></i>
+                Gender
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['gender']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Address -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-geo-alt"></i>
+                Address
+            </div>
+
+            <div class="teacher-info-value">
+                <?=
+                    !empty($teacher['address'])
+                        ? nl2br(e($teacher['address']))
+                        : '—'
+                ?>
+            </div>
 
         </div>
 
@@ -367,16 +326,311 @@ include 'header.php';
 </div>
 
 
-<!-- ==========================================================
-     DOCUMENTS
-========================================================== -->
+<!-- =========================================================
+     EMPLOYMENT INFORMATION
+========================================================= -->
 
-<div class="card p-4 mt-4">
+<div class="teacher-info-card mt-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="teacher-card-header">
 
         <div>
+            <h5 class="fw-bold mb-1">
+                Employment Information
+            </h5>
 
+            <p class="text-muted small mb-0">
+                Employment and appointment details.
+            </p>
+        </div>
+
+        <div class="teacher-card-icon">
+            <i class="bi bi-briefcase"></i>
+        </div>
+
+    </div>
+
+
+    <div class="teacher-info-grid">
+
+        <!-- Employee No. -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-person-badge"></i>
+                Employee No.
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['employee_id']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Plantilla No. -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-card-list"></i>
+                Plantilla No.
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['plantilla_no']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- TIN No. -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-credit-card"></i>
+                TIN No.
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['tin_no']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- First Day of Service -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-calendar-check"></i>
+                First Day of Service
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['first_day_of_service']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Position / Department -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-building"></i>
+                Position / Department
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['position_department']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Current / Latest Appointment -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-briefcase"></i>
+                Current / Latest Appointment
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['current_latest_appointment']) ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     EDUCATION & ELIGIBILITY
+========================================================= -->
+
+<div class="teacher-info-card mt-4">
+
+    <div class="teacher-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Education &amp; Eligibility
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Educational background and professional eligibility.
+            </p>
+        </div>
+
+        <div class="teacher-card-icon">
+            <i class="bi bi-mortarboard"></i>
+        </div>
+
+    </div>
+
+
+    <div class="teacher-info-grid">
+
+        <!-- Degree Finished -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-mortarboard"></i>
+                Degree Finished
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['degree_finished']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Specialization / PRC Eligibility -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-award"></i>
+                Specialization / PRC Eligibility
+            </div>
+
+            <div class="teacher-info-value">
+                <?=
+                    !empty($teacher['specialization_prc_eligibility'])
+                        ? nl2br(e($teacher['specialization_prc_eligibility']))
+                        : '—'
+                ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     CONTACT INFORMATION
+========================================================= -->
+
+<div class="teacher-info-card mt-4">
+
+    <div class="teacher-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Contact Information
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Official and personal email information.
+            </p>
+        </div>
+
+        <div class="teacher-card-icon">
+            <i class="bi bi-envelope"></i>
+        </div>
+
+    </div>
+
+
+    <div class="teacher-info-grid">
+
+        <!-- DepEd Email -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-envelope"></i>
+                DepEd Email
+            </div>
+
+            <div class="teacher-info-value teacher-email">
+                <?= teacher_value($teacher['deped_email']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Personal Email -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-envelope-at"></i>
+                Personal Email
+            </div>
+
+            <div class="teacher-info-value teacher-email">
+                <?= teacher_value($teacher['personal_email']) ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ADDITIONAL INFORMATION
+========================================================= -->
+
+<div class="teacher-info-card mt-4">
+
+    <div class="teacher-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Additional Information
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Other relevant information about the teacher.
+            </p>
+        </div>
+
+        <div class="teacher-card-icon">
+            <i class="bi bi-info-circle"></i>
+        </div>
+
+    </div>
+
+
+    <div class="teacher-additional-info">
+
+        <div class="teacher-additional-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-card-text"></i>
+                Other Relevant Information
+            </div>
+
+            <div class="teacher-info-value">
+                <?=
+                    !empty($teacher['other_info'])
+                        ? nl2br(e($teacher['other_info']))
+                        : '—'
+                ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     DOCUMENTS
+========================================================= -->
+
+<div class="teacher-info-card mt-4">
+
+    <div class="teacher-card-header">
+
+        <div>
             <h5 class="fw-bold mb-1">
                 Documents
             </h5>
@@ -384,20 +638,24 @@ include 'header.php';
             <p class="text-muted small mb-0">
                 Upload and manage teacher documents.
             </p>
+        </div>
 
+        <div class="teacher-card-icon">
+            <i class="bi bi-folder"></i>
         </div>
 
     </div>
 
 
-    <!-- Upload Document -->
+    <!-- Upload -->
+
     <form
         method="POST"
         enctype="multipart/form-data"
-        class="row g-2 mb-4"
+        class="teacher-upload-form"
     >
 
-        <div class="col-md-8">
+        <div class="teacher-file-input">
 
             <input
                 type="file"
@@ -414,38 +672,32 @@ include 'header.php';
         </div>
 
 
-        <div class="col-md-4">
-
-            <button
-                type="submit"
-                name="upload_document"
-                value="1"
-                class="btn btn-success w-100"
-            >
-                <i class="bi bi-upload"></i>
-                Upload Document
-            </button>
-
-        </div>
+        <button
+            type="submit"
+            name="upload_document"
+            value="1"
+            class="btn btn-primary teacher-upload-btn"
+        >
+            <i class="bi bi-upload me-1"></i>
+            Upload Document
+        </button>
 
     </form>
 
 
-    <!-- Documents Table -->
-    <div class="table-responsive">
+    <!-- Document Table -->
 
-        <table class="table table-hover align-middle mb-0">
+    <div class="teacher-documents-table table-responsive">
+
+        <table class="table align-middle mb-0">
 
             <thead>
-
                 <tr>
                     <th>Document</th>
                     <th>Uploaded</th>
                     <th class="text-end">Actions</th>
                 </tr>
-
             </thead>
-
 
             <tbody>
 
@@ -457,9 +709,17 @@ include 'header.php';
 
                             <td>
 
-                                <i class="bi bi-file-earmark me-2"></i>
+                                <div class="teacher-document-name">
 
-                                <?= e($document['document_name']) ?>
+                                    <div class="teacher-document-icon">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+
+                                    <span>
+                                        <?= e($document['document_name']) ?>
+                                    </span>
+
+                                </div>
 
                             </td>
 
@@ -471,24 +731,29 @@ include 'header.php';
 
                             <td class="text-end">
 
-                                <a
-                                    href="<?= e($document['file_path']) ?>"
-                                    target="_blank"
-                                    class="btn btn-sm btn-outline-primary"
-                                >
-                                    <i class="bi bi-eye"></i>
-                                    View / Download
-                                </a>
+                                <div class="teacher-document-actions">
 
+                                    <a
+                                        href="<?= e($document['file_path']) ?>"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="View Document"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                        <span>View</span>
+                                    </a>
 
-                                <a
-                                    href="delete_document.php?id=<?= (int) $document['id'] ?>&return=teacher_view.php%3Fid%3D<?= (int) $id ?>"
-                                    class="btn btn-sm btn-outline-danger"
-                                    data-confirm="Delete this document?"
-                                >
-                                    <i class="bi bi-trash"></i>
-                                    Delete
-                                </a>
+                                    <a
+                                        href="delete_document.php?id=<?= (int) $document['id'] ?>&return=<?= urlencode('teacher_view.php?id=' . $id) ?>"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-confirm="Delete this document?"
+                                        title="Delete Document"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                        <span>Delete</span>
+                                    </a>
+
+                                </div>
 
                             </td>
 
@@ -500,14 +765,23 @@ include 'header.php';
 
                     <tr>
 
-                        <td
-                            colspan="3"
-                            class="text-center text-muted py-5"
-                        >
+                        <td colspan="3">
 
-                            <i class="bi bi-file-earmark fs-2 d-block mb-2"></i>
+                            <div class="teacher-empty-documents text-center">
 
-                            No documents uploaded.
+                                <div class="teacher-empty-icon">
+                                    <i class="bi bi-folder2-open"></i>
+                                </div>
+
+                                <h6 class="fw-bold mb-1">
+                                    No documents uploaded
+                                </h6>
+
+                                <p class="text-muted small mb-0">
+                                    Teacher documents will appear here.
+                                </p>
+
+                            </div>
 
                         </td>
 
@@ -524,4 +798,4 @@ include 'header.php';
 </div>
 
 
-<?php include 'footer.php'; ?>
+<?php include __DIR__ . '/footer.php'; ?>
