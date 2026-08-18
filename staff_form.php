@@ -14,7 +14,14 @@ $error = '';
 
 
 // ==========================================================
-// LOAD EXISTING STAFF
+// Current Logged-in User
+// ==========================================================
+
+$currentUserId = (int)($_SESSION['user_id'] ?? 0);
+
+
+// ==========================================================
+// Load Existing Staff Record
 // ==========================================================
 
 if ($isEdit) {
@@ -23,6 +30,7 @@ if ($isEdit) {
         SELECT *
         FROM staff
         WHERE id = ?
+        LIMIT 1
     ");
 
     $stmt->execute([$id]);
@@ -30,34 +38,58 @@ if ($isEdit) {
     $record = $stmt->fetch();
 
     if (!$record) {
+
         redirect('staff.php');
+
     }
 }
 
 
 // ==========================================================
-// FORM SUBMISSION
+// Process Form
 // ==========================================================
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $data = [
 
-        'employee_id' => trim($_POST['employee_id'] ?? ''),
-        'full_name' => trim($_POST['full_name'] ?? ''),
+        'employee_id' => trim(
+            $_POST['employee_id'] ?? ''
+        ),
 
-        'date_of_birth' => !empty($_POST['date_of_birth'])
+        'full_name' => trim(
+            $_POST['full_name'] ?? ''
+        ),
+
+        'date_of_birth' => !empty(
+            $_POST['date_of_birth'] ?? ''
+        )
             ? $_POST['date_of_birth']
             : null,
 
-        'gender' => trim($_POST['gender'] ?? ''),
-        'contact_number' => trim($_POST['contact_number'] ?? ''),
-        'address' => trim($_POST['address'] ?? ''),
+        'gender' => trim(
+            $_POST['gender'] ?? ''
+        ),
 
-        'plantilla_no' => trim($_POST['plantilla_no'] ?? ''),
-        'tin_no' => trim($_POST['tin_no'] ?? ''),
+        'contact_number' => trim(
+            $_POST['contact_number'] ?? ''
+        ),
 
-        'first_day_of_service' => !empty($_POST['first_day_of_service'])
+        'address' => trim(
+            $_POST['address'] ?? ''
+        ),
+
+        'plantilla_no' => trim(
+            $_POST['plantilla_no'] ?? ''
+        ),
+
+        'tin_no' => trim(
+            $_POST['tin_no'] ?? ''
+        ),
+
+        'first_day_of_service' => !empty(
+            $_POST['first_day_of_service'] ?? ''
+        )
             ? $_POST['first_day_of_service']
             : null,
 
@@ -65,9 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST['position_department'] ?? ''
         ),
 
-        'current_latest_appointment' => trim(
+        'current_latest_appointment' => !empty(
             $_POST['current_latest_appointment'] ?? ''
-        ),
+        )
+            ? $_POST['current_latest_appointment']
+            : null,
 
         'degree_finished' => trim(
             $_POST['degree_finished'] ?? ''
@@ -92,19 +126,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     // ======================================================
-    // VALIDATION
+    // Validate Form
     // ======================================================
 
-    if ($data['employee_id'] === '') {
+    if ($currentUserId <= 0) {
 
-        $error = 'Staff / Employee ID is required.';
+        $error =
+            'Unable to identify the current user. Please log in again.';
+
+    } elseif ($data['employee_id'] === '') {
+
+        $error =
+            'Staff / Employee ID is required.';
 
     } elseif ($data['full_name'] === '') {
 
-        $error = 'Full Name is required.';
+        $error =
+            'Full Name is required.';
 
     } elseif (
-        $data['full_name'] !== '' &&
         !preg_match(
             "/^[A-Za-zÀ-ÿ .'-]+$/",
             $data['full_name']
@@ -151,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     // ======================================================
-    // SAVE RECORD
+    // Save Record
     // ======================================================
 
     if ($error === '') {
@@ -159,13 +199,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
 
             // ==================================================
-            // UPDATE
+            // UPDATE EXISTING STAFF
             // ==================================================
 
             if ($isEdit) {
 
+                /*
+                 * IMPORTANT:
+                 *
+                 * created_by is NOT changed.
+                 *
+                 * updated_by becomes the currently logged-in user.
+                 *
+                 * user_id is also NOT changed here because
+                 * user_id represents the staff member's account,
+                 * not the person performing the update.
+                 */
+
                 $sql = "
                     UPDATE staff SET
+
+                        updated_by = ?,
 
                         employee_id = ?,
                         full_name = ?,
@@ -193,6 +247,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $params = [
 
+                    // Person who updated the record
+                    $currentUserId,
+
                     $data['employee_id'],
                     $data['full_name'],
                     $data['date_of_birth'],
@@ -218,19 +275,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
 
                 $stmt = $pdo->prepare($sql);
+
                 $stmt->execute($params);
 
             }
 
 
             // ==================================================
-            // INSERT
+            // INSERT NEW STAFF
             // ==================================================
 
             else {
 
+                /*
+                 * When creating a new staff record:
+                 *
+                 * created_by = current logged-in user
+                 * updated_by = current logged-in user
+                 *
+                 * user_id is left NULL unless the staff member
+                 * is later connected to an actual user account.
+                 */
+
                 $sql = "
                     INSERT INTO staff (
+
+                        user_id,
+                        created_by,
+                        updated_by,
 
                         employee_id,
                         full_name,
@@ -255,15 +327,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     )
                     VALUES (
+                        NULL,
+                        ?, ?,
+
                         ?, ?, ?, ?, ?, ?,
+
                         ?, ?, ?, ?, ?,
+
                         ?, ?,
+
                         ?, ?,
+
                         ?
                     )
                 ";
 
                 $params = [
+
+                    // Creator
+                    $currentUserId,
+
+                    // Last updater
+                    $currentUserId,
 
                     $data['employee_id'],
                     $data['full_name'],
@@ -288,6 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
 
                 $stmt = $pdo->prepare($sql);
+
                 $stmt->execute($params);
 
                 $id = (int)$pdo->lastInsertId();
@@ -297,7 +383,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
             // ==================================================
-            // PROFILE PHOTO
+            // Upload Photo
             // ==================================================
 
             if (
@@ -308,16 +394,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $newPhoto = upload_file(
                     'photo',
                     'staff',
-                    ['jpg', 'jpeg', 'png', 'webp'],
+                    [
+                        'jpg',
+                        'jpeg',
+                        'png',
+                        'webp'
+                    ],
                     5242880
                 );
 
+
                 if ($newPhoto) {
 
-                    // Delete old photo when replacing it
+                    /*
+                     * Delete old photo when replacing it.
+                     */
+
                     if (!empty($record['photo'])) {
-                        delete_upload($record['photo']);
+
+                        delete_upload(
+                            $record['photo']
+                        );
+
                     }
+
 
                     $stmt = $pdo->prepare("
                         UPDATE staff
@@ -329,43 +429,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $newPhoto,
                         $id
                     ]);
+
                 }
+
             }
 
 
             // ==================================================
-            // REDIRECT
+            // Open Saved Record
             // ==================================================
 
             redirect(
                 "staff_view.php?id=" . $id
             );
 
+        }
 
-        } catch (PDOException $e) {
+
+        // ======================================================
+        // Database Error
+        // ======================================================
+
+        catch (PDOException $e) {
+
+            /*
+             * Duplicate employee ID
+             */
 
             if ($e->getCode() === '23000') {
 
                 $error =
-                    'Staff/Employee ID already exists. Please use a different ID.';
+                    'Staff / Employee ID already exists. Please use a different ID.';
 
             } else {
 
                 $error =
-                    'Unable to save the staff record.';
+                    'Unable to save the staff record: '
+                    . $e->getMessage();
+
             }
+
         }
+
     }
 
 
     // ======================================================
-    // KEEP ENTERED VALUES
+    // Keep Entered Values
     // ======================================================
 
     $record = array_merge(
         $record,
         $data
     );
+
 }
 
 
@@ -383,7 +500,7 @@ include 'header.php';
 
 
     <!-- ======================================================
-         PAGE HEADER
+         Page Header
     ======================================================= -->
 
     <div class="staff-form-header">
@@ -395,7 +512,12 @@ include 'header.php';
             </div>
 
             <h2 class="staff-title">
-                <?= $isEdit ? 'Edit Staff' : 'Add Staff' ?>
+
+                <?= $isEdit
+                    ? 'Edit Staff'
+                    : 'Add Staff'
+                ?>
+
             </h2>
 
             <p class="staff-subtitle">
@@ -425,7 +547,7 @@ include 'header.php';
 
 
     <!-- ======================================================
-         ERROR
+         Error Message
     ======================================================= -->
 
     <?php if ($error): ?>
@@ -442,7 +564,7 @@ include 'header.php';
 
 
     <!-- ======================================================
-         FORM
+         Staff Form
     ======================================================= -->
 
     <form
@@ -454,14 +576,14 @@ include 'header.php';
 
 
             <!-- ==================================================
-                 LEFT COLUMN
+                 Main Information
             =================================================== -->
 
             <div class="col-12 col-lg-8">
 
 
                 <!-- ==================================================
-                     BASIC INFORMATION
+                     Basic Information
                 =================================================== -->
 
                 <div class="staff-form-card">
@@ -494,7 +616,7 @@ include 'header.php';
                         <div class="row g-3">
 
 
-                            <!-- FULL NAME -->
+                            <!-- Full Name -->
 
                             <div class="col-12">
 
@@ -516,7 +638,7 @@ include 'header.php';
                                     value="<?= e(
                                         $record['full_name'] ?? ''
                                     ) ?>"
-                                    maxlength="100"
+                                    maxlength="150"
                                     required
                                     placeholder="e.g. Juan Dela Cruz"
                                 >
@@ -524,7 +646,7 @@ include 'header.php';
                             </div>
 
 
-                            <!-- BIRTHDATE -->
+                            <!-- Birthdate -->
 
                             <div class="col-12 col-md-4">
 
@@ -544,7 +666,7 @@ include 'header.php';
                             </div>
 
 
-                            <!-- GENDER -->
+                            <!-- Gender -->
 
                             <div class="col-12 col-md-4">
 
@@ -591,7 +713,7 @@ include 'header.php';
                             </div>
 
 
-                            <!-- CONTACT NUMBER -->
+                            <!-- Contact Number -->
 
                             <div class="col-12 col-md-4">
 
@@ -616,7 +738,7 @@ include 'header.php';
                             </div>
 
 
-                            <!-- ADDRESS -->
+                            <!-- Address -->
 
                             <div class="col-12">
 
@@ -643,7 +765,7 @@ include 'header.php';
 
 
                 <!-- ==================================================
-                     EMPLOYMENT INFORMATION
+                     Employment Information
                 =================================================== -->
 
                 <div class="staff-form-card mt-4">
@@ -676,7 +798,7 @@ include 'header.php';
                         <div class="row g-3">
 
 
-                            <!-- EMPLOYEE ID -->
+                            <!-- Employee ID -->
 
                             <div class="col-12 col-md-6">
 
@@ -697,6 +819,7 @@ include 'header.php';
                                     value="<?= e(
                                         $record['employee_id'] ?? ''
                                     ) ?>"
+                                    maxlength="50"
                                     required
                                     placeholder="Employee number"
                                 >
@@ -704,7 +827,7 @@ include 'header.php';
                             </div>
 
 
-                            <!-- PLANTILLA -->
+                            <!-- Plantilla -->
 
                             <div class="col-12 col-md-6">
 
@@ -719,6 +842,7 @@ include 'header.php';
                                     value="<?= e(
                                         $record['plantilla_no'] ?? ''
                                     ) ?>"
+                                    maxlength="50"
                                     placeholder="Plantilla number"
                                 >
 
@@ -740,13 +864,14 @@ include 'header.php';
                                     value="<?= e(
                                         $record['tin_no'] ?? ''
                                     ) ?>"
+                                    maxlength="30"
                                     placeholder="TIN number"
                                 >
 
                             </div>
 
 
-                            <!-- FIRST DAY -->
+                            <!-- First Day of Service -->
 
                             <div class="col-12 col-md-6">
 
@@ -759,14 +884,16 @@ include 'header.php';
                                     name="first_day_of_service"
                                     class="form-control"
                                     value="<?= e(
-                                        $record['first_day_of_service'] ?? ''
+                                        $record[
+                                            'first_day_of_service'
+                                        ] ?? ''
                                     ) ?>"
                                 >
 
                             </div>
 
 
-                            <!-- POSITION / DEPARTMENT -->
+                            <!-- Position -->
 
                             <div class="col-12">
 
@@ -779,15 +906,18 @@ include 'header.php';
                                     name="position_department"
                                     class="form-control"
                                     value="<?= e(
-                                        $record['position_department'] ?? ''
+                                        $record[
+                                            'position_department'
+                                        ] ?? ''
                                     ) ?>"
+                                    maxlength="150"
                                     placeholder="e.g. Administrative Staff / Finance"
                                 >
 
                             </div>
 
 
-                            <!-- CURRENT / LATEST APPOINTMENT -->
+                            <!-- Latest Appointment -->
 
                             <div class="col-12">
 
@@ -795,16 +925,16 @@ include 'header.php';
                                     Current / Latest Appointment
                                 </label>
 
-                                <textarea
+                                <input
+                                    type="date"
                                     name="current_latest_appointment"
                                     class="form-control"
-                                    rows="3"
-                                    placeholder="Enter current or latest appointment"
-                                ><?= e(
-                                    $record[
-                                        'current_latest_appointment'
-                                    ] ?? ''
-                                ) ?></textarea>
+                                    value="<?= e(
+                                        $record[
+                                            'current_latest_appointment'
+                                        ] ?? ''
+                                    ) ?>"
+                                >
 
                             </div>
 
@@ -816,7 +946,7 @@ include 'header.php';
 
 
                 <!-- ==================================================
-                     EDUCATION & ELIGIBILITY
+                     Education & Eligibility
                 =================================================== -->
 
                 <div class="staff-form-card mt-4">
@@ -849,7 +979,7 @@ include 'header.php';
                         <div class="row g-3">
 
 
-                            <!-- DEGREE -->
+                            <!-- Degree -->
 
                             <div class="col-12">
 
@@ -862,15 +992,18 @@ include 'header.php';
                                     name="degree_finished"
                                     class="form-control"
                                     value="<?= e(
-                                        $record['degree_finished'] ?? ''
+                                        $record[
+                                            'degree_finished'
+                                        ] ?? ''
                                     ) ?>"
+                                    maxlength="255"
                                     placeholder="e.g. Bachelor of Science in Business Administration"
                                 >
 
                             </div>
 
 
-                            <!-- SPECIALIZATION / PRC -->
+                            <!-- Specialization / PRC -->
 
                             <div class="col-12">
 
@@ -882,6 +1015,7 @@ include 'header.php';
                                     name="specialization_prc_eligibility"
                                     class="form-control"
                                     rows="4"
+                                    maxlength="255"
                                     placeholder="Enter specialization, PRC eligibility, license details, etc."
                                 ><?= e(
                                     $record[
@@ -899,7 +1033,7 @@ include 'header.php';
 
 
                 <!-- ==================================================
-                     CONTACT INFORMATION
+                     Contact Information
                 =================================================== -->
 
                 <div class="staff-form-card mt-4">
@@ -932,7 +1066,7 @@ include 'header.php';
                         <div class="row g-3">
 
 
-                            <!-- DEPED EMAIL -->
+                            <!-- DepEd Email -->
 
                             <div class="col-12">
 
@@ -945,15 +1079,18 @@ include 'header.php';
                                     name="deped_email"
                                     class="form-control"
                                     value="<?= e(
-                                        $record['deped_email'] ?? ''
+                                        $record[
+                                            'deped_email'
+                                        ] ?? ''
                                     ) ?>"
+                                    maxlength="150"
                                     placeholder="staff@deped.gov.ph"
                                 >
 
                             </div>
 
 
-                            <!-- PERSONAL EMAIL -->
+                            <!-- Personal Email -->
 
                             <div class="col-12">
 
@@ -966,8 +1103,11 @@ include 'header.php';
                                     name="personal_email"
                                     class="form-control"
                                     value="<?= e(
-                                        $record['personal_email'] ?? ''
+                                        $record[
+                                            'personal_email'
+                                        ] ?? ''
                                     ) ?>"
+                                    maxlength="150"
                                     placeholder="personal@email.com"
                                 >
 
@@ -981,7 +1121,7 @@ include 'header.php';
 
 
                 <!-- ==================================================
-                     ADDITIONAL INFORMATION
+                     Additional Information
                 =================================================== -->
 
                 <div class="staff-form-card mt-4">
@@ -1032,7 +1172,7 @@ include 'header.php';
 
 
             <!-- ==================================================
-                 RIGHT COLUMN - PHOTO
+                 Profile Photo
             =================================================== -->
 
             <div class="col-12 col-lg-4">
@@ -1066,6 +1206,8 @@ include 'header.php';
                     <div class="staff-photo-body">
 
 
+                        <!-- Current Photo -->
+
                         <?php if (!empty($record['photo'])): ?>
 
                             <img
@@ -1089,6 +1231,8 @@ include 'header.php';
                         <?php endif; ?>
 
 
+                        <!-- Select Photo -->
+
                         <input
                             type="file"
                             name="photo"
@@ -1100,10 +1244,13 @@ include 'header.php';
                         <div class="form-text">
 
                             JPG, JPEG, PNG, or WEBP.
+
                             Maximum file size: 5 MB.
 
                         </div>
 
+
+                        <!-- Save -->
 
                         <button
                             type="submit"
@@ -1136,44 +1283,54 @@ include 'header.php';
 
 document.addEventListener('DOMContentLoaded', function () {
 
+
+    // ======================================================
+    // Full Name
+    // ======================================================
+
     const fullName =
         document.getElementById('full_name');
 
-    const contactNumber =
-        document.getElementById('contact_number');
-
-
-    // ======================================================
-    // CLEAN NAME
-    // ======================================================
 
     if (fullName) {
 
-        fullName.addEventListener('input', function () {
+        fullName.addEventListener(
+            'input',
+            function () {
 
-            this.value = this.value.replace(
-                /[^A-Za-zÀ-ÿ .'-]/g,
-                ''
-            );
+                this.value =
+                    this.value.replace(
+                        /[^A-Za-zÀ-ÿ .'-]/g,
+                        ''
+                    );
 
-        });
+            }
+        );
 
     }
 
 
     // ======================================================
-    // CLEAN PHONE NUMBER
+    // Contact Number
     // ======================================================
+
+    const contactNumber =
+        document.getElementById('contact_number');
+
 
     if (contactNumber) {
 
-        contactNumber.addEventListener('input', function () {
+        contactNumber.addEventListener(
+            'input',
+            function () {
 
-            this.value = this.value
-                .replace(/\D/g, '')
-                .slice(0, 11);
+                this.value =
+                    this.value
+                        .replace(/\D/g, '')
+                        .slice(0, 11);
 
-        });
+            }
+        );
 
     }
 

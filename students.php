@@ -12,7 +12,7 @@ $sql = "SELECT * FROM students";
 $params = [];
 
 if ($q !== '') {
-    $sql .= " WHERE student_id LIKE ? OR full_name LIKE ?";
+    $sql .= " WHERE lrn LIKE ? OR full_name LIKE ?";
     $params = [
         "%$q%",
         "%$q%"
@@ -58,7 +58,7 @@ include 'header.php';
                 name="q"
                 class="form-control"
                 value="<?= e($q) ?>"
-                placeholder="Search by Student ID or name"
+                placeholder="Search by Student LRN or name"
                 aria-label="Search students"
             >
         </div>

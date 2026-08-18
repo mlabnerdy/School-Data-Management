@@ -6,6 +6,11 @@ require_login();
 
 $pageTitle = 'Teacher Form';
 
+/*
+ * Logged-in user ID
+ */
+$currentUserId = (int)($_SESSION['user_id'] ?? 0);
+
 $id = (int)($_GET['id'] ?? 0);
 $isEdit = $id > 0;
 
@@ -44,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
 
         'employee_id' => trim($_POST['employee_id'] ?? ''),
+
         'full_name' => trim($_POST['full_name'] ?? ''),
 
         'date_of_birth' => !empty($_POST['date_of_birth'])
@@ -51,30 +57,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             : null,
 
         'gender' => trim($_POST['gender'] ?? ''),
+
         'contact_number' => trim($_POST['contact_number'] ?? ''),
+
         'address' => trim($_POST['address'] ?? ''),
 
         'plantilla_no' => trim($_POST['plantilla_no'] ?? ''),
+
         'tin_no' => trim($_POST['tin_no'] ?? ''),
+
         'first_day_of_service' => !empty($_POST['first_day_of_service'])
             ? $_POST['first_day_of_service']
             : null,
 
-        'position_department' => trim($_POST['position_department'] ?? ''),
-        'current_latest_appointment' => trim(
-            $_POST['current_latest_appointment'] ?? ''
+        'position_department' => trim(
+            $_POST['position_department'] ?? ''
         ),
 
-        'degree_finished' => trim($_POST['degree_finished'] ?? ''),
+        'current_latest_appointment' => !empty(
+            $_POST['current_latest_appointment']
+        )
+            ? $_POST['current_latest_appointment']
+            : null,
+
+        'degree_finished' => trim(
+            $_POST['degree_finished'] ?? ''
+        ),
 
         'specialization_prc_eligibility' => trim(
             $_POST['specialization_prc_eligibility'] ?? ''
         ),
 
-        'deped_email' => trim($_POST['deped_email'] ?? ''),
-        'personal_email' => trim($_POST['personal_email'] ?? ''),
+        'deped_email' => trim(
+            $_POST['deped_email'] ?? ''
+        ),
 
-        'other_info' => trim($_POST['other_info'] ?? '')
+        'personal_email' => trim(
+            $_POST['personal_email'] ?? ''
+        ),
+
+        'other_info' => trim(
+            $_POST['other_info'] ?? ''
+        )
     ];
 
 
@@ -91,32 +115,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Full Name is required.';
 
     } elseif (
-        $data['full_name'] !== '' &&
-        !preg_match("/^[A-Za-zÀ-ÿ .'-]+$/", $data['full_name'])
+        !preg_match(
+            "/^[A-Za-zÀ-ÿ .'-]+$/",
+            $data['full_name']
+        )
     ) {
 
-        $error = 'Full Name must not contain numbers or invalid characters.';
+        $error =
+            'Full Name must not contain numbers or invalid characters.';
 
     } elseif (
         $data['contact_number'] !== '' &&
-        !preg_match('/^09[0-9]{9}$/', $data['contact_number'])
+        !preg_match(
+            '/^09[0-9]{9}$/',
+            $data['contact_number']
+        )
     ) {
 
-        $error = 'Contact Number must be a valid Philippine mobile number.';
+        $error =
+            'Contact Number must be a valid Philippine mobile number.';
 
     } elseif (
         $data['deped_email'] !== '' &&
-        !filter_var($data['deped_email'], FILTER_VALIDATE_EMAIL)
+        !filter_var(
+            $data['deped_email'],
+            FILTER_VALIDATE_EMAIL
+        )
     ) {
 
-        $error = 'Please enter a valid DepEd Email.';
+        $error =
+            'Please enter a valid DepEd Email.';
 
     } elseif (
         $data['personal_email'] !== '' &&
-        !filter_var($data['personal_email'], FILTER_VALIDATE_EMAIL)
+        !filter_var(
+            $data['personal_email'],
+            FILTER_VALIDATE_EMAIL
+        )
     ) {
 
-        $error = 'Please enter a valid Personal Email.';
+        $error =
+            'Please enter a valid Personal Email.';
 
     }
 
@@ -128,6 +167,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($error === '') {
 
         try {
+
+            // ==================================================
+            // UPDATE EXISTING TEACHER
+            // ==================================================
 
             if ($isEdit) {
 
@@ -153,7 +196,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         deped_email = ?,
                         personal_email = ?,
 
-                        other_info = ?
+                        other_info = ?,
+
+                        updated_by = ?,
+                        updated_at = NOW()
 
                     WHERE id = ?
                 ";
@@ -161,33 +207,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $params = [
 
                     $data['employee_id'],
+
                     $data['full_name'],
+
                     $data['date_of_birth'],
+
                     $data['gender'],
+
                     $data['contact_number'],
+
                     $data['address'],
 
                     $data['plantilla_no'],
+
                     $data['tin_no'],
+
                     $data['first_day_of_service'],
+
                     $data['position_department'],
+
                     $data['current_latest_appointment'],
 
                     $data['degree_finished'],
+
                     $data['specialization_prc_eligibility'],
 
                     $data['deped_email'],
+
                     $data['personal_email'],
 
                     $data['other_info'],
+
+                    // User who updated the record
+                    $currentUserId,
 
                     $id
                 ];
 
                 $stmt = $pdo->prepare($sql);
+
                 $stmt->execute($params);
 
-            } else {
+            }
+
+
+            // ==================================================
+            // INSERT NEW TEACHER
+            // ==================================================
+
+            else {
 
                 $sql = "
                     INSERT INTO teachers (
@@ -211,46 +279,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         deped_email,
                         personal_email,
 
-                        other_info
+                        other_info,
+                        created_by
 
                     )
                     VALUES (
+
                         ?, ?, ?, ?, ?, ?,
+
                         ?, ?, ?, ?, ?,
+
                         ?, ?,
+
                         ?, ?,
-                        ?
+
+                        ?, ?
+
                     )
                 ";
 
                 $params = [
 
                     $data['employee_id'],
+
                     $data['full_name'],
+
                     $data['date_of_birth'],
+
                     $data['gender'],
+
                     $data['contact_number'],
+
                     $data['address'],
 
                     $data['plantilla_no'],
+
                     $data['tin_no'],
+
                     $data['first_day_of_service'],
+
                     $data['position_department'],
+
                     $data['current_latest_appointment'],
 
                     $data['degree_finished'],
+
                     $data['specialization_prc_eligibility'],
 
                     $data['deped_email'],
+
                     $data['personal_email'],
 
-                    $data['other_info']
+                    $data['other_info'],
+
+                    // User who created the record
+                    $currentUserId
                 ];
 
                 $stmt = $pdo->prepare($sql);
+
                 $stmt->execute($params);
 
                 $id = (int)$pdo->lastInsertId();
+
                 $isEdit = true;
             }
 
@@ -267,14 +358,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $newPhoto = upload_file(
                     'photo',
                     'teacher',
-                    ['jpg', 'jpeg', 'png', 'webp'],
+                    [
+                        'jpg',
+                        'jpeg',
+                        'png',
+                        'webp'
+                    ],
                     5242880
                 );
 
                 if ($newPhoto) {
 
                     if (!empty($record['photo'])) {
-                        delete_upload($record['photo']);
+
+                        delete_upload(
+                            $record['photo']
+                        );
+
                     }
 
                     $stmt = $pdo->prepare("
@@ -295,7 +395,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // REDIRECT
             // ==================================================
 
-            redirect("teacher_view.php?id=" . $id);
+            redirect(
+                "teacher_view.php?id=" . $id
+            );
 
 
         } catch (PDOException $e) {
@@ -309,23 +411,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $error =
                     'Unable to save the teacher record.';
+
+                // Uncomment temporarily if you want to see
+                // the actual database error:
+                //
+                // $error = $e->getMessage();
             }
         }
     }
 
 
-    // Keep entered values
-    $record = array_merge($record, $data);
+    // ======================================================
+    // KEEP ENTERED VALUES
+    // ======================================================
+
+    $record = array_merge(
+        $record,
+        $data
+    );
 }
+
 
 include 'header.php';
 
 ?>
 
-<link rel="stylesheet" href="assets/teacher_form.css">
+<link
+    rel="stylesheet"
+    href="assets/teacher_form.css"
+>
 
 
 <div class="teacher-form-page">
+
 
     <!-- ======================================================
          PAGE HEADER
@@ -340,13 +458,19 @@ include 'header.php';
             </div>
 
             <h2 class="teacher-title">
-                <?= $isEdit ? 'Edit Teacher' : 'Add Teacher' ?>
+
+                <?= $isEdit
+                    ? 'Edit Teacher'
+                    : 'Add Teacher' ?>
+
             </h2>
 
             <p class="teacher-subtitle">
+
                 <?= $isEdit
                     ? 'Update the teacher information below.'
                     : 'Add a new teacher record to the system.' ?>
+
             </p>
 
         </div>
@@ -356,8 +480,11 @@ include 'header.php';
             href="teachers.php"
             class="btn btn-outline-secondary"
         >
+
             <i class="bi bi-arrow-left me-1"></i>
+
             Back to List
+
         </a>
 
     </div>
@@ -369,9 +496,13 @@ include 'header.php';
 
     <?php if ($error): ?>
 
-        <div class="alert alert-danger teacher-form-alert">
+        <div
+            class="alert alert-danger teacher-form-alert"
+        >
 
-            <i class="bi bi-exclamation-circle-fill me-2"></i>
+            <i
+                class="bi bi-exclamation-circle-fill me-2"
+            ></i>
 
             <?= e($error) ?>
 
@@ -408,7 +539,9 @@ include 'header.php';
                     <div class="teacher-form-card-header">
 
                         <div class="teacher-section-icon">
+
                             <i class="bi bi-person-vcard"></i>
+
                         </div>
 
                         <div>
@@ -436,8 +569,13 @@ include 'header.php';
                             <div class="col-12">
 
                                 <label class="form-label">
+
                                     Full Name
-                                    <span class="text-danger">*</span>
+
+                                    <span class="text-danger">
+                                        *
+                                    </span>
+
                                 </label>
 
                                 <input
@@ -445,7 +583,9 @@ include 'header.php';
                                     name="full_name"
                                     id="full_name"
                                     class="form-control"
-                                    value="<?= e($record['full_name'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['full_name'] ?? ''
+                                    ) ?>"
                                     maxlength="100"
                                     required
                                     placeholder="e.g. Juan Dela Cruz"
@@ -466,7 +606,9 @@ include 'header.php';
                                     type="date"
                                     name="date_of_birth"
                                     class="form-control"
-                                    value="<?= e($record['date_of_birth'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['date_of_birth'] ?? ''
+                                    ) ?>"
                                 >
 
                             </div>
@@ -490,17 +632,25 @@ include 'header.php';
                                     </option>
 
                                     <?php foreach (
-                                        ['Male', 'Female', 'Other']
-                                        as $gender
+                                        [
+                                            'Male',
+                                            'Female',
+                                            'Other'
+                                        ] as $gender
                                     ): ?>
 
                                         <option
                                             value="<?= e($gender) ?>"
-                                            <?= (($record['gender'] ?? '') === $gender)
+                                            <?= (
+                                                ($record['gender'] ?? '')
+                                                === $gender
+                                            )
                                                 ? 'selected'
                                                 : '' ?>
                                         >
+
                                             <?= e($gender) ?>
+
                                         </option>
 
                                     <?php endforeach; ?>
@@ -523,7 +673,9 @@ include 'header.php';
                                     name="contact_number"
                                     id="contact_number"
                                     class="form-control"
-                                    value="<?= e($record['contact_number'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['contact_number'] ?? ''
+                                    ) ?>"
                                     maxlength="11"
                                     pattern="09[0-9]{9}"
                                     inputmode="numeric"
@@ -546,7 +698,9 @@ include 'header.php';
                                     class="form-control"
                                     rows="3"
                                     placeholder="Enter complete address"
-                                ><?= e($record['address'] ?? '') ?></textarea>
+                                ><?= e(
+                                    $record['address'] ?? ''
+                                ) ?></textarea>
 
                             </div>
 
@@ -566,7 +720,9 @@ include 'header.php';
                     <div class="teacher-form-card-header">
 
                         <div class="teacher-section-icon">
+
                             <i class="bi bi-briefcase"></i>
+
                         </div>
 
                         <div>
@@ -594,15 +750,22 @@ include 'header.php';
                             <div class="col-12 col-md-6">
 
                                 <label class="form-label">
+
                                     Employee No.
-                                    <span class="text-danger">*</span>
+
+                                    <span class="text-danger">
+                                        *
+                                    </span>
+
                                 </label>
 
                                 <input
                                     type="text"
                                     name="employee_id"
                                     class="form-control"
-                                    value="<?= e($record['employee_id'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['employee_id'] ?? ''
+                                    ) ?>"
                                     required
                                     placeholder="Employee number"
                                 >
@@ -622,7 +785,9 @@ include 'header.php';
                                     type="text"
                                     name="plantilla_no"
                                     class="form-control"
-                                    value="<?= e($record['plantilla_no'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['plantilla_no'] ?? ''
+                                    ) ?>"
                                     placeholder="Plantilla number"
                                 >
 
@@ -641,7 +806,9 @@ include 'header.php';
                                     type="text"
                                     name="tin_no"
                                     class="form-control"
-                                    value="<?= e($record['tin_no'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['tin_no'] ?? ''
+                                    ) ?>"
                                     placeholder="TIN number"
                                 >
 
@@ -660,7 +827,9 @@ include 'header.php';
                                     type="date"
                                     name="first_day_of_service"
                                     class="form-control"
-                                    value="<?= e($record['first_day_of_service'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['first_day_of_service'] ?? ''
+                                    ) ?>"
                                 >
 
                             </div>
@@ -678,14 +847,16 @@ include 'header.php';
                                     type="text"
                                     name="position_department"
                                     class="form-control"
-                                    value="<?= e($record['position_department'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['position_department'] ?? ''
+                                    ) ?>"
                                     placeholder="e.g. Teacher III / Senior High School"
                                 >
 
                             </div>
 
 
-                            <!-- CURRENT APPOINTMENT -->
+                            <!-- CURRENT / LATEST APPOINTMENT -->
 
                             <div class="col-12">
 
@@ -693,12 +864,14 @@ include 'header.php';
                                     Current / Latest Appointment
                                 </label>
 
-                                <textarea
+                                <input
+                                    type="date"
                                     name="current_latest_appointment"
                                     class="form-control"
-                                    rows="3"
-                                    placeholder="Enter current or latest appointment"
-                                ><?= e($record['current_latest_appointment'] ?? '') ?></textarea>
+                                    value="<?= e(
+                                        $record['current_latest_appointment'] ?? ''
+                                    ) ?>"
+                                >
 
                             </div>
 
@@ -718,7 +891,9 @@ include 'header.php';
                     <div class="teacher-form-card-header">
 
                         <div class="teacher-section-icon">
+
                             <i class="bi bi-mortarboard"></i>
+
                         </div>
 
                         <div>
@@ -753,7 +928,9 @@ include 'header.php';
                                     type="text"
                                     name="degree_finished"
                                     class="form-control"
-                                    value="<?= e($record['degree_finished'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['degree_finished'] ?? ''
+                                    ) ?>"
                                     placeholder="e.g. Bachelor of Secondary Education"
                                 >
 
@@ -773,7 +950,11 @@ include 'header.php';
                                     class="form-control"
                                     rows="4"
                                     placeholder="Enter specialization, PRC eligibility, license details, etc."
-                                ><?= e($record['specialization_prc_eligibility'] ?? '') ?></textarea>
+                                ><?= e(
+                                    $record[
+                                        'specialization_prc_eligibility'
+                                    ] ?? ''
+                                ) ?></textarea>
 
                             </div>
 
@@ -793,7 +974,9 @@ include 'header.php';
                     <div class="teacher-form-card-header">
 
                         <div class="teacher-section-icon">
+
                             <i class="bi bi-envelope"></i>
+
                         </div>
 
                         <div>
@@ -828,7 +1011,9 @@ include 'header.php';
                                     type="email"
                                     name="deped_email"
                                     class="form-control"
-                                    value="<?= e($record['deped_email'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['deped_email'] ?? ''
+                                    ) ?>"
                                     placeholder="teacher@deped.gov.ph"
                                 >
 
@@ -847,7 +1032,9 @@ include 'header.php';
                                     type="email"
                                     name="personal_email"
                                     class="form-control"
-                                    value="<?= e($record['personal_email'] ?? '') ?>"
+                                    value="<?= e(
+                                        $record['personal_email'] ?? ''
+                                    ) ?>"
                                     placeholder="personal@email.com"
                                 >
 
@@ -869,7 +1056,9 @@ include 'header.php';
                     <div class="teacher-form-card-header">
 
                         <div class="teacher-section-icon">
+
                             <i class="bi bi-info-circle"></i>
+
                         </div>
 
                         <div>
@@ -898,7 +1087,9 @@ include 'header.php';
                             class="form-control"
                             rows="5"
                             placeholder="Additional information..."
-                        ><?= e($record['other_info'] ?? '') ?></textarea>
+                        ><?= e(
+                            $record['other_info'] ?? ''
+                        ) ?></textarea>
 
                     </div>
 
@@ -913,12 +1104,16 @@ include 'header.php';
 
             <div class="col-12 col-lg-4">
 
-                <div class="teacher-form-card teacher-photo-card">
+                <div
+                    class="teacher-form-card teacher-photo-card"
+                >
 
                     <div class="teacher-form-card-header">
 
                         <div class="teacher-section-icon">
+
                             <i class="bi bi-camera"></i>
+
                         </div>
 
                         <div>
@@ -949,7 +1144,9 @@ include 'header.php';
 
                         <?php else: ?>
 
-                            <div class="teacher-photo-placeholder">
+                            <div
+                                class="teacher-photo-placeholder"
+                            >
 
                                 <i class="bi bi-person"></i>
 
@@ -971,8 +1168,11 @@ include 'header.php';
 
 
                         <div class="form-text">
+
                             JPG, JPEG, PNG, or WEBP.
+
                             Maximum file size: 5 MB.
+
                         </div>
 
 
@@ -1004,50 +1204,61 @@ include 'header.php';
 
 <script>
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
 
-    const fullName =
-        document.getElementById('full_name');
+        const fullName =
+            document.getElementById('full_name');
 
-    const contactNumber =
-        document.getElementById('contact_number');
+        const contactNumber =
+            document.getElementById('contact_number');
 
 
-    // ======================================================
-    // CLEAN NAME
-    // ======================================================
+        // ======================================================
+        // CLEAN NAME
+        // ======================================================
 
-    if (fullName) {
+        if (fullName) {
 
-        fullName.addEventListener('input', function () {
+            fullName.addEventListener(
+                'input',
+                function () {
 
-            this.value = this.value.replace(
-                /[^A-Za-zÀ-ÿ .'-]/g,
-                ''
+                    this.value =
+                        this.value.replace(
+                            /[^A-Za-zÀ-ÿ .'-]/g,
+                            ''
+                        );
+
+                }
             );
 
-        });
+        }
+
+
+        // ======================================================
+        // CLEAN PHONE NUMBER
+        // ======================================================
+
+        if (contactNumber) {
+
+            contactNumber.addEventListener(
+                'input',
+                function () {
+
+                    this.value =
+                        this.value
+                            .replace(/\D/g, '')
+                            .slice(0, 11);
+
+                }
+            );
+
+        }
 
     }
-
-
-    // ======================================================
-    // CLEAN PHONE NUMBER
-    // ======================================================
-
-    if (contactNumber) {
-
-        contactNumber.addEventListener('input', function () {
-
-            this.value = this.value
-                .replace(/\D/g, '')
-                .slice(0, 11);
-
-        });
-
-    }
-
-});
+);
 
 </script>
 

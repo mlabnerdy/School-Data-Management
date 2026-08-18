@@ -331,15 +331,13 @@ include 'header.php';
 
 
                                 <!-- Delete -->
-                                <a
-                                    href="delete_teacher.php?id=<?= (int)$r['id'] ?>"
-                                    class="btn btn-sm btn-outline-danger"
-                                    title="Delete Teacher"
-                                    onclick="return confirm('Are you sure you want to delete this teacher record?');"
-                                >
-                                    <i class="bi bi-trash"></i>
-                                    <span>Delete</span>
-                                </a>
+                              <a
+                                href="delete_teacher.php?id=<?= (int)$r['id'] ?>"
+                                class="btn btn-sm btn-danger"
+                            >
+                                <i class="bi bi-trash me-1"></i>
+                                Delete
+                            </a>
 
                             </div>
 

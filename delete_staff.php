@@ -7,13 +7,13 @@ require_login();
 $id = (int)($_GET['id'] ?? 0);
 
 if ($id <= 0) {
-    redirect('students.php');
+    redirect('staff.php');
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| Get Student
+| Get Staff
 |--------------------------------------------------------------------------
 */
 
@@ -22,17 +22,17 @@ $stmt = $pdo->prepare("
         id,
         full_name,
         photo
-    FROM students
+    FROM staff
     WHERE id = ?
     LIMIT 1
 ");
 
 $stmt->execute([$id]);
 
-$student = $stmt->fetch();
+$staff = $stmt->fetch();
 
-if (!$student) {
-    redirect('students.php');
+if (!$staff) {
+    redirect('staff.php');
 }
 
 
@@ -50,17 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($password === '') {
 
-        $error = 'Please enter your account password.';
+        $error =
+            'Please enter your account password.';
 
     } else {
 
-        /*
-        |------------------------------------------------------------------
-        | Get Logged-in User
-        |------------------------------------------------------------------
-        */
+        $currentUserId =
+            (int)($_SESSION['user_id'] ?? 0);
 
-        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
 
         if ($currentUserId <= 0) {
 
@@ -68,6 +65,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'Unable to identify your account. Please log in again.';
 
         } else {
+
+            /*
+            |------------------------------------------------------------------
+            | Get Logged-in User Password
+            |------------------------------------------------------------------
+            */
 
             $stmt = $pdo->prepare("
                 SELECT password
@@ -98,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ) {
 
                 $error =
-                    'Incorrect password. The student record was not deleted.';
+                    'Incorrect password. The staff record was not deleted.';
 
             } else {
 
@@ -109,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     /*
                     |----------------------------------------------------------
-                    | Delete Student Documents
+                    | Delete Staff Documents
                     |----------------------------------------------------------
                     */
 
@@ -121,11 +124,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ");
 
                     $stmt->execute([
-                        'student',
+                        'staff',
                         $id
                     ]);
 
-                    $documents = $stmt->fetchAll();
+                    $documents =
+                        $stmt->fetchAll();
 
 
                     /*
@@ -159,21 +163,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ");
 
                     $stmt->execute([
-                        'student',
+                        'staff',
                         $id
                     ]);
 
 
                     /*
                     |----------------------------------------------------------
-                    | Delete Student Photo
+                    | Delete Staff Photo
                     |----------------------------------------------------------
                     */
 
-                    if (!empty($student['photo'])) {
+                    if (!empty($staff['photo'])) {
 
                         delete_upload(
-                            $student['photo']
+                            $staff['photo']
                         );
 
                     }
@@ -181,12 +185,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     /*
                     |----------------------------------------------------------
-                    | Delete Student
+                    | Delete Staff
                     |----------------------------------------------------------
                     */
 
                     $stmt = $pdo->prepare("
-                        DELETE FROM students
+                        DELETE FROM staff
                         WHERE id = ?
                     ");
 
@@ -200,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     /*
                     |----------------------------------------------------------
-                    | Success Message
+                    | Success Page
                     |----------------------------------------------------------
                     */
 
@@ -228,16 +232,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                         <h4 class="fw-bold mb-2">
 
-                                            Student Deleted Successfully
+                                            Staff Deleted Successfully
 
                                         </h4>
 
                                         <p class="text-muted mb-4">
 
-                                            The student record
+                                            The staff record
                                             <strong>
                                                 <?= e(
-                                                    $student['full_name']
+                                                    $staff['full_name']
                                                 ) ?>
                                             </strong>
                                             has been permanently deleted.
@@ -245,13 +249,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </p>
 
                                         <a
-                                            href="students.php"
+                                            href="staff.php"
                                             class="btn btn-primary"
                                         >
 
                                             <i class="bi bi-arrow-left me-1"></i>
 
-                                            Back to Students
+                                            Back to Staff
 
                                         </a>
 
@@ -278,7 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     $error =
-                        'Unable to delete the student record. '
+                        'Unable to delete the staff record. '
                         . 'Please try again.';
                 }
             }
@@ -315,7 +319,7 @@ include 'header.php';
                         ></i>
 
                         <h4 class="fw-bold mt-3">
-                            Confirm Student Deletion
+                            Confirm Staff Deletion
                         </h4>
 
                         <p class="text-muted">
@@ -323,7 +327,7 @@ include 'header.php';
                             You are about to permanently delete
 
                             <strong>
-                                <?= e($student['full_name']) ?>
+                                <?= e($staff['full_name']) ?>
                             </strong>.
 
                             Enter your account password to continue.
@@ -388,7 +392,7 @@ include 'header.php';
                         <div class="d-flex gap-2">
 
                             <a
-                                href="students.php"
+                                href="staff.php"
                                 class="btn btn-light w-50"
                             >
 
@@ -405,7 +409,7 @@ include 'header.php';
 
                                 <i class="bi bi-trash me-1"></i>
 
-                                Delete Student
+                                Delete Staff
 
                             </button>
 

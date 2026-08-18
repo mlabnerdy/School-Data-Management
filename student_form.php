@@ -9,9 +9,23 @@ $isEdit = $id > 0;
 $record = [];
 $error = '';
 
+/*
+ * Logged-in user
+ */
+$currentUserId = (int)($_SESSION['user_id'] ?? 0);
+
+
+/*
+ * Load existing student
+ */
 if ($isEdit) {
-    $stmt = $pdo->prepare("SELECT * FROM students WHERE id = ?");
+
+    $stmt = $pdo->prepare(
+        "SELECT * FROM students WHERE id = ?"
+    );
+
     $stmt->execute([$id]);
+
     $record = $stmt->fetch();
 
     if (!$record) {
@@ -19,85 +33,185 @@ if ($isEdit) {
     }
 }
 
+
+/*
+ * Save Student
+ */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $data = [
+
         'lrn' => trim($_POST['lrn'] ?? ''),
+
         'school_id' => '500634',
+
         'full_name' => trim($_POST['full_name'] ?? ''),
+
         'date_of_birth' => !empty($_POST['date_of_birth'])
             ? $_POST['date_of_birth']
             : null,
+
         'gender' => trim($_POST['gender'] ?? ''),
+
         'contact_number' => trim($_POST['contact_number'] ?? ''),
+
         'address' => trim($_POST['address'] ?? ''),
-        'parent_guardian' => trim($_POST['parent_guardian'] ?? ''),
-        'school_year' => trim($_POST['school_year'] ?? ''),
-        'grade_section' => trim($_POST['grade_section'] ?? ''),
-        'emergency_name' => trim($_POST['emergency_name'] ?? ''),
-        'emergency_address' => trim($_POST['emergency_address'] ?? ''),
-        'emergency_contact' => trim($_POST['emergency_contact'] ?? ''),
-        'other_info' => trim($_POST['other_info'] ?? '')
+
+        'parent_guardian' => trim(
+            $_POST['parent_guardian'] ?? ''
+        ),
+
+        'school_year' => trim(
+            $_POST['school_year'] ?? ''
+        ),
+
+        'grade_section' => trim(
+            $_POST['grade_section'] ?? ''
+        ),
+
+        'emergency_name' => trim(
+            $_POST['emergency_name'] ?? ''
+        ),
+
+        'emergency_address' => trim(
+            $_POST['emergency_address'] ?? ''
+        ),
+
+        'emergency_contact' => trim(
+            $_POST['emergency_contact'] ?? ''
+        ),
+
+        'other_info' => trim(
+            $_POST['other_info'] ?? ''
+        )
+
     ];
 
-    // LRN
+
+    /*
+     * LRN
+     */
     if (
         $data['lrn'] !== '' &&
         !preg_match('/^[0-9]{12}$/', $data['lrn'])
     ) {
-        $error = 'LRN must contain exactly 12 numbers.';
+
+        $error =
+            'LRN must contain exactly 12 numbers.';
+
     }
 
-    // Full Name
-    elseif (!preg_match("/^[A-Za-zÀ-ÿ .'-]+$/", $data['full_name'])) {
-        $error = 'Full Name must not contain numbers or special characters.';
+
+    /*
+     * Full Name
+     */
+    elseif (
+        !preg_match(
+            "/^[A-Za-zÀ-ÿ .'-]+$/",
+            $data['full_name']
+        )
+    ) {
+
+        $error =
+            'Full Name must not contain numbers or special characters.';
+
     }
 
-    // Parent / Guardian
+
+    /*
+     * Parent / Guardian
+     */
     elseif (
         $data['parent_guardian'] !== '' &&
-        !preg_match("/^[A-Za-zÀ-ÿ .'-]+$/", $data['parent_guardian'])
+        !preg_match(
+            "/^[A-Za-zÀ-ÿ .'-]+$/",
+            $data['parent_guardian']
+        )
     ) {
-        $error = 'Parent / Guardian name must not contain numbers or special characters.';
+
+        $error =
+            'Parent / Guardian name must not contain numbers or special characters.';
+
     }
 
-    // Emergency Name
+
+    /*
+     * Emergency Name
+     */
     elseif (
         $data['emergency_name'] !== '' &&
-        !preg_match("/^[A-Za-zÀ-ÿ .'-]+$/", $data['emergency_name'])
+        !preg_match(
+            "/^[A-Za-zÀ-ÿ .'-]+$/",
+            $data['emergency_name']
+        )
     ) {
-        $error = 'Emergency contact name must not contain numbers or special characters.';
+
+        $error =
+            'Emergency contact name must not contain numbers or special characters.';
+
     }
 
-    // Student Mobile
+
+    /*
+     * Student Mobile
+     */
     elseif (
         $data['contact_number'] !== '' &&
-        !preg_match('/^09[0-9]{9}$/', $data['contact_number'])
+        !preg_match(
+            '/^09[0-9]{9}$/',
+            $data['contact_number']
+        )
     ) {
-        $error = 'Mobile Number must be a valid Philippine number.';
+
+        $error =
+            'Mobile Number must be a valid Philippine number.';
+
     }
 
-    // Emergency Mobile
+
+    /*
+     * Emergency Mobile
+     */
     elseif (
         $data['emergency_contact'] !== '' &&
-        !preg_match('/^09[0-9]{9}$/', $data['emergency_contact'])
+        !preg_match(
+            '/^09[0-9]{9}$/',
+            $data['emergency_contact']
+        )
     ) {
-        $error = 'Emergency Contact No. must be a valid Philippine number.';
+
+        $error =
+            'Emergency Contact No. must be a valid Philippine number.';
+
     }
 
-    // Required fields
+
+    /*
+     * Required fields
+     */
     elseif ($data['full_name'] === '') {
-        $error = 'Full Name is required.';
+
+        $error =
+            'Full Name is required.';
+
     }
 
+
+    /*
+     * Save to Database
+     */
     if (!$error) {
 
         try {
 
+            /*
+             * EDIT EXISTING STUDENT
+             */
             if ($isEdit) {
 
                 $sql = "
                     UPDATE students SET
+
                         lrn = ?,
                         school_id = ?,
                         full_name = ?,
@@ -111,31 +225,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         emergency_name = ?,
                         emergency_address = ?,
                         emergency_contact = ?,
-                        other_info = ?
+                        other_info = ?,
+
+                        updated_by = ?,
+                        updated_at = NOW()
+
                     WHERE id = ?
                 ";
 
                 $params = [
+
                     $data['lrn'],
+
                     $data['school_id'],
+
                     $data['full_name'],
+
                     $data['date_of_birth'],
+
                     $data['gender'],
+
                     $data['contact_number'],
+
                     $data['address'],
+
                     $data['parent_guardian'],
+
                     $data['school_year'],
+
                     $data['grade_section'],
+
                     $data['emergency_name'],
+
                     $data['emergency_address'],
+
                     $data['emergency_contact'],
+
                     $data['other_info'],
+
+                    /*
+                     * Who updated the record
+                     */
+                    $currentUserId,
+
                     $id
+
                 ];
 
-                $pdo->prepare($sql)->execute($params);
+                $pdo
+                    ->prepare($sql)
+                    ->execute($params);
 
-            } else {
+            }
+
+
+            /*
+             * CREATE NEW STUDENT
+             */
+            else {
 
                 $sql = "
                     INSERT INTO students
@@ -153,35 +300,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         emergency_name,
                         emergency_address,
                         emergency_contact,
-                        other_info
+                        other_info,
+                        created_by
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+                    VALUES
+                    (
+                        ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?, ?
+                    )
                 ";
 
                 $params = [
+
                     $data['lrn'],
+
                     $data['school_id'],
+
                     $data['full_name'],
+
                     $data['date_of_birth'],
+
                     $data['gender'],
+
                     $data['contact_number'],
+
                     $data['address'],
+
                     $data['parent_guardian'],
+
                     $data['school_year'],
+
                     $data['grade_section'],
+
                     $data['emergency_name'],
+
                     $data['emergency_address'],
+
                     $data['emergency_contact'],
-                    $data['other_info']
+
+                    $data['other_info'],
+
+                    /*
+                     * Who created the record
+                     */
+                    $currentUserId
+
                 ];
 
-                $pdo->prepare($sql)->execute($params);
+                $pdo
+                    ->prepare($sql)
+                    ->execute($params);
 
+
+                /*
+                 * Get newly created student ID
+                 */
                 $id = (int)$pdo->lastInsertId();
+
                 $isEdit = true;
+
             }
 
-            // Photo
+
+            /*
+             * Photo
+             */
             if (!empty($_FILES['photo']['name'])) {
 
                 $newPhoto = upload_file(
@@ -194,36 +378,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($newPhoto) {
 
                     if (!empty($record['photo'])) {
-                        delete_upload($record['photo']);
+
+                        delete_upload(
+                            $record['photo']
+                        );
+
                     }
 
                     $stmt = $pdo->prepare(
-                        "UPDATE students SET photo = ? WHERE id = ?"
+                        "
+                        UPDATE students
+                        SET photo = ?
+                        WHERE id = ?
+                        "
                     );
 
-                    $stmt->execute([$newPhoto, $id]);
+                    $stmt->execute([
+                        $newPhoto,
+                        $id
+                    ]);
+
                 }
+
             }
 
-            redirect("student_view.php?id=$id");
+
+            /*
+             * Redirect after successful save
+             */
+            redirect(
+                "student_view.php?id=$id"
+            );
+
 
         } catch (PDOException $e) {
 
-            $error = 'Could not save the student record.';
+            $error =
+                'Could not save the student record.';
+
         }
+
     }
+
 }
 
-// Keep values
+
+/*
+ * Keep values
+ */
 if ($isEdit) {
-    $stmt = $pdo->prepare("SELECT * FROM students WHERE id = ?");
+
+    $stmt = $pdo->prepare(
+        "SELECT * FROM students WHERE id = ?"
+    );
+
     $stmt->execute([$id]);
+
     $record = $stmt->fetch() ?: [];
+
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $record = $_POST;
+
 }
+
 
 include 'header.php';
+
 ?>
 
 <link rel="stylesheet" href="assets/studentform.css">

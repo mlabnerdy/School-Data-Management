@@ -6,49 +6,78 @@ require_login();
 
 $pageTitle = 'Dashboard';
 
+// Get current user's role
+
 $userRole = $_SESSION['role'] ?? '';
 
-$isAdmin = ($userRole === 'Administrator');
-$isStaff = ($userRole === 'Staff');
-$isTeacher = ($userRole === 'Teacher');
+$isAdmin = strcasecmp($userRole, 'Administrator') === 0;
+$isStaff = strcasecmp($userRole, 'Staff') === 0;
+$isTeacher = strcasecmp($userRole, 'Teacher') === 0;
 
 
-/* Statistics */
+// Get dashboard statistics
 
 $students = $pdo
     ->query("SELECT COUNT(*) FROM students")
     ->fetchColumn();
 
-
 $teachers = $pdo
     ->query("SELECT COUNT(*) FROM teachers")
     ->fetchColumn();
 
-
 $staff = $pdo
     ->query("SELECT COUNT(*) FROM staff")
     ->fetchColumn();
-
 
 $docs = $pdo
     ->query("SELECT COUNT(*) FROM documents")
     ->fetchColumn();
 
 
-/* Recent Students */
+// Get recent students
 
 $recentStudents = $pdo->query("
     SELECT
-        lrn AS record_id,
-        full_name,
-        created_at
-    FROM students
-    ORDER BY created_at DESC
-    LIMIT 8
+        s.lrn AS record_id,
+        s.full_name,
+        s.created_at,
+        s.updated_at,
+
+        CASE
+            WHEN s.updated_at IS NOT NULL
+                 AND s.updated_at <> s.created_at
+            THEN s.updated_at
+            ELSE s.created_at
+        END AS activity_date,
+
+        COALESCE(
+            NULLIF(u_updated.full_name, ''),
+            NULLIF(u_updated.role, ''),
+            NULLIF(u_updated.username, ''),
+
+            NULLIF(u_created.full_name, ''),
+            NULLIF(u_created.role, ''),
+            NULLIF(u_created.username, ''),
+
+            'Unknown User'
+        ) AS action_by
+
+    FROM students s
+
+    LEFT JOIN users u_created
+        ON u_created.id = s.created_by
+
+    LEFT JOIN users u_updated
+        ON u_updated.id = s.updated_by
+
+    ORDER BY
+        COALESCE(s.updated_at, s.created_at) DESC
+
+    LIMIT 5
 ")->fetchAll();
 
 
-/* Recent Teachers */
+// Get recent teachers
 
 $recentTeachers = [];
 
@@ -56,16 +85,97 @@ if ($isAdmin || $isStaff) {
 
     $recentTeachers = $pdo->query("
         SELECT
-            employee_id AS record_id,
-            full_name,
-            created_at
-        FROM teachers
-        ORDER BY created_at DESC
-        LIMIT 8
+            t.employee_id AS record_id,
+            t.full_name,
+            t.created_at,
+            t.updated_at,
+
+            CASE
+                WHEN t.updated_at IS NOT NULL
+                     AND t.updated_at <> t.created_at
+                THEN t.updated_at
+                ELSE t.created_at
+            END AS activity_date,
+
+            COALESCE(
+                NULLIF(u_updated.full_name, ''),
+                NULLIF(u_updated.role, ''),
+                NULLIF(u_updated.username, ''),
+
+                NULLIF(u_created.full_name, ''),
+                NULLIF(u_created.role, ''),
+                NULLIF(u_created.username, ''),
+
+                'Unknown User'
+            ) AS action_by
+
+        FROM teachers t
+
+        LEFT JOIN users u_created
+            ON u_created.id = t.created_by
+
+        LEFT JOIN users u_updated
+            ON u_updated.id = t.updated_by
+
+        ORDER BY
+            COALESCE(t.updated_at, t.created_at) DESC
+
+        LIMIT 5
     ")->fetchAll();
 
 }
 
+
+// Get recent staff
+
+$recentStaff = [];
+
+if ($isAdmin) {
+
+    $recentStaff = $pdo->query("
+        SELECT
+            st.employee_id,
+            st.full_name,
+            st.created_at,
+            st.updated_at,
+
+            CASE
+                WHEN st.updated_at IS NOT NULL
+                     AND st.updated_at <> st.created_at
+                THEN st.updated_at
+                ELSE st.created_at
+            END AS activity_date,
+
+            COALESCE(
+                NULLIF(u_updated.full_name, ''),
+                NULLIF(u_updated.role, ''),
+                NULLIF(u_updated.username, ''),
+
+                NULLIF(u_created.full_name, ''),
+                NULLIF(u_created.role, ''),
+                NULLIF(u_created.username, ''),
+
+                'Unknown User'
+            ) AS action_by
+
+        FROM staff st
+
+        LEFT JOIN users u_created
+            ON u_created.id = st.created_by
+
+        LEFT JOIN users u_updated
+            ON u_updated.id = st.updated_by
+
+        ORDER BY
+            COALESCE(st.updated_at, st.created_at) DESC
+
+        LIMIT 5
+    ")->fetchAll();
+
+}
+
+
+// Load dashboard header
 
 include 'header.php';
 
@@ -77,7 +187,7 @@ include 'header.php';
 >
 
 
-<!-- Dashboard Header -->
+<!-- Dashboard welcome -->
 
 <div class="mb-4">
 
@@ -86,16 +196,14 @@ include 'header.php';
     </h2>
 
     <p class="text-muted mb-0">
-
         Welcome back,
         <?= e($_SESSION['full_name'] ?? 'User') ?>.
-
     </p>
 
 </div>
 
 
-<!-- Statistics -->
+<!-- Dashboard statistics -->
 
 <div class="dashboard-stats row g-4 mb-4">
 
@@ -264,14 +372,12 @@ include 'header.php';
 
     <?php endif; ?>
 
-
 </div>
 
 
-<!-- Recent Students -->
+<!-- Recent students -->
 
 <div class="dashboard-record-card mb-4">
-
 
     <div class="records-header">
 
@@ -286,7 +392,6 @@ include 'header.php';
             </p>
 
         </div>
-
 
         <div class="records-icon">
 
@@ -317,6 +422,10 @@ include 'header.php';
                         Date Added
                     </th>
 
+                    <th>
+                        Created / Updated By
+                    </th>
+
                 </tr>
 
             </thead>
@@ -327,6 +436,8 @@ include 'header.php';
                 <?php foreach ($recentStudents as $r): ?>
 
                     <tr>
+
+                        <!-- Student LRN -->
 
                         <td>
 
@@ -339,17 +450,21 @@ include 'header.php';
                         </td>
 
 
+                        <!-- Student name -->
+
                         <td>
 
                             <div class="record-name">
 
                                 <div class="record-avatar">
 
-                                    <?= strtoupper(
-                                        substr(
-                                            $r['full_name'],
-                                            0,
-                                            1
+                                    <?= e(
+                                        strtoupper(
+                                            substr(
+                                                $r['full_name'] ?? 'U',
+                                                0,
+                                                1
+                                            )
                                         )
                                     ) ?>
 
@@ -362,15 +477,47 @@ include 'header.php';
                         </td>
 
 
+                        <!-- Latest activity -->
+
                         <td>
 
                             <span class="record-date">
 
                                 <i class="bi bi-calendar3"></i>
 
-                                <?= e($r['created_at']) ?>
+                                <?= e($r['activity_date']) ?>
 
                             </span>
+
+                        </td>
+
+
+                        <!-- User who created or updated -->
+
+                        <td>
+
+                            <div class="record-name">
+
+                                <div class="record-avatar">
+
+                                    <?= e(
+                                        strtoupper(
+                                            substr(
+                                                $r['action_by'] ?? 'U',
+                                                0,
+                                                1
+                                            )
+                                        )
+                                    ) ?>
+
+                                </div>
+
+                                <?= e(
+                                    $r['action_by']
+                                    ?? 'Unknown User'
+                                ) ?>
+
+                            </div>
 
                         </td>
 
@@ -384,7 +531,7 @@ include 'header.php';
                     <tr>
 
                         <td
-                            colspan="3"
+                            colspan="4"
                             class="text-center text-muted py-4"
                         >
 
@@ -405,11 +552,11 @@ include 'header.php';
 </div>
 
 
-<!-- Recent Teachers -->
+<!-- Recent teachers -->
 
 <?php if ($isAdmin || $isStaff): ?>
 
-    <div class="dashboard-record-card">
+    <div class="dashboard-record-card mb-4">
 
         <div class="records-header">
 
@@ -424,7 +571,6 @@ include 'header.php';
                 </p>
 
             </div>
-
 
             <div class="records-icon">
 
@@ -455,6 +601,10 @@ include 'header.php';
                             Date Added
                         </th>
 
+                        <th>
+                            Created / Updated By
+                        </th>
+
                     </tr>
 
                 </thead>
@@ -465,6 +615,8 @@ include 'header.php';
                     <?php foreach ($recentTeachers as $r): ?>
 
                         <tr>
+
+                            <!-- Teacher ID -->
 
                             <td>
 
@@ -477,17 +629,21 @@ include 'header.php';
                             </td>
 
 
+                            <!-- Teacher name -->
+
                             <td>
 
                                 <div class="record-name">
 
                                     <div class="record-avatar">
 
-                                        <?= strtoupper(
-                                            substr(
-                                                $r['full_name'],
-                                                0,
-                                                1
+                                        <?= e(
+                                            strtoupper(
+                                                substr(
+                                                    $r['full_name'] ?? 'U',
+                                                    0,
+                                                    1
+                                                )
                                             )
                                         ) ?>
 
@@ -500,15 +656,47 @@ include 'header.php';
                             </td>
 
 
+                            <!-- Latest activity -->
+
                             <td>
 
                                 <span class="record-date">
 
                                     <i class="bi bi-calendar3"></i>
 
-                                    <?= e($r['created_at']) ?>
+                                    <?= e($r['activity_date']) ?>
 
                                 </span>
+
+                            </td>
+
+
+                            <!-- User who created or updated -->
+
+                            <td>
+
+                                <div class="record-name">
+
+                                    <div class="record-avatar">
+
+                                        <?= e(
+                                            strtoupper(
+                                                substr(
+                                                    $r['action_by'] ?? 'U',
+                                                    0,
+                                                    1
+                                                )
+                                            )
+                                        ) ?>
+
+                                    </div>
+
+                                    <?= e(
+                                        $r['action_by']
+                                        ?? 'Unknown User'
+                                    ) ?>
+
+                                </div>
 
                             </td>
 
@@ -522,11 +710,191 @@ include 'header.php';
                         <tr>
 
                             <td
-                                colspan="3"
+                                colspan="4"
                                 class="text-center text-muted py-4"
                             >
 
                                 No teacher records yet.
+
+                            </td>
+
+                        </tr>
+
+                    <?php endif; ?>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+<?php endif; ?>
+
+
+<!-- Recent staff -->
+
+<?php if ($isAdmin): ?>
+
+    <div class="dashboard-record-card">
+
+        <div class="records-header">
+
+            <div>
+
+                <h5 class="records-title">
+                    Recent Staff
+                </h5>
+
+                <p class="records-subtitle">
+                    Latest staff records
+                </p>
+
+            </div>
+
+            <div class="records-icon">
+
+                <i class="bi bi-people-fill"></i>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table dashboard-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Employee ID
+                        </th>
+
+                        <th>
+                            Name
+                        </th>
+
+                        <th>
+                            Date Added
+                        </th>
+
+                        <th>
+                            Created / Updated By
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <?php foreach ($recentStaff as $r): ?>
+
+                        <tr>
+
+                            <!-- Staff employee ID -->
+                            <td>
+
+                                <span class="record-id">
+
+                                    <?= e($r['employee_id']) ?>
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- Staff name -->
+
+                            <td>
+
+                                <div class="record-name">
+
+                                    <div class="record-avatar">
+
+                                        <?= e(
+                                            strtoupper(
+                                                substr(
+                                                    $r['full_name'] ?? 'U',
+                                                    0,
+                                                    1
+                                                )
+                                            )
+                                        ) ?>
+
+                                    </div>
+
+                                    <?= e($r['full_name']) ?>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- Latest activity -->
+
+                            <td>
+
+                                <span class="record-date">
+
+                                    <i class="bi bi-calendar3"></i>
+
+                                    <?= e($r['activity_date']) ?>
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- User who created or updated -->
+
+                            <td>
+
+                                <div class="record-name">
+
+                                    <div class="record-avatar">
+
+                                        <?= e(
+                                            strtoupper(
+                                                substr(
+                                                    $r['action_by'] ?? 'U',
+                                                    0,
+                                                    1
+                                                )
+                                            )
+                                        ) ?>
+
+                                    </div>
+
+                                    <?= e(
+                                        $r['action_by']
+                                        ?? 'Unknown User'
+                                    ) ?>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    <?php endforeach; ?>
+
+
+                    <?php if (!$recentStaff): ?>
+
+                        <tr>
+
+                            <td
+                                colspan="4"
+                                class="text-center text-muted py-4"
+                            >
+
+                                No staff records yet.
 
                             </td>
 

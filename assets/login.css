@@ -1,256 +1,457 @@
 /* =========================================================
-   SCHOOL DATA MANAGEMENT SYSTEM
    LOGIN PAGE
-   Blue & White Theme
    ========================================================= */
 
-
-/* ---------------------------------------------------------
-   PAGE
-   --------------------------------------------------------- */
-
 .login-page {
-    min-height: 100vh;
     margin: 0;
+    min-height: 100vh;
+    background: #f4f6f9;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+
+/* =========================================================
+   MAIN WRAPPER
+   ========================================================= */
+
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+}
+
+
+/* =========================================================
+   LEFT - SCHOOL SECTION
+   ========================================================= */
+
+.school-section {
+    position: relative;
+    width: 55%;
+    min-height: 100vh;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(13, 71, 161, 0.96),
+            rgba(25, 118, 210, 0.90)
+        );
+
+    color: #ffffff;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    background:
-        linear-gradient(
-            135deg,
-            #eef5ff 0%,
-            #ffffff 50%,
-            #e8f1ff 100%
-        );
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-}
-
-
-/* ---------------------------------------------------------
-   CONTAINER
-   --------------------------------------------------------- */
-
-.login-container {
-    width: 100%;
-    max-width: 460px;
-
-    padding: 24px;
-}
-
-
-/* ---------------------------------------------------------
-   LOGIN CARD
-   --------------------------------------------------------- */
-
-.login-card {
-    background: #ffffff;
-
-    border: 1px solid #e1eaf5;
-
-    border-radius: 20px;
-
-    padding: 40px;
-
-    box-shadow:
-        0 20px 50px rgba(24, 76, 140, 0.12);
-
-    animation: loginFadeIn 0.4s ease;
-}
-
-
-/* ---------------------------------------------------------
-   LOGIN LOGO
-   --------------------------------------------------------- */
-
-.login-logo {
-    width: 90px !important;
-    height: 90px !important;
-
-    margin: 0 auto 20px !important;
-
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-
-    background: transparent;
-
-    border: none;
-
     overflow: hidden;
 }
 
-/* Logo Image */
 
-.login-logo img {
-    display: block !important;
+/* Decorative background */
 
-    width: 90px !important;
-    height: 90px !important;
+.school-section::before {
+    content: "";
+    position: absolute;
 
-    max-width: 90px !important;
-    max-height: 90px !important;
+    width: 500px;
+    height: 500px;
 
-    object-fit: contain !important;
+    border-radius: 50%;
 
-    margin: 0 !important;
-    padding: 0 !important;
+    background: rgba(255, 255, 255, 0.08);
+
+    top: -180px;
+    left: -150px;
 }
 
 
-/* ---------------------------------------------------------
-   TITLE
-   --------------------------------------------------------- */
+.school-section::after {
+    content: "";
+    position: absolute;
+
+    width: 600px;
+    height: 600px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.06);
+
+    bottom: -300px;
+    right: -200px;
+}
+
+
+/* Overlay */
+
+.school-overlay {
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.08),
+            transparent
+        );
+}
+
+
+/* School content */
+
+.school-content {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+    max-width: 650px;
+
+    padding: 60px;
+}
+
+
+/* =========================================================
+   SCHOOL LOGO - LEFT SIDE
+   ========================================================= */
+
+.school-logo {
+    width: 100px;
+    height: 100px;
+
+    margin-bottom: 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.95);
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.18);
+}
+
+
+.school-logo img {
+    width: 78px;
+    height: 78px;
+
+    object-fit: contain;
+}
+
+
+/* =========================================================
+   SCHOOL NAME
+   ========================================================= */
+
+.school-name {
+    margin: 0;
+
+    font-size: 42px;
+    font-weight: 800;
+
+    line-height: 1.15;
+
+    letter-spacing: -1px;
+}
+
+
+.school-tagline {
+    margin-top: 12px;
+    margin-bottom: 35px;
+
+    font-size: 18px;
+
+    color: rgba(255, 255, 255, 0.88);
+}
+
+
+/* =========================================================
+   ABOUT SCHOOL
+   ========================================================= */
+
+.school-about {
+    max-width: 590px;
+}
+
+
+.school-about h2 {
+    margin-bottom: 15px;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+
+.school-about p {
+    margin-bottom: 12px;
+
+    font-size: 15px;
+    line-height: 1.7;
+
+    color: rgba(255, 255, 255, 0.88);
+}
+
+
+/* =========================================================
+   MISSION / VISION
+   ========================================================= */
+
+.school-highlights {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+
+    margin-top: 30px;
+}
+
+
+.school-highlight {
+    display: flex;
+
+    gap: 14px;
+
+    padding: 18px;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    border-radius: 14px;
+
+    backdrop-filter: blur(5px);
+}
+
+
+.highlight-icon {
+    flex-shrink: 0;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.14);
+
+    font-size: 19px;
+}
+
+
+.school-highlight h3 {
+    margin: 0 0 5px;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
+.school-highlight p {
+    margin: 0;
+
+    font-size: 13px;
+    line-height: 1.5;
+
+    color: rgba(255, 255, 255, 0.82);
+}
+
+
+/* =========================================================
+   SCHOOL FOOTER
+   ========================================================= */
+
+.school-footer {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 22px;
+
+    margin-top: 35px;
+
+    font-size: 13px;
+
+    color: rgba(255, 255, 255, 0.75);
+}
+
+
+/* =========================================================
+   RIGHT - LOGIN SECTION
+   ========================================================= */
+
+.login-section {
+    width: 45%;
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+
+    background: #ffffff;
+}
+
+
+/* =========================================================
+   LOGIN CARD
+   ========================================================= */
+
+.login-card {
+    width: 100%;
+    max-width: 430px;
+
+    padding: 20px;
+}
+
+
+/* =========================================================
+   LOGIN LOGO - RIGHT SIDE
+   ========================================================= */
+
+.login-logo {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 28px;
+}
+
+
+.login-logo img {
+    width: 130px;
+    height: 130px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* =========================================================
+   LOGIN HEADER
+   ========================================================= */
+
+.login-header {
+    text-align: center;
+
+    margin-bottom: 30px;
+}
+
 
 .login-title {
-    color: #163a63;
+    margin: 0;
 
-    font-size: 25px;
-    font-weight: 700;
+    font-size: 30px;
+    font-weight: 800;
 
-    margin-bottom: 6px;
+    color: #212529;
 }
 
 
 .login-subtitle {
-    color: #718096;
+    margin-top: 8px;
+    margin-bottom: 0;
 
     font-size: 14px;
 
-    margin-bottom: 0;
+    color: #6c757d;
 }
 
 
-/* ---------------------------------------------------------
-   FORM LABEL
-   --------------------------------------------------------- */
+/* =========================================================
+   FORM
+   ========================================================= */
 
-.login-card .form-label {
-    color: #34495e;
-
-    font-size: 14px;
+.form-label {
+    margin-bottom: 8px;
 
     font-weight: 600;
 
-    margin-bottom: 7px;
+    color: #343a40;
 }
 
 
-/* ---------------------------------------------------------
-   INPUT
-   --------------------------------------------------------- */
-
 .login-input {
-    border-radius: 10px;
-
-    overflow: hidden;
-
-    border: 1px solid #d8e2ee;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    height: 50px;
 }
 
 
 .login-input .input-group-text {
-    background: #f5f9ff;
+    width: 48px;
 
-    border: none;
+    justify-content: center;
 
-    color: #0d6efd;
+    border-color: #dee2e6;
 
-    padding-left: 15px;
-    padding-right: 12px;
+    background: #f8f9fa;
+
+    color: #6c757d;
 }
 
 
 .login-input .form-control {
-    border: none;
+    height: 50px;
 
-    height: 48px;
-
-    font-size: 14px;
+    border-color: #dee2e6;
 
     box-shadow: none;
 }
 
 
-.login-input .form-control::placeholder {
-    color: #a0aec0;
-}
-
-
-/* Input focus */
-
-.login-input:focus-within {
-    border-color: #0d6efd;
+.login-input .form-control:focus {
+    border-color: #1976d2;
 
     box-shadow:
-        0 0 0 3px rgba(13, 110, 253, 0.10);
+        0 0 0 0.2rem rgba(25, 118, 210, 0.12);
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    PASSWORD TOGGLE
-   --------------------------------------------------------- */
+   ========================================================= */
 
 .password-toggle {
+    width: 50px;
+
+    border: 1px solid #dee2e6;
+
+    border-left: 0;
+
     background: #ffffff;
 
-    border: none;
-
-    color: #718096;
-
-    padding: 0 15px;
-
-    transition: color 0.2s ease;
+    color: #6c757d;
 }
 
 
 .password-toggle:hover {
-    color: #0d6efd;
+    color: #1976d2;
 
-    background: #ffffff;
+    background: #f8f9fa;
 }
 
 
-.password-toggle:focus {
-    box-shadow: none;
-
-    color: #0d6efd;
-}
-
-
-/* ---------------------------------------------------------
+/* =========================================================
    LOGIN BUTTON
-   --------------------------------------------------------- */
+   ========================================================= */
 
 .login-btn {
     height: 50px;
 
     border: none;
 
-    border-radius: 10px;
+    border-radius: 8px;
 
-    background: #0d6efd;
+    background: #1976d2;
 
     color: #ffffff;
 
-    font-size: 15px;
-
     font-weight: 600;
-
-    box-shadow:
-        0 6px 15px rgba(13, 110, 253, 0.20);
 
     transition:
         background 0.2s ease,
@@ -260,14 +461,14 @@
 
 
 .login-btn:hover {
-    background: #0b5ed7;
+    background: #1565c0;
 
     color: #ffffff;
 
     transform: translateY(-1px);
 
     box-shadow:
-        0 8px 18px rgba(13, 110, 253, 0.25);
+        0 6px 18px rgba(25, 118, 210, 0.25);
 }
 
 
@@ -276,139 +477,242 @@
 }
 
 
-/* ---------------------------------------------------------
-   ERROR ALERT
-   --------------------------------------------------------- */
+/* =========================================================
+   ALERT
+   ========================================================= */
 
 .login-alert {
-    border-radius: 10px;
+    border-radius: 8px;
 
     font-size: 14px;
-
-    padding: 12px 14px;
-
-    margin-bottom: 20px;
 }
 
 
-/* ---------------------------------------------------------
-   DEFAULT ACCOUNT INFO
-   --------------------------------------------------------- */
+/* =========================================================
+   DEFAULT ACCOUNT
+   ========================================================= */
 
 .login-help {
-    margin-top: 20px;
+    margin-top: 22px;
 
-    padding: 12px 14px;
+    padding: 12px 15px;
 
-    background: #f5f9ff;
+    border-radius: 8px;
 
-    border: 1px solid #e0ebf8;
+    background: #f8f9fa;
 
-    border-radius: 10px;
+    color: #6c757d;
 
-    color: #64748b;
-
-    font-size: 12px;
+    font-size: 13px;
 
     text-align: center;
-}
-
-
-.login-help i {
-    color: #0d6efd;
 }
 
 
 .login-help strong {
-    color: #365f8f;
+    color: #343a40;
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    FOOTER
-   --------------------------------------------------------- */
+   ========================================================= */
 
 .login-footer {
+    margin-top: 30px;
+
     text-align: center;
 
-    margin-top: 24px;
-
-    color: #94a3b8;
-
     font-size: 12px;
+
+    color: #adb5bd;
 }
 
 
-/* ---------------------------------------------------------
-   ANIMATION
-   --------------------------------------------------------- */
-
-@keyframes loginFadeIn {
-
-    from {
-        opacity: 0;
-
-        transform:
-            translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-
-        transform:
-            translateY(0);
-    }
-
-}
-
-
-/* ---------------------------------------------------------
+/* =========================================================
    TABLET
-   --------------------------------------------------------- */
+   ========================================================= */
 
-@media (max-width: 576px) {
+@media (max-width: 1100px) {
 
-    .login-container {
-        padding: 16px;
+    .school-section {
+        width: 50%;
     }
 
-    .login-card {
-        padding: 30px 24px;
-
-        border-radius: 16px;
+    .login-section {
+        width: 50%;
     }
 
-    .login-logo {
-        width: 64px;
-        height: 64px;
+    .school-content {
+        padding: 40px;
+    }
 
+    .school-name {
+        font-size: 34px;
+    }
+
+    .school-highlights {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .login-wrapper {
+        flex-direction: column;
+    }
+
+
+    /* Left school section */
+
+    .school-section {
+        width: 100%;
+        min-height: auto;
+    }
+
+
+    .school-content {
+        padding: 45px 25px;
+    }
+
+
+    .school-logo {
+        width: 80px;
+        height: 80px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .school-logo img {
+        width: 62px;
+        height: 62px;
+    }
+
+
+    .school-name {
         font-size: 30px;
     }
 
-    .login-title {
-        font-size: 22px;
+
+    .school-tagline {
+        font-size: 15px;
+
+        margin-bottom: 25px;
     }
 
-}
+
+    .school-about p {
+        font-size: 14px;
+    }
 
 
-/* ---------------------------------------------------------
-   SMALL MOBILE
-   --------------------------------------------------------- */
+    .school-highlights {
+        grid-template-columns: 1fr;
 
-@media (max-width: 360px) {
+        margin-top: 25px;
+    }
+
+
+    .school-footer {
+        margin-top: 25px;
+
+        gap: 10px;
+
+        flex-direction: column;
+    }
+
+
+    /* Right login section */
+
+    .login-section {
+        width: 100%;
+
+        min-height: auto;
+
+        padding: 45px 20px;
+    }
+
 
     .login-card {
-        padding: 25px 18px;
+        max-width: 450px;
+
+        padding: 0;
     }
+
+
+    /* Keep login logo visible on mobile */
+
+    .login-logo {
+        display: flex;
+
+        margin-bottom: 22px;
+    }
+
+
+    .login-logo img {
+        width: 110px;
+        height: 110px;
+    }
+
 
     .login-title {
-        font-size: 20px;
-    }
-
-    .login-subtitle {
-        font-size: 13px;
+        font-size: 27px;
     }
 
 }
 
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .school-content {
+        padding: 35px 20px;
+    }
+
+
+    .school-name {
+        font-size: 27px;
+    }
+
+
+    .school-highlights {
+        gap: 12px;
+    }
+
+
+    .school-highlight {
+        padding: 15px;
+    }
+
+
+    .login-section {
+        padding: 35px 18px;
+    }
+
+
+    .login-logo {
+        margin-bottom: 20px;
+    }
+
+
+    .login-logo img {
+        width: 100px;
+        height: 100px;
+    }
+
+
+    .login-title {
+        font-size: 25px;
+    }
+
+}

@@ -333,12 +333,10 @@ include 'header.php';
                                 <!-- Delete -->
                                 <a
                                     href="delete_staff.php?id=<?= (int)$r['id'] ?>"
-                                    class="btn btn-sm btn-outline-danger"
-                                    title="Delete Staff"
-                                    onclick="return confirm('Are you sure you want to delete this staff record?');"
+                                    class="btn btn-sm btn-danger"
                                 >
-                                    <i class="bi bi-trash"></i>
-                                    <span>Delete</span>
+                                    <i class="bi bi-trash me-1"></i>
+                                    Delete
                                 </a>
 
                             </div>
