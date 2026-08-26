@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- School Name -->
 
             <h1 class="school-name">
-                Santa Elena Elementary School
+                Sta. Elena Integrated School
             </h1>
 
 
@@ -222,12 +222,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <span>
                     <i class="bi bi-geo-alt me-1"></i>
-                    School Address
+                    Purok 7, Barangay Sta. Elena (Poblacion), Sta. Elena, Camarines Norte
                 </span>
 
                 <span>
                     <i class="bi bi-telephone me-1"></i>
-                    School Contact Number
+                    0915-818-2455
                 </span>
 
             </div>
