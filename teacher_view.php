@@ -340,7 +340,7 @@ include __DIR__ . '/header.php';
             </h5>
 
             <p class="text-muted small mb-0">
-                Employment and appointment details.
+                Employment, appointment, and government identification details.
             </p>
         </div>
 
@@ -393,6 +393,66 @@ include __DIR__ . '/header.php';
 
             <div class="teacher-info-value">
                 <?= teacher_value($teacher['tin_no']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- GSIS No. -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-credit-card-2-front"></i>
+                GSIS No.
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['gsis_no']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- PhilHealth No. -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-heart-pulse"></i>
+                PhilHealth No.
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['philhealth_no']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Salary Grade -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-bar-chart"></i>
+                Salary Grade
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['salary_grade']) ?>
+            </div>
+
+        </div>
+
+
+        <!-- Step -->
+        <div class="teacher-info-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-list-ol"></i>
+                Step
+            </div>
+
+            <div class="teacher-info-value">
+                <?= teacher_value($teacher['step']) ?>
             </div>
 
         </div>
@@ -501,6 +561,55 @@ include __DIR__ . '/header.php';
                 <?=
                     !empty($teacher['specialization_prc_eligibility'])
                         ? nl2br(e($teacher['specialization_prc_eligibility']))
+                        : '—'
+                ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     TRAINING & ACCOMPLISHMENTS
+========================================================= -->
+
+<div class="teacher-info-card mt-4">
+
+    <div class="teacher-card-header">
+
+        <div>
+            <h5 class="fw-bold mb-1">
+                Training &amp; Accomplishments
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Training, seminars, certifications, and other accomplishments.
+            </p>
+        </div>
+
+        <div class="teacher-card-icon">
+            <i class="bi bi-trophy"></i>
+        </div>
+
+    </div>
+
+
+    <div class="teacher-additional-info">
+
+        <div class="teacher-additional-item">
+
+            <div class="teacher-info-label">
+                <i class="bi bi-award"></i>
+                Training and Accomplishments
+            </div>
+
+            <div class="teacher-info-value">
+                <?=
+                    !empty($teacher['training_accomplishments'])
+                        ? nl2br(e($teacher['training_accomplishments']))
                         : '—'
                 ?>
             </div>

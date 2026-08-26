@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 18, 2026 at 10:31 AM
+-- Generation Time: Aug 26, 2026 at 10:00 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,6 +40,59 @@ CREATE TABLE `documents` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `information`
+--
+
+CREATE TABLE `information` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `school_year` varchar(20) DEFAULT NULL,
+  `date_posted` date DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'Published',
+  `file_name` varchar(255) DEFAULT NULL,
+  `file_path` varchar(500) DEFAULT NULL,
+  `file_type` varchar(100) DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `information`
+--
+
+INSERT INTO `information` (`id`, `title`, `category`, `description`, `school_year`, `date_posted`, `status`, `file_name`, `file_path`, `file_type`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, 'Test', 'Inventory', 'Test Test', '2027-2028', '2026-08-26', 'Published', 'Personal Data Sheet (PDS) 2025 - CS Form 212 Revised 2025.pdf', 'uploads/information/info_6a8e96978da089.49788080_Personal_Data_Sheet__PDS__2025_-_CS_Form_212_Revised_2025.pdf', 'application/pdf', 3, 3, '2026-08-26 07:32:39', '2026-08-26 07:33:50');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `school_years`
+--
+
+CREATE TABLE `school_years` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `school_year` varchar(9) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `school_years`
+--
+
+INSERT INTO `school_years` (`id`, `school_year`, `is_active`, `created_at`) VALUES
+(1, '2024-2025', 1, '2026-08-26 06:06:10'),
+(2, '2025-2026', 1, '2026-08-26 06:06:10'),
+(3, '2026-2027', 1, '2026-08-26 06:06:10'),
+(4, '2027-2028', 1, '2026-08-26 06:14:19');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `staff`
 --
 
@@ -70,15 +123,20 @@ CREATE TABLE `staff` (
   `tin_no` varchar(30) DEFAULT NULL,
   `birthdate` date DEFAULT NULL,
   `specialization` varchar(255) DEFAULT NULL,
-  `prc_eligibility` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `prc_eligibility` varchar(255) DEFAULT NULL,
+  `gsis_no` varchar(50) DEFAULT NULL,
+  `philhealth_no` varchar(50) DEFAULT NULL,
+  `salary_grade` tinyint(3) UNSIGNED DEFAULT NULL,
+  `step` tinyint(3) UNSIGNED DEFAULT NULL,
+  `training_accomplishments` text DEFAULT NULL
+) ;
 
 --
 -- Dumping data for table `staff`
 --
 
-INSERT INTO `staff` (`id`, `user_id`, `created_by`, `updated_by`, `employee_id`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `email`, `position_department`, `other_info`, `created_at`, `updated_at`, `plantilla_no`, `first_day_of_service`, `current_latest_appointment`, `deped_email`, `personal_email`, `degree_finished`, `specialization_prc_eligibility`, `tin_no`, `birthdate`, `specialization`, `prc_eligibility`) VALUES
-(1, 3, NULL, 3, '55-412341', 'uploads/staff/f5cecdb776a993b3d6a68bce.webp', 'Pony Plum', '1989-05-10', 'Male', 'P5 Brgy. Dulo Test 2 test test testteststtest', '09091005012', '', 'Registrar', '', '2026-08-08 06:40:37', '2026-08-18 08:09:19', '', NULL, NULL, '', '', '', '', '', NULL, NULL, NULL);
+INSERT INTO `staff` (`id`, `user_id`, `created_by`, `updated_by`, `employee_id`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `email`, `position_department`, `other_info`, `created_at`, `updated_at`, `plantilla_no`, `first_day_of_service`, `current_latest_appointment`, `deped_email`, `personal_email`, `degree_finished`, `specialization_prc_eligibility`, `tin_no`, `birthdate`, `specialization`, `prc_eligibility`, `gsis_no`, `philhealth_no`, `salary_grade`, `step`, `training_accomplishments`) VALUES
+(1, 3, NULL, 3, '55-412341', 'uploads/staff/f5cecdb776a993b3d6a68bce.webp', 'Pony Plum', '1989-05-10', 'Male', 'P5 Brgy. Dulo Test 2 test test testteststtest', '09091005012', '', 'Registrar', '', '2026-08-08 06:40:37', '2026-08-18 08:09:19', '', NULL, NULL, '', '', '', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -114,7 +172,7 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `lrn`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `parent_guardian`, `grade_section`, `other_info`, `created_at`, `updated_at`, `school_id`, `school_year`, `emergency_name`, `emergency_address`, `emergency_contact`, `created_by`, `updated_by`) VALUES
-(2, '500223090129', 'uploads/student/9c8376caecfe8279f2b1de75.jpg', 'Juan Dela Cruz', '2018-08-14', 'Male', 'P-5 Brgy. V Doon St. Bacoor City', '09325010012', 'Maria Dela Cruz', 'Grade I - Wonderful', '', '2026-08-14 06:36:57', '2026-08-14 06:36:57', '500634', '2026-2027', 'Maria Dela Cruz', 'P-5 Brgy. V Doon St. Bacoor City', '09500093912', NULL, NULL);
+(2, '500223090129', 'uploads/student/9c8376caecfe8279f2b1de75.jpg', 'Juan Dela Cruz', '2018-08-14', 'Male', 'P-5 Brgy. V Doon St. Bacoor City', '09325010012', 'Maria Dela Cruz', 'Grade I - Wonderful', '', '2026-08-14 06:36:57', '2026-08-26 06:14:45', '500634', '2027-2028', 'Maria Dela Cruz', 'P-5 Brgy. V Doon St. Bacoor City', '09500093912', NULL, 3);
 
 -- --------------------------------------------------------
 
@@ -149,16 +207,51 @@ CREATE TABLE `teachers` (
   `specialization` varchar(255) DEFAULT NULL,
   `prc_eligibility` varchar(255) DEFAULT NULL,
   `created_by` int(11) DEFAULT NULL,
-  `updated_by` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_by` int(11) DEFAULT NULL,
+  `gsis_no` varchar(50) DEFAULT NULL,
+  `philhealth_no` varchar(50) DEFAULT NULL,
+  `salary_grade` tinyint(3) UNSIGNED DEFAULT NULL,
+  `step` tinyint(3) UNSIGNED DEFAULT NULL,
+  `training_accomplishments` text DEFAULT NULL
+) ;
 
 --
 -- Dumping data for table `teachers`
 --
 
-INSERT INTO `teachers` (`id`, `user_id`, `employee_id`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `email`, `position_department`, `other_info`, `created_at`, `updated_at`, `plantilla_no`, `first_day_of_service`, `current_latest_appointment`, `deped_email`, `personal_email`, `degree_finished`, `specialization_prc_eligibility`, `tin_no`, `birthdate`, `specialization`, `prc_eligibility`, `created_by`, `updated_by`) VALUES
-(4, 5, '55-412322', NULL, 'Maria Dela Cruz', NULL, '', 'Test test test', '09325010012', NULL, '', '', '2026-08-14 08:35:21', '2026-08-18 07:46:01', '3212331', '2026-08-09', '2026-08-04', 'sample@deped.gov.ph', 'sampleemail@email.com', 'Bachelor of Secondary Education', '2132158921839', '2348237482374', '2026-08-09', NULL, NULL, NULL, 3),
-(6, NULL, '5623626', NULL, 'Jane Doe', '2026-08-03', 'Female', 'Purok test', '09667183489', NULL, 'Teacher II', '', '2026-08-18 07:14:54', '2026-08-18 08:03:58', '84566356', '2026-08-03', '2026-08-11', 'sample2@deped.gov.ph', 'sample2email@email.com', 'Bachelor of Secondary Education', 'Mathematics', '63466345', NULL, NULL, NULL, NULL, 3);
+INSERT INTO `teachers` (`id`, `user_id`, `employee_id`, `photo`, `full_name`, `date_of_birth`, `gender`, `address`, `contact_number`, `email`, `position_department`, `other_info`, `created_at`, `updated_at`, `plantilla_no`, `first_day_of_service`, `current_latest_appointment`, `deped_email`, `personal_email`, `degree_finished`, `specialization_prc_eligibility`, `tin_no`, `birthdate`, `specialization`, `prc_eligibility`, `created_by`, `updated_by`, `gsis_no`, `philhealth_no`, `salary_grade`, `step`, `training_accomplishments`) VALUES
+(4, 5, '55-412322', NULL, 'Maria Dela Cruz', NULL, '', 'Test test test', '09325010012', NULL, '', '', '2026-08-14 08:35:21', '2026-08-18 07:46:01', '3212331', '2026-08-09', '2026-08-04', 'sample@deped.gov.ph', 'sampleemail@email.com', 'Bachelor of Secondary Education', '2132158921839', '2348237482374', '2026-08-09', NULL, NULL, NULL, 3, NULL, NULL, NULL, NULL, NULL),
+(6, NULL, '5623626', NULL, 'Jane Doe', '2026-08-03', 'Female', 'Purok test', '09667183489', NULL, 'Teacher II', '', '2026-08-18 07:14:54', '2026-08-18 08:03:58', '84566356', '2026-08-03', '2026-08-11', 'sample2@deped.gov.ph', 'sample2email@email.com', 'Bachelor of Secondary Education', 'Mathematics', '63466345', NULL, NULL, NULL, NULL, 3, NULL, NULL, NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `transparency`
+--
+
+CREATE TABLE `transparency` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `school_year` varchar(20) DEFAULT NULL,
+  `date_posted` date DEFAULT NULL,
+  `file_name` varchar(255) DEFAULT NULL,
+  `file_path` varchar(500) DEFAULT NULL,
+  `file_type` varchar(100) DEFAULT NULL,
+  `status` enum('Published','Draft','Archived') NOT NULL DEFAULT 'Published',
+  `created_by` int(10) UNSIGNED DEFAULT NULL,
+  `updated_by` int(10) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `transparency`
+--
+
+INSERT INTO `transparency` (`id`, `title`, `category`, `description`, `school_year`, `date_posted`, `file_name`, `file_path`, `file_type`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(2, 'Test', NULL, 'Test', NULL, NULL, 'PARQPlus2025ImageFile.pdf', 'uploads/transparency/dd5b6adf05f2e730830ce248.pdf', 'application/pdf', 'Published', 3, 3, '2026-08-26 07:57:14', '2026-08-26 07:58:57');
 
 -- --------------------------------------------------------
 
@@ -196,6 +289,20 @@ ALTER TABLE `documents`
   ADD KEY `idx_owner` (`owner_type`,`owner_id`);
 
 --
+-- Indexes for table `information`
+--
+ALTER TABLE `information`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `school_years`
+--
+ALTER TABLE `school_years`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_school_year` (`school_year`),
+  ADD KEY `idx_school_year_active` (`is_active`);
+
+--
 -- Indexes for table `staff`
 --
 ALTER TABLE `staff`
@@ -207,7 +314,8 @@ ALTER TABLE `staff`
 -- Indexes for table `students`
 --
 ALTER TABLE `students`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_students_school_year` (`school_year`);
 
 --
 -- Indexes for table `teachers`
@@ -216,6 +324,17 @@ ALTER TABLE `teachers`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `employee_id` (`employee_id`),
   ADD KEY `fk_teachers_user` (`user_id`);
+
+--
+-- Indexes for table `transparency`
+--
+ALTER TABLE `transparency`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_transparency_category` (`category`),
+  ADD KEY `idx_transparency_school_year` (`school_year`),
+  ADD KEY `idx_transparency_status` (`status`),
+  ADD KEY `idx_transparency_created_by` (`created_by`),
+  ADD KEY `idx_transparency_updated_by` (`updated_by`);
 
 --
 -- Indexes for table `users`
@@ -235,10 +354,22 @@ ALTER TABLE `documents`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT for table `information`
+--
+ALTER TABLE `information`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `school_years`
+--
+ALTER TABLE `school_years`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT for table `staff`
 --
 ALTER TABLE `staff`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `students`
@@ -250,7 +381,13 @@ ALTER TABLE `students`
 -- AUTO_INCREMENT for table `teachers`
 --
 ALTER TABLE `teachers`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `transparency`
+--
+ALTER TABLE `transparency`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`

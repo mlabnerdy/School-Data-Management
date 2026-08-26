@@ -1,0 +1,319 @@
+/* ==========================================================
+   TRANSPARENCY FORM
+========================================================== */
+
+.transparency-form-page {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+}
+
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.transparency-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.transparency-form-label {
+    color: #0d6efd;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+}
+
+.transparency-title {
+    margin-bottom: 5px;
+    color: #212529;
+    font-weight: 700;
+}
+
+.transparency-subtitle {
+    margin: 0;
+    color: #6c757d;
+}
+
+
+/* ==========================================================
+   ALERT
+========================================================== */
+
+.transparency-form-alert {
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+
+/* ==========================================================
+   CARD
+========================================================== */
+
+.transparency-form-card {
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.04);
+}
+
+.transparency-form-card-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #edf0f2;
+    background: #fff;
+}
+
+.transparency-form-card-header h5 {
+    margin: 0 0 3px;
+    color: #212529;
+    font-weight: 700;
+}
+
+.transparency-form-card-header p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.82rem;
+}
+
+.transparency-section-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: #f1f6ff;
+    color: #0d6efd;
+    font-size: 19px;
+}
+
+.transparency-form-card-body {
+    padding: 22px;
+}
+
+
+/* ==========================================================
+   FORM ELEMENTS
+========================================================== */
+
+.transparency-form-page .form-label {
+    margin-bottom: 7px;
+    color: #343a40;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.transparency-form-page .form-control,
+.transparency-form-page .form-select {
+    min-height: 43px;
+    border-color: #dfe3e7;
+    border-radius: 10px;
+}
+
+.transparency-form-page textarea.form-control {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.transparency-form-page .form-control:focus,
+.transparency-form-page .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.12);
+}
+
+.transparency-form-page .form-text {
+    margin-top: 6px;
+    color: #7a8288;
+    font-size: 0.77rem;
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   CURRENT FILE
+========================================================== */
+
+.transparency-current-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid #e5e9ed;
+    border-radius: 12px;
+    background: #f8f9fa;
+}
+
+.transparency-file-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #fff;
+    color: #0d6efd;
+    font-size: 19px;
+}
+
+.transparency-file-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.transparency-file-info .fw-semibold {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ==========================================================
+   SAVE CARD
+========================================================== */
+
+.transparency-save-card {
+    position: sticky;
+    top: 20px;
+}
+
+.transparency-save-body {
+    padding: 20px;
+}
+
+.transparency-save-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 13px;
+    background: #f1f6ff;
+    border: 1px solid #dce9ff;
+    border-radius: 11px;
+    color: #495057;
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+.transparency-save-info > i {
+    color: #0d6efd;
+    font-size: 16px;
+    margin-top: 2px;
+}
+
+.transparency-save-btn {
+    min-height: 45px;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+
+/* ==========================================================
+   STATUS GUIDE
+========================================================== */
+
+.transparency-status-guide {
+    padding: 20px;
+}
+
+.transparency-status-item {
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #edf0f2;
+}
+
+.transparency-status-item:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+.transparency-status-item .badge {
+    display: inline-block;
+    margin-bottom: 7px;
+    padding: 6px 9px;
+}
+
+.transparency-status-item p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.8rem;
+    line-height: 1.55;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 991px) {
+
+    .transparency-save-card {
+        position: static;
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .transparency-form-page {
+        padding: 18px 14px 30px;
+    }
+
+    .transparency-form-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .transparency-form-header > a {
+        width: 100%;
+    }
+
+    .transparency-form-header > a .btn {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .transparency-form-card-body {
+        padding: 16px;
+    }
+
+    .transparency-form-card-header {
+        padding: 16px;
+    }
+
+    .transparency-current-file {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .transparency-current-file .btn {
+        width: 100%;
+        margin-left: 54px;
+    }
+
+    .transparency-save-body {
+        padding: 16px;
+    }
+
+    .transparency-status-guide {
+        padding: 16px;
+    }
+
+}

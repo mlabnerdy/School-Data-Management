@@ -15,6 +15,7 @@ $stmt = $pdo->prepare("
     SELECT *
     FROM staff
     WHERE id = ?
+    LIMIT 1
 ");
 
 $stmt->execute([$id]);
@@ -23,6 +24,16 @@ $staff = $stmt->fetch();
 
 if (!$staff) {
     redirect('staff.php');
+}
+
+
+/* =========================================================
+   HELPER FOR EMPTY VALUES
+========================================================= */
+
+function staff_value($value)
+{
+    return !empty($value) ? e($value) : '—';
 }
 
 
@@ -57,8 +68,11 @@ if (
 
         if ($path) {
 
-            $documentName = $_FILES['document']['name'];
-            $documentType = $_FILES['document']['type'] ?? '';
+            $documentName =
+                $_FILES['document']['name'] ?? 'Document';
+
+            $documentType =
+                $_FILES['document']['type'] ?? '';
 
             $stmt = $pdo->prepare("
                 INSERT INTO documents (
@@ -131,11 +145,15 @@ include __DIR__ . '/header.php';
         </div>
 
         <div>
-            <h2 class="fw-bold mb-1">Staff Details</h2>
+
+            <h2 class="fw-bold mb-1">
+                Staff Details
+            </h2>
 
             <p class="text-muted mb-0">
                 View and manage staff information.
             </p>
+
         </div>
 
     </div>
@@ -192,22 +210,26 @@ include __DIR__ . '/header.php';
 
     <div class="staff-profile-info">
 
+        <div class="staff-profile-label">
+            STAFF PROFILE
+        </div>
+
         <h3 class="fw-bold mb-1">
-            <?= e($staff['full_name'] ?? 'Staff Member') ?>
+            <?= staff_value($staff['full_name'] ?? '') ?>
         </h3>
 
         <p class="text-muted mb-2">
-            <?= !empty($staff['position_department'])
-                ? e($staff['position_department'])
-                : 'Staff' ?>
+            <?= staff_value($staff['position_department'] ?? '') ?>
         </p>
 
         <span class="staff-id-badge">
+
             <i class="bi bi-person-badge me-1"></i>
+
             Employee No.
-            <?= !empty($staff['employee_id'])
-                ? e($staff['employee_id'])
-                : '—' ?>
+
+            <?= staff_value($staff['employee_id'] ?? '') ?>
+
         </span>
 
     </div>
@@ -224,6 +246,7 @@ include __DIR__ . '/header.php';
     <div class="staff-card-header">
 
         <div>
+
             <h5 class="fw-bold mb-1">
                 Basic Information
             </h5>
@@ -231,6 +254,7 @@ include __DIR__ . '/header.php';
             <p class="text-muted small mb-0">
                 Personal information and basic details.
             </p>
+
         </div>
 
         <div class="staff-card-icon">
@@ -242,69 +266,107 @@ include __DIR__ . '/header.php';
 
     <div class="staff-info-grid">
 
-        <!-- Contact Number -->
+
+        <!-- Employee ID -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
-                <i class="bi bi-telephone"></i>
-                Contact Number
+
+                <i class="bi bi-person-badge"></i>
+
+                Staff / Employee ID
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['contact_number'])
-                    ? e($staff['contact_number'])
-                    : '—' ?>
+                <?= staff_value($staff['employee_id'] ?? '') ?>
+            </div>
+
+        </div>
+
+
+        <!-- Contact Number -->
+
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+
+                <i class="bi bi-telephone"></i>
+
+                Contact Number
+
+            </div>
+
+            <div class="staff-info-value">
+                <?= staff_value($staff['contact_number'] ?? '') ?>
             </div>
 
         </div>
 
 
         <!-- Birthdate -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-calendar-event"></i>
+
                 Birthdate
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['date_of_birth'])
-                    ? e($staff['date_of_birth'])
-                    : '—' ?>
+                <?= staff_value($staff['date_of_birth'] ?? '') ?>
             </div>
 
         </div>
 
 
         <!-- Gender -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-gender-ambiguous"></i>
+
                 Gender
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['gender'])
-                    ? e($staff['gender'])
-                    : '—' ?>
+                <?= staff_value($staff['gender'] ?? '') ?>
             </div>
 
         </div>
 
 
         <!-- Address -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-geo-alt"></i>
+
                 Address
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['address'])
-                    ? nl2br(e($staff['address']))
-                    : '—' ?>
+
+                <?php if (!empty($staff['address'])): ?>
+
+                    <?= nl2br(e($staff['address'])) ?>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
             </div>
 
         </div>
@@ -323,6 +385,7 @@ include __DIR__ . '/header.php';
     <div class="staff-card-header">
 
         <div>
+
             <h5 class="fw-bold mb-1">
                 Employment Information
             </h5>
@@ -330,6 +393,7 @@ include __DIR__ . '/header.php';
             <p class="text-muted small mb-0">
                 Staff employment and appointment details.
             </p>
+
         </div>
 
         <div class="staff-card-icon">
@@ -341,103 +405,274 @@ include __DIR__ . '/header.php';
 
     <div class="staff-info-grid">
 
+
         <!-- Employee No. -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-person-badge"></i>
+
                 Employee No.
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['employee_id'])
-                    ? e($staff['employee_id'])
-                    : '—' ?>
+                <?= staff_value($staff['employee_id'] ?? '') ?>
             </div>
 
         </div>
 
 
         <!-- Plantilla No. -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-card-list"></i>
+
                 Plantilla No.
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['plantilla_no'])
-                    ? e($staff['plantilla_no'])
-                    : '—' ?>
+                <?= staff_value($staff['plantilla_no'] ?? '') ?>
             </div>
 
         </div>
 
 
         <!-- TIN No. -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-credit-card"></i>
+
                 TIN No.
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['tin_no'])
-                    ? e($staff['tin_no'])
-                    : '—' ?>
+                <?= staff_value($staff['tin_no'] ?? '') ?>
             </div>
 
         </div>
 
 
         <!-- First Day of Service -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-calendar-check"></i>
+
                 First Day of Service
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['first_day_of_service'])
-                    ? e($staff['first_day_of_service'])
-                    : '—' ?>
+                <?= staff_value($staff['first_day_of_service'] ?? '') ?>
             </div>
 
         </div>
 
 
         <!-- Position / Department -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-building"></i>
+
                 Position / Department
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['position_department'])
-                    ? e($staff['position_department'])
-                    : '—' ?>
+                <?= staff_value($staff['position_department'] ?? '') ?>
             </div>
 
         </div>
 
 
         <!-- Current / Latest Appointment -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-briefcase"></i>
+
                 Current / Latest Appointment
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['current_latest_appointment'])
-                    ? e($staff['current_latest_appointment'])
-                    : '—' ?>
+                <?= staff_value($staff['current_latest_appointment'] ?? '') ?>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     GOVERNMENT & COMPENSATION INFORMATION
+========================================================= -->
+
+<div class="staff-info-card mt-4">
+
+    <div class="staff-card-header">
+
+        <div>
+
+            <h5 class="fw-bold mb-1">
+                Government &amp; Compensation Information
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Government identification and salary information.
+            </p>
+
+        </div>
+
+        <div class="staff-card-icon">
+            <i class="bi bi-bank"></i>
+        </div>
+
+    </div>
+
+
+    <div class="staff-info-grid">
+
+
+        <!-- GSIS No. -->
+
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+
+                <i class="bi bi-credit-card-2-front"></i>
+
+                GSIS No.
+
+            </div>
+
+            <div class="staff-info-value">
+
+                <?php if (array_key_exists('gsis_no', $staff)): ?>
+
+                    <?= staff_value($staff['gsis_no']) ?>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
+            </div>
+
+        </div>
+
+
+        <!-- PhilHealth No. -->
+
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+
+                <i class="bi bi-heart-pulse"></i>
+
+                PhilHealth No.
+
+            </div>
+
+            <div class="staff-info-value">
+
+                <?php if (array_key_exists('philhealth_no', $staff)): ?>
+
+                    <?= staff_value($staff['philhealth_no']) ?>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
+            </div>
+
+        </div>
+
+
+        <!-- Salary Grade -->
+
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+
+                <i class="bi bi-cash-stack"></i>
+
+                Salary Grade
+
+            </div>
+
+            <div class="staff-info-value">
+
+                <?php if (
+                    array_key_exists('salary_grade', $staff) &&
+                    $staff['salary_grade'] !== null &&
+                    $staff['salary_grade'] !== ''
+                ): ?>
+
+                    SG <?= e($staff['salary_grade']) ?>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
+            </div>
+
+        </div>
+
+
+        <!-- Step -->
+
+        <div class="staff-info-item">
+
+            <div class="staff-info-label">
+
+                <i class="bi bi-bar-chart-steps"></i>
+
+                Step
+
+            </div>
+
+            <div class="staff-info-value">
+
+                <?php if (
+                    array_key_exists('step', $staff) &&
+                    $staff['step'] !== null &&
+                    $staff['step'] !== ''
+                ): ?>
+
+                    Step <?= e($staff['step']) ?>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
             </div>
 
         </div>
@@ -456,13 +691,15 @@ include __DIR__ . '/header.php';
     <div class="staff-card-header">
 
         <div>
+
             <h5 class="fw-bold mb-1">
-                Education & Eligibility
+                Education &amp; Eligibility
             </h5>
 
             <p class="text-muted small mb-0">
-                Educational background and eligibility information.
+                Educational background and professional eligibility information.
             </p>
+
         </div>
 
         <div class="staff-card-icon">
@@ -474,35 +711,134 @@ include __DIR__ . '/header.php';
 
     <div class="staff-info-grid">
 
+
         <!-- Degree Finished -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-mortarboard"></i>
+
                 Degree Finished
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['degree_finished'])
-                    ? e($staff['degree_finished'])
-                    : '—' ?>
+                <?= staff_value($staff['degree_finished'] ?? '') ?>
             </div>
 
         </div>
 
 
-        <!-- Specialization / PRC Eligibility -->
+        <!-- Specialization / PRC -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-award"></i>
+
                 Specialization / PRC Eligibility
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['specialization_prc_eligibility'])
-                    ? nl2br(e($staff['specialization_prc_eligibility']))
-                    : '—' ?>
+
+                <?php if (
+                    !empty(
+                        $staff['specialization_prc_eligibility'] ?? ''
+                    )
+                ): ?>
+
+                    <?= nl2br(
+                        e(
+                            $staff[
+                                'specialization_prc_eligibility'
+                            ]
+                        )
+                    ) ?>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     TRAINING & ACCOMPLISHMENTS
+========================================================= -->
+
+<div class="staff-info-card mt-4">
+
+    <div class="staff-card-header">
+
+        <div>
+
+            <h5 class="fw-bold mb-1">
+                Training &amp; Accomplishments
+            </h5>
+
+            <p class="text-muted small mb-0">
+                Training, seminars, certifications, awards, and other accomplishments.
+            </p>
+
+        </div>
+
+        <div class="staff-card-icon">
+            <i class="bi bi-trophy"></i>
+        </div>
+
+    </div>
+
+
+    <div class="staff-additional-info">
+
+        <div class="staff-additional-item">
+
+            <div class="staff-info-label">
+
+                <i class="bi bi-award"></i>
+
+                Training and Accomplishments
+
+            </div>
+
+            <div class="staff-info-value">
+
+                <?php if (
+                    array_key_exists(
+                        'training_accomplishments',
+                        $staff
+                    ) &&
+                    !empty(
+                        $staff['training_accomplishments']
+                    )
+                ): ?>
+
+                    <?= nl2br(
+                        e(
+                            $staff[
+                                'training_accomplishments'
+                            ]
+                        )
+                    ) ?>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
             </div>
 
         </div>
@@ -521,6 +857,7 @@ include __DIR__ . '/header.php';
     <div class="staff-card-header">
 
         <div>
+
             <h5 class="fw-bold mb-1">
                 Contact Information
             </h5>
@@ -528,6 +865,7 @@ include __DIR__ . '/header.php';
             <p class="text-muted small mb-0">
                 Official and personal contact details.
             </p>
+
         </div>
 
         <div class="staff-card-icon">
@@ -539,35 +877,70 @@ include __DIR__ . '/header.php';
 
     <div class="staff-info-grid">
 
+
         <!-- DepEd Email -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-envelope"></i>
+
                 DepEd Email
+
             </div>
 
             <div class="staff-info-value staff-email">
-                <?= !empty($staff['deped_email'])
-                    ? e($staff['deped_email'])
-                    : '—' ?>
+
+                <?php if (!empty($staff['deped_email'])): ?>
+
+                    <a
+                        href="mailto:<?= e($staff['deped_email']) ?>"
+                        class="text-decoration-none"
+                    >
+                        <?= e($staff['deped_email']) ?>
+                    </a>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
             </div>
 
         </div>
 
 
         <!-- Personal Email -->
+
         <div class="staff-info-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-envelope-at"></i>
+
                 Personal Email
+
             </div>
 
             <div class="staff-info-value staff-email">
-                <?= !empty($staff['personal_email'])
-                    ? e($staff['personal_email'])
-                    : '—' ?>
+
+                <?php if (!empty($staff['personal_email'])): ?>
+
+                    <a
+                        href="mailto:<?= e($staff['personal_email']) ?>"
+                        class="text-decoration-none"
+                    >
+                        <?= e($staff['personal_email']) ?>
+                    </a>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
             </div>
 
         </div>
@@ -586,6 +959,7 @@ include __DIR__ . '/header.php';
     <div class="staff-card-header">
 
         <div>
+
             <h5 class="fw-bold mb-1">
                 Additional Information
             </h5>
@@ -593,6 +967,7 @@ include __DIR__ . '/header.php';
             <p class="text-muted small mb-0">
                 Other relevant staff information.
             </p>
+
         </div>
 
         <div class="staff-card-icon">
@@ -607,14 +982,25 @@ include __DIR__ . '/header.php';
         <div class="staff-additional-item">
 
             <div class="staff-info-label">
+
                 <i class="bi bi-card-text"></i>
+
                 Other Relevant Information
+
             </div>
 
             <div class="staff-info-value">
-                <?= !empty($staff['other_info'])
-                    ? nl2br(e($staff['other_info']))
-                    : '—' ?>
+
+                <?php if (!empty($staff['other_info'])): ?>
+
+                    <?= nl2br(e($staff['other_info'])) ?>
+
+                <?php else: ?>
+
+                    —
+
+                <?php endif; ?>
+
             </div>
 
         </div>
@@ -633,6 +1019,7 @@ include __DIR__ . '/header.php';
     <div class="staff-card-header">
 
         <div>
+
             <h5 class="fw-bold mb-1">
                 Documents
             </h5>
@@ -640,6 +1027,7 @@ include __DIR__ . '/header.php';
             <p class="text-muted small mb-0">
                 Upload and manage staff documents.
             </p>
+
         </div>
 
         <div class="staff-card-icon">
@@ -649,7 +1037,10 @@ include __DIR__ . '/header.php';
     </div>
 
 
-    <!-- Upload -->
+    <!-- =====================================================
+         UPLOAD DOCUMENT
+    ====================================================== -->
+
     <form
         method="POST"
         enctype="multipart/form-data"
@@ -667,7 +1058,8 @@ include __DIR__ . '/header.php';
             >
 
             <div class="form-text">
-                PDF, DOC, DOCX, JPG, PNG, or WEBP. Maximum 10 MB.
+                PDF, DOC, DOCX, JPG, PNG, or WEBP.
+                Maximum 10 MB.
             </div>
 
         </div>
@@ -679,25 +1071,44 @@ include __DIR__ . '/header.php';
             value="1"
             class="btn btn-primary staff-upload-btn"
         >
+
             <i class="bi bi-upload me-1"></i>
+
             Upload Document
+
         </button>
 
     </form>
 
 
-    <!-- Documents -->
+    <!-- =====================================================
+         DOCUMENT TABLE
+    ====================================================== -->
+
     <div class="staff-documents-table table-responsive">
 
         <table class="table align-middle mb-0">
 
             <thead>
+
                 <tr>
-                    <th>Document</th>
-                    <th>Uploaded</th>
-                    <th class="text-end">Actions</th>
+
+                    <th>
+                        Document
+                    </th>
+
+                    <th>
+                        Uploaded
+                    </th>
+
+                    <th class="text-end">
+                        Actions
+                    </th>
+
                 </tr>
+
             </thead>
+
 
             <tbody>
 
@@ -712,41 +1123,76 @@ include __DIR__ . '/header.php';
                                 <div class="staff-document-name">
 
                                     <div class="staff-document-icon">
+
                                         <i class="bi bi-file-earmark-text"></i>
+
                                     </div>
 
                                     <span>
-                                        <?= e($document['document_name']) ?>
+
+                                        <?= e(
+                                            $document['document_name']
+                                            ?? 'Document'
+                                        ) ?>
+
                                     </span>
 
                                 </div>
 
                             </td>
 
+
                             <td>
-                                <?= e($document['uploaded_at']) ?>
+
+                                <?= e(
+                                    $document['uploaded_at']
+                                    ?? '—'
+                                ) ?>
+
                             </td>
+
 
                             <td class="text-end">
 
                                 <div class="staff-document-actions">
 
-                                    <a
-                                        href="<?= e($document['file_path']) ?>"
-                                        target="_blank"
-                                        class="btn btn-sm btn-outline-primary"
-                                    >
-                                        <i class="bi bi-eye"></i>
-                                        <span>View</span>
-                                    </a>
+
+                                    <!-- View -->
 
                                     <a
-                                        href="delete_document.php?id=<?= (int)$document['id'] ?>&return=<?= urlencode('staff_view.php?id=' . $id) ?>"
+                                        href="<?= e(
+                                            $document['file_path']
+                                            ?? '#'
+                                        ) ?>"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="View Document"
+                                    >
+
+                                        <i class="bi bi-eye"></i>
+
+                                        <span>
+                                            View
+                                        </span>
+
+                                    </a>
+
+
+                                    <!-- Delete -->
+
+                                    <a
+                                        href="delete_document.php?id=<?= (int)($document['id'] ?? 0) ?>&return=<?= urlencode('staff_view.php?id=' . $id) ?>"
                                         class="btn btn-sm btn-outline-danger"
                                         data-confirm="Delete this document?"
+                                        title="Delete Document"
                                     >
+
                                         <i class="bi bi-trash"></i>
-                                        <span>Delete</span>
+
+                                        <span>
+                                            Delete
+                                        </span>
+
                                     </a>
 
                                 </div>
@@ -766,7 +1212,9 @@ include __DIR__ . '/header.php';
                             <div class="staff-empty-documents text-center">
 
                                 <div class="staff-empty-icon">
+
                                     <i class="bi bi-folder2-open"></i>
+
                                 </div>
 
                                 <h6 class="fw-bold mb-1">

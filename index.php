@@ -6,7 +6,8 @@ require_login();
 
 $pageTitle = 'Dashboard';
 
-// Get current user's role
+
+// Current user's role
 
 $userRole = $_SESSION['role'] ?? '';
 
@@ -15,7 +16,9 @@ $isStaff = strcasecmp($userRole, 'Staff') === 0;
 $isTeacher = strcasecmp($userRole, 'Teacher') === 0;
 
 
-// Get dashboard statistics
+// ==========================================================
+// DASHBOARD STATISTICS
+// ==========================================================
 
 $students = $pdo
     ->query("SELECT COUNT(*) FROM students")
@@ -34,7 +37,61 @@ $docs = $pdo
     ->fetchColumn();
 
 
-// Get recent students
+// ==========================================================
+// INFORMATION BOARD STATISTICS
+// ==========================================================
+
+$informationPublished = $pdo
+    ->query("
+        SELECT COUNT(*)
+        FROM information
+        WHERE status = 'Published'
+    ")
+    ->fetchColumn();
+
+$informationDocuments = $pdo
+    ->query("
+        SELECT COUNT(*)
+        FROM information
+        WHERE status = 'Published'
+        AND (
+            (file_name IS NOT NULL AND file_name <> '')
+            OR
+            (file_path IS NOT NULL AND file_path <> '')
+        )
+    ")
+    ->fetchColumn();
+
+
+// ==========================================================
+// TRANSPARENCY BOARD STATISTICS
+// ==========================================================
+
+$transparencyPublished = $pdo
+    ->query("
+        SELECT COUNT(*)
+        FROM transparency
+        WHERE status = 'Published'
+    ")
+    ->fetchColumn();
+
+$transparencyDocuments = $pdo
+    ->query("
+        SELECT COUNT(*)
+        FROM transparency
+        WHERE status = 'Published'
+        AND (
+            (file_name IS NOT NULL AND file_name <> '')
+            OR
+            (file_path IS NOT NULL AND file_path <> '')
+        )
+    ")
+    ->fetchColumn();
+
+
+// ==========================================================
+// RECENT STUDENTS
+// ==========================================================
 
 $recentStudents = $pdo->query("
     SELECT
@@ -77,7 +134,9 @@ $recentStudents = $pdo->query("
 ")->fetchAll();
 
 
-// Get recent teachers
+// ==========================================================
+// RECENT TEACHERS
+// ==========================================================
 
 $recentTeachers = [];
 
@@ -126,7 +185,9 @@ if ($isAdmin || $isStaff) {
 }
 
 
-// Get recent staff
+// ==========================================================
+// RECENT STAFF
+// ==========================================================
 
 $recentStaff = [];
 
@@ -175,7 +236,141 @@ if ($isAdmin) {
 }
 
 
-// Load dashboard header
+// ==========================================================
+// RECENT INFORMATION BOARD
+// ==========================================================
+
+$recentInformation = [];
+
+if ($isAdmin || $isStaff || $isTeacher) {
+
+    $recentInformation = $pdo->query("
+        SELECT
+            i.id,
+            i.title,
+            i.category,
+            i.description,
+            i.school_year,
+            i.date_posted,
+            i.file_name,
+            i.file_path,
+            i.file_type,
+            i.status,
+            i.created_by,
+            i.updated_by,
+            i.created_at,
+            i.updated_at,
+
+            COALESCE(
+                i.date_posted,
+                DATE(i.updated_at),
+                DATE(i.created_at)
+            ) AS activity_date,
+
+            COALESCE(
+                NULLIF(u_updated.full_name, ''),
+                NULLIF(u_updated.role, ''),
+                NULLIF(u_updated.username, ''),
+
+                NULLIF(u_created.full_name, ''),
+                NULLIF(u_created.role, ''),
+                NULLIF(u_created.username, ''),
+
+                'Unknown User'
+            ) AS action_by
+
+        FROM information i
+
+        LEFT JOIN users u_created
+            ON u_created.id = i.created_by
+
+        LEFT JOIN users u_updated
+            ON u_updated.id = i.updated_by
+
+        WHERE i.status = 'Published'
+
+        ORDER BY
+            COALESCE(
+                i.date_posted,
+                DATE(i.updated_at),
+                DATE(i.created_at)
+            ) DESC
+
+        LIMIT 5
+    ")->fetchAll();
+
+}
+
+
+// ==========================================================
+// RECENT TRANSPARENCY BOARD
+// ==========================================================
+
+$recentTransparency = [];
+
+if ($isAdmin || $isStaff || $isTeacher) {
+
+    $recentTransparency = $pdo->query("
+        SELECT
+            t.id,
+            t.title,
+            t.category,
+            t.description,
+            t.school_year,
+            t.date_posted,
+            t.file_name,
+            t.file_path,
+            t.file_type,
+            t.status,
+            t.created_by,
+            t.updated_by,
+            t.created_at,
+            t.updated_at,
+
+            COALESCE(
+                t.date_posted,
+                DATE(t.updated_at),
+                DATE(t.created_at)
+            ) AS activity_date,
+
+            COALESCE(
+                NULLIF(u_updated.full_name, ''),
+                NULLIF(u_updated.role, ''),
+                NULLIF(u_updated.username, ''),
+
+                NULLIF(u_created.full_name, ''),
+                NULLIF(u_created.role, ''),
+                NULLIF(u_created.username, ''),
+
+                'Unknown User'
+            ) AS action_by
+
+        FROM transparency t
+
+        LEFT JOIN users u_created
+            ON u_created.id = t.created_by
+
+        LEFT JOIN users u_updated
+            ON u_updated.id = t.updated_by
+
+        WHERE t.status = 'Published'
+
+        ORDER BY
+            COALESCE(
+                t.date_posted,
+                DATE(t.updated_at),
+                DATE(t.created_at)
+            ) DESC
+
+        LIMIT 5
+    ")->fetchAll();
+
+}
+
+
+// ==========================================================
+// LOAD HEADER
+// ==========================================================
 
 include 'header.php';
 
@@ -203,170 +398,291 @@ include 'header.php';
 </div>
 
 
-<!-- Dashboard statistics -->
+<!-- ==========================================================
+     DASHBOARD STATISTICS
+=========================================================== -->
 
-<div class="dashboard-stats row g-4 mb-4">
+<div class="dashboard-statistics mb-4">
 
 
-    <!-- Students -->
+    <!-- Main statistics -->
 
-    <div class="col-12 col-sm-6 col-xl-3">
+    <div class="row g-4 justify-content-center">
 
-        <a
-            href="students.php"
-            class="dashboard-stat-link"
-        >
 
-            <div class="dashboard-stat-card">
+        <!-- Students -->
 
-                <div class="stat-content">
+        <div class="col-12 col-sm-6 col-lg-3">
 
-                    <span class="stat-label">
-                        Students
-                    </span>
+            <a
+                href="students.php"
+                class="dashboard-stat-link"
+            >
 
-                    <span class="stat-number">
-                        <?= e($students) ?>
-                    </span>
+                <div class="dashboard-stat-card">
 
-                    <span class="stat-description">
-                        Registered students
-                    </span>
+                    <div class="stat-content">
+
+                        <span class="stat-label">
+                            Students
+                        </span>
+
+                        <span class="stat-number">
+                            <?= e($students) ?>
+                        </span>
+
+                        <span class="stat-description">
+                            Registered students
+                        </span>
+
+                    </div>
+
+                    <div class="stat-icon stat-icon-blue">
+
+                        <i class="bi bi-mortarboard-fill"></i>
+
+                    </div>
 
                 </div>
 
-                <div class="stat-icon stat-icon-blue">
+            </a>
 
-                    <i class="bi bi-mortarboard-fill"></i>
+        </div>
+
+
+        <!-- Teachers -->
+
+        <?php if ($isAdmin || $isStaff): ?>
+
+            <div class="col-12 col-sm-6 col-lg-3">
+
+                <a
+                    href="teachers.php"
+                    class="dashboard-stat-link"
+                >
+
+                    <div class="dashboard-stat-card">
+
+                        <div class="stat-content">
+
+                            <span class="stat-label">
+                                Teachers
+                            </span>
+
+                            <span class="stat-number">
+                                <?= e($teachers) ?>
+                            </span>
+
+                            <span class="stat-description">
+                                Registered teachers
+                            </span>
+
+                        </div>
+
+                        <div class="stat-icon stat-icon-blue">
+
+                            <i class="bi bi-person-workspace"></i>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        <?php endif; ?>
+
+
+        <!-- Staff -->
+
+        <?php if ($isAdmin): ?>
+
+            <div class="col-12 col-sm-6 col-lg-3">
+
+                <a
+                    href="staff.php"
+                    class="dashboard-stat-link"
+                >
+
+                    <div class="dashboard-stat-card">
+
+                        <div class="stat-content">
+
+                            <span class="stat-label">
+                                Staff
+                            </span>
+
+                            <span class="stat-number">
+                                <?= e($staff) ?>
+                            </span>
+
+                            <span class="stat-description">
+                                Registered staff
+                            </span>
+
+                        </div>
+
+                        <div class="stat-icon stat-icon-blue">
+
+                            <i class="bi bi-people-fill"></i>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        <?php endif; ?>
+
+
+        <!-- Documents -->
+
+        <?php if ($isAdmin): ?>
+
+            <div class="col-12 col-sm-6 col-lg-3">
+
+                <div class="dashboard-stat-card">
+
+                    <div class="stat-content">
+
+                        <span class="stat-label">
+                            Documents
+                        </span>
+
+                        <span class="stat-number">
+                            <?= e($docs) ?>
+                        </span>
+
+                        <span class="stat-description">
+                            Stored documents
+                        </span>
+
+                    </div>
+
+                    <div class="stat-icon stat-icon-blue">
+
+                        <i class="bi bi-file-earmark-text-fill"></i>
+
+                    </div>
 
                 </div>
 
             </div>
 
-        </a>
+        <?php endif; ?>
 
     </div>
 
 
-    <!-- Teachers -->
+    <!-- Information and Transparency -->
 
-    <?php if ($isAdmin || $isStaff): ?>
+    <?php if ($isAdmin || $isStaff || $isTeacher): ?>
 
-        <div class="col-12 col-sm-6 col-xl-3">
-
-            <a
-                href="teachers.php"
-                class="dashboard-stat-link"
-            >
-
-                <div class="dashboard-stat-card">
-
-                    <div class="stat-content">
-
-                        <span class="stat-label">
-                            Teachers
-                        </span>
-
-                        <span class="stat-number">
-                            <?= e($teachers) ?>
-                        </span>
-
-                        <span class="stat-description">
-                            Registered teachers
-                        </span>
-
-                    </div>
-
-                    <div class="stat-icon stat-icon-blue">
-
-                        <i class="bi bi-person-workspace"></i>
-
-                    </div>
-
-                </div>
-
-            </a>
-
-        </div>
-
-    <?php endif; ?>
+        <div class="row g-4 justify-content-center mt-1">
 
 
-    <!-- Staff -->
+            <!-- Information Board -->
 
-    <?php if ($isAdmin): ?>
+            <div class="col-12 col-sm-6 col-lg-4">
 
-        <div class="col-12 col-sm-6 col-xl-3">
+                <a
+                    href="information.php"
+                    class="dashboard-stat-link"
+                >
 
-            <a
-                href="staff.php"
-                class="dashboard-stat-link"
-            >
+                    <div class="dashboard-stat-card">
 
-                <div class="dashboard-stat-card">
+                        <div class="stat-content">
 
-                    <div class="stat-content">
+                            <span class="stat-label">
+                                Information Board
+                            </span>
 
-                        <span class="stat-label">
-                            Staff
-                        </span>
+                            <span class="stat-number stat-number-small">
 
-                        <span class="stat-number">
-                            <?= e($staff) ?>
-                        </span>
+                                <?= e($informationPublished) ?>
 
-                        <span class="stat-description">
-                            Registered staff
-                        </span>
+                                <span class="stat-inline-label">
+                                    Published
+                                </span>
+
+                            </span>
+
+                            <span class="stat-description">
+
+                                <?= e($informationDocuments) ?>
+
+                                Document<?= $informationDocuments == 1 ? '' : 's' ?>
+
+                            </span>
+
+                        </div>
+
+                        <div class="stat-icon stat-icon-blue">
+
+                            <i class="bi bi-info-circle-fill"></i>
+
+                        </div>
 
                     </div>
 
-                    <div class="stat-icon stat-icon-blue">
-
-                        <i class="bi bi-people-fill"></i>
-
-                    </div>
-
-                </div>
-
-            </a>
-
-        </div>
-
-    <?php endif; ?>
-
-
-    <!-- Documents -->
-
-    <?php if ($isAdmin): ?>
-
-        <div class="col-12 col-sm-6 col-xl-3">
-
-            <div class="dashboard-stat-card">
-
-                <div class="stat-content">
-
-                    <span class="stat-label">
-                        Documents
-                    </span>
-
-                    <span class="stat-number">
-                        <?= e($docs) ?>
-                    </span>
-
-                    <span class="stat-description">
-                        Stored documents
-                    </span>
-
-                </div>
-
-                <div class="stat-icon stat-icon-blue">
-
-                    <i class="bi bi-file-earmark-text-fill"></i>
-
-                </div>
+                </a>
 
             </div>
+
+
+            <!-- Transparency Board -->
+
+            <div class="col-12 col-sm-6 col-lg-4">
+
+                <a
+                    href="transparency.php"
+                    class="dashboard-stat-link"
+                >
+
+                    <div class="dashboard-stat-card">
+
+                        <div class="stat-content">
+
+                            <span class="stat-label">
+                                Transparency Board
+                            </span>
+
+                            <span class="stat-number stat-number-small">
+
+                                <?= e($transparencyPublished) ?>
+
+                                <span class="stat-inline-label">
+                                    Published
+                                </span>
+
+                            </span>
+
+                            <span class="stat-description">
+
+                                <?= e($transparencyDocuments) ?>
+
+                                Document<?= $transparencyDocuments == 1 ? '' : 's' ?>
+
+                            </span>
+
+                        </div>
+
+                        <div class="stat-icon stat-icon-blue">
+
+                            <i class="bi bi-megaphone-fill"></i>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
 
         </div>
 
@@ -375,7 +691,9 @@ include 'header.php';
 </div>
 
 
-<!-- Recent students -->
+<!-- ==========================================================
+     RECENT STUDENTS
+=========================================================== -->
 
 <div class="dashboard-record-card mb-4">
 
@@ -437,20 +755,14 @@ include 'header.php';
 
                     <tr>
 
-                        <!-- Student LRN -->
-
                         <td>
 
                             <span class="record-id">
-
                                 <?= e($r['record_id']) ?>
-
                             </span>
 
                         </td>
 
-
-                        <!-- Student name -->
 
                         <td>
 
@@ -477,8 +789,6 @@ include 'header.php';
                         </td>
 
 
-                        <!-- Latest activity -->
-
                         <td>
 
                             <span class="record-date">
@@ -491,8 +801,6 @@ include 'header.php';
 
                         </td>
 
-
-                        <!-- User who created or updated -->
 
                         <td>
 
@@ -552,7 +860,9 @@ include 'header.php';
 </div>
 
 
-<!-- Recent teachers -->
+<!-- ==========================================================
+     RECENT TEACHERS
+=========================================================== -->
 
 <?php if ($isAdmin || $isStaff): ?>
 
@@ -616,20 +926,14 @@ include 'header.php';
 
                         <tr>
 
-                            <!-- Teacher ID -->
-
                             <td>
 
                                 <span class="record-id">
-
                                     <?= e($r['record_id']) ?>
-
                                 </span>
 
                             </td>
 
-
-                            <!-- Teacher name -->
 
                             <td>
 
@@ -656,8 +960,6 @@ include 'header.php';
                             </td>
 
 
-                            <!-- Latest activity -->
-
                             <td>
 
                                 <span class="record-date">
@@ -670,8 +972,6 @@ include 'header.php';
 
                             </td>
 
-
-                            <!-- User who created or updated -->
 
                             <td>
 
@@ -733,11 +1033,13 @@ include 'header.php';
 <?php endif; ?>
 
 
-<!-- Recent staff -->
+<!-- ==========================================================
+     RECENT STAFF
+=========================================================== -->
 
 <?php if ($isAdmin): ?>
 
-    <div class="dashboard-record-card">
+    <div class="dashboard-record-card mb-4">
 
         <div class="records-header">
 
@@ -793,23 +1095,182 @@ include 'header.php';
 
                 <tbody>
 
-                    <?php foreach ($recentStaff as $r): ?>
+                <?php foreach ($recentStaff as $r): ?>
+
+                    <tr>
+
+                        <td>
+
+                            <span class="record-id">
+                                <?= e($r['employee_id']) ?>
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="record-name">
+
+                                <div class="record-avatar">
+
+                                    <?= e(
+                                        strtoupper(
+                                            substr(
+                                                $r['full_name'] ?? 'U',
+                                                0,
+                                                1
+                                            )
+                                        )
+                                    ) ?>
+
+                                </div>
+
+                                <?= e($r['full_name']) ?>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="record-date">
+
+                                <i class="bi bi-calendar3"></i>
+
+                                <?= e($r['activity_date']) ?>
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="record-name">
+
+                                <div class="record-avatar">
+
+                                    <?= e(
+                                        strtoupper(
+                                            substr(
+                                                $r['action_by'] ?? 'U',
+                                                0,
+                                                1
+                                            )
+                                        )
+                                    ) ?>
+
+                                </div>
+
+                                <?= e(
+                                    $r['action_by']
+                                    ?? 'Unknown User'
+                                ) ?>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                <?php endforeach; ?>
+
+
+                <?php if (!$recentStaff): ?>
+
+                    <tr>
+
+                        <td
+                            colspan="4"
+                            class="text-center text-muted py-4"
+                        >
+
+                            No staff records yet.
+
+                        </td>
+
+                    </tr>
+
+                <?php endif; ?>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+<?php endif; ?>
+
+
+<!-- ==========================================================
+     RECENT INFORMATION BOARD
+=========================================================== -->
+
+<?php if ($isAdmin || $isStaff || $isTeacher): ?>
+
+    <div class="dashboard-record-card mb-4">
+
+        <div class="records-header">
+
+            <div>
+
+                <h5 class="records-title">
+                    Recent Information Board
+                </h5>
+
+                <p class="records-subtitle">
+                    Latest published information
+                </p>
+
+            </div>
+
+            <div class="records-icon">
+
+                <i class="bi bi-info-circle"></i>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table dashboard-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Title
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Date Posted
+                        </th>
+
+                        <th>
+                            Published By
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <?php foreach ($recentInformation as $r): ?>
 
                         <tr>
-
-                            <!-- Staff employee ID -->
-                            <td>
-
-                                <span class="record-id">
-
-                                    <?= e($r['employee_id']) ?>
-
-                                </span>
-
-                            </td>
-
-
-                            <!-- Staff name -->
 
                             <td>
 
@@ -817,26 +1278,35 @@ include 'header.php';
 
                                     <div class="record-avatar">
 
-                                        <?= e(
-                                            strtoupper(
-                                                substr(
-                                                    $r['full_name'] ?? 'U',
-                                                    0,
-                                                    1
-                                                )
-                                            )
-                                        ) ?>
+                                        <i class="bi bi-info-circle"></i>
 
                                     </div>
 
-                                    <?= e($r['full_name']) ?>
+                                    <?= e($r['title']) ?>
 
                                 </div>
 
                             </td>
 
 
-                            <!-- Latest activity -->
+                            <td>
+
+                                <?php if (!empty($r['category'])): ?>
+
+                                    <span class="record-id">
+                                        <?= e($r['category']) ?>
+                                    </span>
+
+                                <?php else: ?>
+
+                                    <span class="text-muted">
+                                        General
+                                    </span>
+
+                                <?php endif; ?>
+
+                            </td>
+
 
                             <td>
 
@@ -850,8 +1320,6 @@ include 'header.php';
 
                             </td>
 
-
-                            <!-- User who created or updated -->
 
                             <td>
 
@@ -885,7 +1353,7 @@ include 'header.php';
                     <?php endforeach; ?>
 
 
-                    <?php if (!$recentStaff): ?>
+                    <?php if (!$recentInformation): ?>
 
                         <tr>
 
@@ -894,7 +1362,190 @@ include 'header.php';
                                 class="text-center text-muted py-4"
                             >
 
-                                No staff records yet.
+                                <i
+                                    class="bi bi-info-circle fs-3 d-block mb-2"
+                                ></i>
+
+                                No published information yet.
+
+                            </td>
+
+                        </tr>
+
+                    <?php endif; ?>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+<?php endif; ?>
+
+
+<!-- ==========================================================
+     RECENT TRANSPARENCY BOARD
+=========================================================== -->
+
+<?php if ($isAdmin || $isStaff || $isTeacher): ?>
+
+    <div class="dashboard-record-card">
+
+        <div class="records-header">
+
+            <div>
+
+                <h5 class="records-title">
+                    Recent Transparency Board
+                </h5>
+
+                <p class="records-subtitle">
+                    Latest published transparency records
+                </p>
+
+            </div>
+
+            <div class="records-icon">
+
+                <i class="bi bi-megaphone"></i>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table dashboard-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Title
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Date Posted
+                        </th>
+
+                        <th>
+                            Published By
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <?php foreach ($recentTransparency as $r): ?>
+
+                        <tr>
+
+                            <td>
+
+                                <div class="record-name">
+
+                                    <div class="record-avatar">
+
+                                        <i class="bi bi-megaphone"></i>
+
+                                    </div>
+
+                                    <?= e($r['title']) ?>
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                <?php if (!empty($r['category'])): ?>
+
+                                    <span class="record-id">
+                                        <?= e($r['category']) ?>
+                                    </span>
+
+                                <?php else: ?>
+
+                                    <span class="text-muted">
+                                        General
+                                    </span>
+
+                                <?php endif; ?>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="record-date">
+
+                                    <i class="bi bi-calendar3"></i>
+
+                                    <?= e($r['activity_date']) ?>
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="record-name">
+
+                                    <div class="record-avatar">
+
+                                        <?= e(
+                                            strtoupper(
+                                                substr(
+                                                    $r['action_by'] ?? 'U',
+                                                    0,
+                                                    1
+                                                )
+                                            )
+                                        ) ?>
+
+                                    </div>
+
+                                    <?= e(
+                                        $r['action_by']
+                                        ?? 'Unknown User'
+                                    ) ?>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    <?php endforeach; ?>
+
+
+                    <?php if (!$recentTransparency): ?>
+
+                        <tr>
+
+                            <td
+                                colspan="4"
+                                class="text-center text-muted py-4"
+                            >
+
+                                <i
+                                    class="bi bi-megaphone fs-3 d-block mb-2"
+                                ></i>
+
+                                No published transparency records yet.
 
                             </td>
 

@@ -9,8 +9,10 @@
    Dashboard Statistics
    --------------------------------------------------------- */
 
-.dashboard-stats {
+.dashboard-stats,
+.dashboard-statistics {
     margin-top: 5px;
+    width: 100%;
 }
 
 
@@ -20,6 +22,14 @@
     text-decoration: none;
     color: inherit;
     display: block;
+    height: 100%;
+}
+
+
+/* Make statistic columns equal height */
+
+.dashboard-statistics .row {
+    align-items: stretch;
 }
 
 
@@ -29,17 +39,23 @@
 
 .dashboard-stat-card {
     position: relative;
+
     min-height: 175px;
+
+    height: 100%;
 
     background: #ffffff;
 
     border: 1px solid #e5eaf0;
+
     border-radius: 16px;
 
     padding: 24px;
 
     display: flex;
+
     align-items: flex-start;
+
     justify-content: space-between;
 
     overflow: hidden;
@@ -81,11 +97,39 @@
 
 
 /* ---------------------------------------------------------
+   Statistic Rows
+   --------------------------------------------------------- */
+
+/*
+   First row:
+   Students | Teachers | Staff | Documents
+
+   Second row:
+   Information Board | Transparency Board
+*/
+
+.dashboard-statistics > .row + .row {
+    margin-top: 4px;
+}
+
+
+/*
+   Keep Information and Transparency cards
+   equal in height.
+*/
+
+.dashboard-statistics > .row + .row .dashboard-stat-card {
+    min-height: 175px;
+}
+
+
+/* ---------------------------------------------------------
    Statistic Content
    --------------------------------------------------------- */
 
 .stat-content {
     display: flex;
+
     flex-direction: column;
 
     min-width: 0;
@@ -124,6 +168,30 @@
 
 
 /* ---------------------------------------------------------
+   Inline Board Statistics
+   --------------------------------------------------------- */
+
+.stat-number-small {
+    display: flex;
+
+    align-items: baseline;
+
+    gap: 6px;
+
+    flex-wrap: wrap;
+}
+
+
+.stat-inline-label {
+    font-size: 14px;
+
+    font-weight: 500;
+
+    color: #6c757d;
+}
+
+
+/* ---------------------------------------------------------
    Statistic Icon
    --------------------------------------------------------- */
 
@@ -136,7 +204,9 @@
     border-radius: 14px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     font-size: 23px;
@@ -180,7 +250,9 @@
     padding: 22px 24px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     border-bottom: 1px solid #edf0f4;
@@ -214,7 +286,9 @@
     border-radius: 12px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     color: #0d6efd;
@@ -338,7 +412,9 @@
     border-radius: 50%;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     background: #eaf3ff;
@@ -447,7 +523,9 @@
     border-radius: 50%;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     background: #eaf3ff;
@@ -507,6 +585,7 @@
     .dashboard-table thead th,
     .dashboard-table tbody td {
         padding-left: 20px;
+
         padding-right: 20px;
     }
 
@@ -519,15 +598,30 @@
 
 @media (max-width: 575.98px) {
 
-    .dashboard-stats {
+    .dashboard-stats,
+    .dashboard-statistics {
         margin-left: -6px;
+
         margin-right: -6px;
     }
 
 
-    .dashboard-stats > div {
+    .dashboard-statistics > .row {
+        margin-left: 0;
+
+        margin-right: 0;
+    }
+
+
+    .dashboard-statistics > .row > div {
         padding-left: 6px;
+
         padding-right: 6px;
+    }
+
+
+    .dashboard-statistics > .row + .row {
+        margin-top: 0;
     }
 
 
@@ -550,6 +644,16 @@
     }
 
 
+    .stat-number-small {
+        font-size: 28px;
+    }
+
+
+    .stat-inline-label {
+        font-size: 12px;
+    }
+
+
     .stat-description {
         font-size: 11px;
     }
@@ -557,6 +661,7 @@
 
     .stat-icon {
         width: 46px;
+
         height: 46px;
 
         border-radius: 12px;
@@ -584,6 +689,7 @@
 
     .records-icon {
         width: 38px;
+
         height: 38px;
 
         font-size: 16px;
@@ -624,8 +730,14 @@
     }
 
 
+    .stat-number-small {
+        font-size: 25px;
+    }
+
+
     .stat-icon {
         width: 42px;
+
         height: 42px;
 
         font-size: 17px;

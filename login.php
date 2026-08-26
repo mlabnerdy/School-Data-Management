@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 ?>
+
 <!doctype html>
 <html lang="en">
 
@@ -40,12 +41,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+
+    <meta
+        name="description"
+        content="School Data Management System Login"
     >
 
     <title>
         Login - School Data Management System
     </title>
+
 
     <!-- Bootstrap -->
     <link
@@ -53,17 +60,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         rel="stylesheet"
     >
 
+
     <!-- Bootstrap Icons -->
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     >
 
+
     <!-- Main CSS -->
     <link
         href="assets/style.css"
         rel="stylesheet"
     >
+
 
     <!-- Login CSS -->
     <link
@@ -80,13 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="login-wrapper">
 
 
-    <!-- =========================================================
+    <!-- =====================================================
          LEFT SIDE - SCHOOL INFORMATION
-         ========================================================= -->
+         ===================================================== -->
 
     <section class="school-section">
 
         <div class="school-overlay"></div>
+
 
         <div class="school-content">
 
@@ -97,7 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <img
                     src="assets/logo/schoollogo.png"
-                    alt="School Logo"
+                    alt="Santa Elena Elementary School Logo"
+                    loading="eager"
                 >
 
             </div>
@@ -145,6 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="school-highlights">
 
 
+                <!-- Mission -->
+
                 <div class="school-highlight">
 
                     <div class="highlight-icon">
@@ -152,6 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="bi bi-bullseye"></i>
 
                     </div>
+
 
                     <div>
 
@@ -170,6 +185,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
 
+                <!-- Vision -->
+
                 <div class="school-highlight">
 
                     <div class="highlight-icon">
@@ -177,6 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="bi bi-eye"></i>
 
                     </div>
+
 
                     <div>
 
@@ -221,9 +239,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-    <!-- =========================================================
+    <!-- =====================================================
          RIGHT SIDE - LOGIN
-         ========================================================= -->
+         ===================================================== -->
 
     <section class="login-section">
 
@@ -231,13 +249,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-card">
 
 
-            <!-- Mobile / Login Logo -->
+            <!-- Login Logo -->
 
             <div class="login-logo">
 
                 <img
                     src="assets/logo/logo2.png"
                     alt="School Logo"
+                    loading="eager"
                 >
 
             </div>
@@ -259,11 +278,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-            <!-- Session Timeout Message -->
+            <!-- Session Timeout -->
 
             <?php if (isset($_GET['timeout'])): ?>
 
-                <div class="alert alert-warning login-alert">
+                <div
+                    class="alert alert-warning login-alert"
+                    role="alert"
+                >
 
                     <i class="bi bi-clock-history me-2"></i>
 
@@ -277,11 +299,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-            <!-- Error Message -->
+            <!-- Login Error -->
 
             <?php if ($error): ?>
 
-                <div class="alert alert-danger login-alert">
+                <div
+                    class="alert alert-danger login-alert"
+                    role="alert"
+                >
 
                     <i class="bi bi-exclamation-circle me-2"></i>
 
@@ -295,7 +320,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Login Form -->
 
-            <form method="post" autocomplete="on">
+            <form
+                method="post"
+                autocomplete="on"
+                class="login-form"
+            >
 
 
                 <!-- Username -->
@@ -446,52 +475,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-<!-- =========================================================
+<!-- =====================================================
      PASSWORD TOGGLE
-     ========================================================= -->
+     ===================================================== -->
 
 <script>
 
-const togglePassword =
-    document.getElementById('togglePassword');
+document.addEventListener('DOMContentLoaded', function () {
 
-const password =
-    document.getElementById('password');
+    const togglePassword =
+        document.getElementById('togglePassword');
 
-const passwordIcon =
-    document.getElementById('passwordIcon');
+    const password =
+        document.getElementById('password');
 
-
-togglePassword.addEventListener('click', function () {
-
-    const isPassword =
-        password.getAttribute('type') === 'password';
+    const passwordIcon =
+        document.getElementById('passwordIcon');
 
 
-    password.setAttribute(
-        'type',
-        isPassword ? 'text' : 'password'
-    );
+    if (
+        !togglePassword ||
+        !password ||
+        !passwordIcon
+    ) {
+        return;
+    }
 
 
-    passwordIcon.classList.toggle(
-        'bi-eye',
-        !isPassword
-    );
+    togglePassword.addEventListener('click', function () {
+
+        const isPassword =
+            password.getAttribute('type') === 'password';
 
 
-    passwordIcon.classList.toggle(
-        'bi-eye-slash',
-        isPassword
-    );
+        password.setAttribute(
+            'type',
+            isPassword ? 'text' : 'password'
+        );
 
 
-    togglePassword.setAttribute(
-        'aria-label',
-        isPassword
-            ? 'Hide password'
-            : 'Show password'
-    );
+        passwordIcon.classList.toggle(
+            'bi-eye',
+            !isPassword
+        );
+
+
+        passwordIcon.classList.toggle(
+            'bi-eye-slash',
+            isPassword
+        );
+
+
+        togglePassword.setAttribute(
+            'aria-label',
+            isPassword
+                ? 'Hide password'
+                : 'Show password'
+        );
+
+    });
 
 });
 

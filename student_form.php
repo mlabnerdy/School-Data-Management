@@ -16,6 +16,22 @@ $currentUserId = (int)($_SESSION['user_id'] ?? 0);
 
 
 /*
+|--------------------------------------------------------------------------
+| Load Active School Years
+|--------------------------------------------------------------------------
+*/
+
+$schoolYearStmt = $pdo->query("
+    SELECT school_year
+    FROM school_years
+    WHERE is_active = 1
+    ORDER BY school_year DESC
+");
+
+$schoolYears = $schoolYearStmt->fetchAll(PDO::FETCH_COLUMN);
+
+
+/*
  * Load existing student
  */
 if ($isEdit) {
@@ -193,6 +209,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $error =
             'Full Name is required.';
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
+     | School Year Validation
+     |--------------------------------------------------------------------------
+     */
+
+    elseif ($data['school_year'] === '') {
+
+        $error =
+            'School Year is required.';
+
+    }
+
+
+    /*
+     * Make sure selected School Year exists
+     * and is active.
+     */
+    elseif (!in_array($data['school_year'], $schoolYears, true)) {
+
+        $error =
+            'Please select a valid active school year.';
 
     }
 
@@ -454,6 +496,7 @@ include 'header.php';
     <div class="student-form-header">
 
         <div>
+
             <div class="student-form-label">
                 STUDENT RECORD
             </div>
@@ -463,27 +506,42 @@ include 'header.php';
             </h2>
 
             <p class="text-muted mb-0">
+
                 <?= $isEdit
                     ? 'Update the student information below.'
                     : 'Add a new student record to the system.' ?>
+
             </p>
+
         </div>
 
-        <a href="students.php" class="btn btn-outline-secondary">
+
+        <a
+            href="students.php"
+            class="btn btn-outline-secondary"
+        >
+
             <i class="bi bi-arrow-left me-1"></i>
+
             Back to List
+
         </a>
 
     </div>
 
+
     <?php if ($error): ?>
 
         <div class="alert alert-danger student-form-alert">
+
             <i class="bi bi-exclamation-circle-fill me-2"></i>
+
             <?= e($error) ?>
+
         </div>
 
     <?php endif; ?>
+
 
     <form
         method="post"
@@ -494,37 +552,57 @@ include 'header.php';
 
         <div class="row g-4">
 
+
             <div class="col-12 col-lg-8">
+
 
                 <div class="student-form-card">
 
+
                     <div class="student-form-card-header">
 
+
                         <div class="student-section-icon">
+
                             <i class="bi bi-person-vcard"></i>
+
                         </div>
 
+
                         <div>
+
                             <h5 class="fw-bold mb-1">
+
                                 Student Information
+
                             </h5>
 
                             <p class="text-muted small mb-0">
+
                                 Enter the student's basic information.
+
                             </p>
+
                         </div>
+
 
                     </div>
 
+
                     <div class="student-form-card-body">
+
 
                         <div class="row g-3">
 
+
                             <!-- LRN -->
+
                             <div class="col-12 col-md-6">
 
                                 <label class="form-label">
+
                                     LRN
+
                                 </label>
 
                                 <input
@@ -540,16 +618,22 @@ include 'header.php';
                                 >
 
                                 <div class="form-text">
+
                                     Maximum 12 numbers.
+
                                 </div>
 
                             </div>
 
+
                             <!-- SCHOOL ID -->
+
                             <div class="col-12 col-md-6">
 
                                 <label class="form-label">
+
                                     School ID No.
+
                                 </label>
 
                                 <input
@@ -561,12 +645,17 @@ include 'header.php';
 
                             </div>
 
+
                             <!-- FULL NAME -->
+
                             <div class="col-12">
 
                                 <label class="form-label">
+
                                     Full Name
+
                                     <span class="text-danger">*</span>
+
                                 </label>
 
                                 <input
@@ -583,11 +672,15 @@ include 'header.php';
 
                             </div>
 
+
                             <!-- BIRTHDATE -->
+
                             <div class="col-12 col-md-4">
 
                                 <label class="form-label">
+
                                     Birthdate
+
                                 </label>
 
                                 <input
@@ -599,11 +692,15 @@ include 'header.php';
 
                             </div>
 
+
                             <!-- GENDER -->
+
                             <div class="col-12 col-md-4">
 
                                 <label class="form-label">
+
                                     Gender
+
                                 </label>
 
                                 <select
@@ -623,7 +720,9 @@ include 'header.php';
                                                 ? 'selected'
                                                 : '' ?>
                                         >
+
                                             <?= e($gender) ?>
+
                                         </option>
 
                                     <?php endforeach; ?>
@@ -632,31 +731,71 @@ include 'header.php';
 
                             </div>
 
+
                             <!-- SCHOOL YEAR -->
+
                             <div class="col-12 col-md-4">
 
-                                <label class="form-label">
+                                <label
+                                    for="school_year"
+                                    class="form-label"
+                                >
+
                                     School Year
+
+                                    <span class="text-danger">*</span>
+
                                 </label>
 
-                                <input
-                                    type="text"
+
+                                <select
                                     name="school_year"
                                     id="school_year"
-                                    class="form-control"
-                                    value="<?= e($record['school_year'] ?? '') ?>"
-                                    maxlength="9"
-                                    pattern="[0-9]{4}-[0-9]{4}"
-                                    placeholder="2026-2027"
+                                    class="form-select"
+                                    required
                                 >
+
+                                    <option value="">
+                                        Select School Year
+                                    </option>
+
+
+                                    <?php foreach ($schoolYears as $year): ?>
+
+                                        <option
+                                            value="<?= e($year) ?>"
+                                            <?= (($record['school_year'] ?? '') === $year)
+                                                ? 'selected'
+                                                : '' ?>
+                                        >
+
+                                            <?= e($year) ?>
+
+                                        </option>
+
+                                    <?php endforeach; ?>
+
+
+                                </select>
+
+
+                                <div class="form-text">
+
+                                    Select an active school year.
+
+                                </div>
 
                             </div>
 
+
                             <!-- MOBILE -->
+
                             <div class="col-12 col-md-6">
 
                                 <label class="form-label">
+
                                     Mobile Number
+
                                 </label>
 
                                 <input
@@ -673,11 +812,15 @@ include 'header.php';
 
                             </div>
 
+
                             <!-- GRADE SECTION -->
+
                             <div class="col-12 col-md-6">
 
                                 <label class="form-label">
+
                                     Grade & Section
+
                                 </label>
 
                                 <input
@@ -691,11 +834,15 @@ include 'header.php';
 
                             </div>
 
+
                             <!-- ADDRESS -->
+
                             <div class="col-12">
 
                                 <label class="form-label">
+
                                     Address
+
                                 </label>
 
                                 <textarea
@@ -707,11 +854,15 @@ include 'header.php';
 
                             </div>
 
+
                             <!-- PARENT GUARDIAN -->
+
                             <div class="col-12">
 
                                 <label class="form-label">
+
                                     Parent / Guardian
+
                                 </label>
 
                                 <input
@@ -726,21 +877,29 @@ include 'header.php';
 
                             </div>
 
+
                             <!-- EMERGENCY -->
+
                             <div class="col-12">
 
                                 <div class="border rounded-3 p-3 mt-2">
 
                                     <h6 class="fw-bold mb-3">
+
                                         In Case of Emergency
+
                                     </h6>
 
+
                                     <div class="row g-3">
+
 
                                         <div class="col-12">
 
                                             <label class="form-label">
+
                                                 Name
+
                                             </label>
 
                                             <input
@@ -755,10 +914,13 @@ include 'header.php';
 
                                         </div>
 
+
                                         <div class="col-12">
 
                                             <label class="form-label">
+
                                                 Address
+
                                             </label>
 
                                             <textarea
@@ -770,10 +932,13 @@ include 'header.php';
 
                                         </div>
 
+
                                         <div class="col-12">
 
                                             <label class="form-label">
+
                                                 Contact No.
+
                                             </label>
 
                                             <input
@@ -790,17 +955,22 @@ include 'header.php';
 
                                         </div>
 
+
                                     </div>
 
                                 </div>
 
                             </div>
 
+
                             <!-- OTHER INFORMATION -->
+
                             <div class="col-12">
 
                                 <label class="form-label">
+
                                     Other Relevant Information
+
                                 </label>
 
                                 <textarea
@@ -812,6 +982,7 @@ include 'header.php';
 
                             </div>
 
+
                         </div>
 
                     </div>
@@ -820,30 +991,47 @@ include 'header.php';
 
             </div>
 
+
             <!-- PHOTO -->
+
             <div class="col-12 col-lg-4">
+
 
                 <div class="student-form-card student-photo-card">
 
+
                     <div class="student-form-card-header">
 
+
                         <div class="student-section-icon">
+
                             <i class="bi bi-camera"></i>
+
                         </div>
 
+
                         <div>
+
                             <h5 class="fw-bold mb-1">
+
                                 Profile Photo
+
                             </h5>
 
                             <p class="text-muted small mb-0">
+
                                 Upload a student profile picture.
+
                             </p>
+
                         </div>
+
 
                     </div>
 
+
                     <div class="student-photo-body">
+
 
                         <?php if (!empty($record['photo'])): ?>
 
@@ -856,11 +1044,17 @@ include 'header.php';
                         <?php else: ?>
 
                             <div class="student-photo-placeholder">
+
                                 <i class="bi bi-person"></i>
-                                <span>No photo uploaded</span>
+
+                                <span>
+                                    No photo uploaded
+                                </span>
+
                             </div>
 
                         <?php endif; ?>
+
 
                         <input
                             type="file"
@@ -869,10 +1063,14 @@ include 'header.php';
                             accept=".jpg,.jpeg,.png,.webp"
                         >
 
+
                         <div class="form-text">
+
                             JPG, JPEG, PNG, or WEBP.
                             Maximum file size: 5 MB.
+
                         </div>
+
 
                         <button
                             type="submit"
@@ -887,11 +1085,13 @@ include 'header.php';
 
                         </button>
 
+
                     </div>
 
                 </div>
 
             </div>
+
 
         </div>
 
@@ -899,7 +1099,9 @@ include 'header.php';
 
 </div>
 
+
 <script>
+
 document.addEventListener('DOMContentLoaded', function () {
 
     const lrn = document.getElementById('lrn');
@@ -908,81 +1110,109 @@ document.addEventListener('DOMContentLoaded', function () {
     const emergencyName = document.getElementById('emergency_name');
     const contactNumber = document.getElementById('contact_number');
     const emergencyContact = document.getElementById('emergency_contact');
-    const schoolYear = document.getElementById('school_year');
 
-    // LRN
+
+    /*
+     * LRN
+     */
+
     if (lrn) {
+
         lrn.addEventListener('input', function () {
+
             this.value = this.value
                 .replace(/\D/g, '')
                 .slice(0, 12);
+
         });
+
     }
 
-    // Names
+
+    /*
+     * Names
+     */
+
     function cleanName(input) {
+
         input.value = input.value.replace(
             /[^A-Za-zÀ-ÿ .'-]/g,
             ''
         );
+
     }
+
 
     if (fullName) {
+
         fullName.addEventListener('input', function () {
+
             cleanName(this);
+
         });
+
     }
+
 
     if (parentGuardian) {
+
         parentGuardian.addEventListener('input', function () {
+
             cleanName(this);
+
         });
+
     }
+
 
     if (emergencyName) {
+
         emergencyName.addEventListener('input', function () {
+
             cleanName(this);
+
         });
+
     }
 
-    // Contact numbers
+
+    /*
+     * Contact numbers
+     */
+
     function cleanPhone(input) {
+
         input.value = input.value
             .replace(/\D/g, '')
             .slice(0, 11);
+
     }
+
 
     if (contactNumber) {
+
         contactNumber.addEventListener('input', function () {
+
             cleanPhone(this);
+
         });
+
     }
+
 
     if (emergencyContact) {
+
         emergencyContact.addEventListener('input', function () {
+
             cleanPhone(this);
-        });
-    }
-
-    // School year
-    if (schoolYear) {
-        schoolYear.addEventListener('input', function () {
-
-            this.value = this.value
-                .replace(/\D/g, '')
-                .slice(0, 8);
-
-            if (this.value.length > 4) {
-                this.value =
-                    this.value.slice(0, 4) +
-                    '-' +
-                    this.value.slice(4);
-            }
 
         });
+
     }
 
 });
+
 </script>
+
 
 <?php include 'footer.php'; ?>

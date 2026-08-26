@@ -87,6 +87,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST['tin_no'] ?? ''
         ),
 
+        'gsis_no' => trim(
+            $_POST['gsis_no'] ?? ''
+        ),
+
+        'philhealth_no' => trim(
+            $_POST['philhealth_no'] ?? ''
+        ),
+
+        'salary_grade' => trim(
+            $_POST['salary_grade'] ?? ''
+        ),
+
+        'step' => trim(
+            $_POST['step'] ?? ''
+        ),
+
         'first_day_of_service' => !empty(
             $_POST['first_day_of_service'] ?? ''
         )
@@ -109,6 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         'specialization_prc_eligibility' => trim(
             $_POST['specialization_prc_eligibility'] ?? ''
+        ),
+
+        'training_accomplishments' => trim(
+            $_POST['training_accomplishments'] ?? ''
         ),
 
         'deped_email' => trim(
@@ -164,6 +184,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $error =
             'Contact Number must be a valid Philippine mobile number.';
+
+    } elseif (
+        $data['gsis_no'] !== '' &&
+        !preg_match(
+            '/^[0-9]+$/',
+            $data['gsis_no']
+        )
+    ) {
+
+        $error =
+            'GSIS No. must contain numbers only.';
+
+    } elseif (
+        $data['philhealth_no'] !== '' &&
+        !preg_match(
+            '/^[0-9]+$/',
+            $data['philhealth_no']
+        )
+    ) {
+
+        $error =
+            'PhilHealth No. must contain numbers only.';
+
+    } elseif (
+        $data['salary_grade'] !== '' &&
+        (
+            !ctype_digit($data['salary_grade']) ||
+            (int)$data['salary_grade'] < 1 ||
+            (int)$data['salary_grade'] > 33
+        )
+    ) {
+
+        $error =
+            'Salary Grade must be between SG 1 and SG 33.';
+
+    } elseif (
+        $data['step'] !== '' &&
+        (
+            !ctype_digit($data['step']) ||
+            (int)$data['step'] < 1 ||
+            (int)$data['step'] > 8
+        )
+    ) {
+
+        $error =
+            'Step must be between Step 1 and Step 8.';
 
     } elseif (
         $data['deped_email'] !== '' &&
@@ -230,12 +296,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         plantilla_no = ?,
                         tin_no = ?,
+                        gsis_no = ?,
+                        philhealth_no = ?,
+                        salary_grade = ?,
+                        step = ?,
+
                         first_day_of_service = ?,
                         position_department = ?,
                         current_latest_appointment = ?,
 
                         degree_finished = ?,
                         specialization_prc_eligibility = ?,
+                        training_accomplishments = ?,
 
                         deped_email = ?,
                         personal_email = ?,
@@ -259,12 +331,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $data['plantilla_no'],
                     $data['tin_no'],
+                    $data['gsis_no'],
+                    $data['philhealth_no'],
+                    $data['salary_grade'],
+                    $data['step'],
+
                     $data['first_day_of_service'],
                     $data['position_department'],
                     $data['current_latest_appointment'],
 
                     $data['degree_finished'],
                     $data['specialization_prc_eligibility'],
+                    $data['training_accomplishments'],
 
                     $data['deped_email'],
                     $data['personal_email'],
@@ -313,12 +391,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         plantilla_no,
                         tin_no,
+                        gsis_no,
+                        philhealth_no,
+                        salary_grade,
+                        step,
+
                         first_day_of_service,
                         position_department,
                         current_latest_appointment,
 
                         degree_finished,
                         specialization_prc_eligibility,
+                        training_accomplishments,
 
                         deped_email,
                         personal_email,
@@ -332,9 +416,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         ?, ?, ?, ?, ?, ?,
 
-                        ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?,
 
-                        ?, ?,
+                        ?, ?, ?,
+
+                        ?, ?, ?,
 
                         ?, ?,
 
@@ -359,12 +445,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $data['plantilla_no'],
                     $data['tin_no'],
+                    $data['gsis_no'],
+                    $data['philhealth_no'],
+                    $data['salary_grade'],
+                    $data['step'],
+
                     $data['first_day_of_service'],
                     $data['position_department'],
                     $data['current_latest_appointment'],
 
                     $data['degree_finished'],
                     $data['specialization_prc_eligibility'],
+                    $data['training_accomplishments'],
 
                     $data['deped_email'],
                     $data['personal_email'],
@@ -785,7 +877,8 @@ include 'header.php';
                             </h5>
 
                             <p>
-                                Employment and appointment details.
+                                Employment, government identification,
+                                salary grade, and appointment details.
                             </p>
 
                         </div>
@@ -867,6 +960,142 @@ include 'header.php';
                                     maxlength="30"
                                     placeholder="TIN number"
                                 >
+
+                            </div>
+
+
+                            <!-- GSIS -->
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label">
+                                    GSIS No.
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="gsis_no"
+                                    id="gsis_no"
+                                    class="form-control"
+                                    value="<?= e(
+                                        $record['gsis_no'] ?? ''
+                                    ) ?>"
+                                    maxlength="30"
+                                    inputmode="numeric"
+                                    pattern="[0-9]+"
+                                    placeholder="GSIS number"
+                                >
+
+                                <div class="form-text">
+                                    Numbers only.
+                                </div>
+
+                            </div>
+
+
+                            <!-- PhilHealth -->
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label">
+                                    PhilHealth No.
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="philhealth_no"
+                                    id="philhealth_no"
+                                    class="form-control"
+                                    value="<?= e(
+                                        $record['philhealth_no'] ?? ''
+                                    ) ?>"
+                                    maxlength="30"
+                                    inputmode="numeric"
+                                    pattern="[0-9]+"
+                                    placeholder="PhilHealth number"
+                                >
+
+                                <div class="form-text">
+                                    Numbers only.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Salary Grade -->
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label">
+                                    Salary Grade
+                                </label>
+
+                                <select
+                                    name="salary_grade"
+                                    class="form-select"
+                                >
+
+                                    <option value="">
+                                        Select Salary Grade
+                                    </option>
+
+                                    <?php for ($sg = 1; $sg <= 33; $sg++): ?>
+
+                                        <option
+                                            value="<?= $sg ?>"
+                                            <?= (
+                                                (string)($record['salary_grade'] ?? '') ===
+                                                (string)$sg
+                                            )
+                                                ? 'selected'
+                                                : ''
+                                            ?>
+                                        >
+                                            SG <?= $sg ?>
+                                        </option>
+
+                                    <?php endfor; ?>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- Step -->
+
+                            <div class="col-12 col-md-6">
+
+                                <label class="form-label">
+                                    Step
+                                </label>
+
+                                <select
+                                    name="step"
+                                    class="form-select"
+                                >
+
+                                    <option value="">
+                                        Select Step
+                                    </option>
+
+                                    <?php for ($step = 1; $step <= 8; $step++): ?>
+
+                                        <option
+                                            value="<?= $step ?>"
+                                            <?= (
+                                                (string)($record['step'] ?? '') ===
+                                                (string)$step
+                                            )
+                                                ? 'selected'
+                                                : ''
+                                            ?>
+                                        >
+                                            Step <?= $step ?>
+                                        </option>
+
+                                    <?php endfor; ?>
+
+                                </select>
 
                             </div>
 
@@ -1025,6 +1254,61 @@ include 'header.php';
 
                             </div>
 
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     Training & Accomplishments
+                =================================================== -->
+
+                <div class="staff-form-card mt-4">
+
+                    <div class="staff-form-card-header">
+
+                        <div class="staff-section-icon">
+
+                            <i class="bi bi-trophy"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h5>
+                                Training &amp; Accomplishments
+                            </h5>
+
+                            <p>
+                                Training, seminars, certifications, and other accomplishments.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="staff-form-card-body">
+
+                        <label class="form-label">
+                            Training and Accomplishments
+                        </label>
+
+                        <textarea
+                            name="training_accomplishments"
+                            class="form-control"
+                            rows="6"
+                            placeholder="Enter trainings, seminars, certifications, awards, accomplishments, and other professional development activities..."
+                        ><?= e(
+                            $record[
+                                'training_accomplishments'
+                            ] ?? ''
+                        ) ?></textarea>
+
+                        <div class="form-text">
+                            You may enter multiple trainings or accomplishments.
                         </div>
 
                     </div>
@@ -1328,6 +1612,58 @@ document.addEventListener('DOMContentLoaded', function () {
                     this.value
                         .replace(/\D/g, '')
                         .slice(0, 11);
+
+            }
+        );
+
+    }
+
+
+    // ======================================================
+    // GSIS No.
+    // Numbers Only
+    // ======================================================
+
+    const gsisNumber =
+        document.getElementById('gsis_no');
+
+
+    if (gsisNumber) {
+
+        gsisNumber.addEventListener(
+            'input',
+            function () {
+
+                this.value =
+                    this.value
+                        .replace(/\D/g, '')
+                        .slice(0, 30);
+
+            }
+        );
+
+    }
+
+
+    // ======================================================
+    // PhilHealth No.
+    // Numbers Only
+    // ======================================================
+
+    const philhealthNumber =
+        document.getElementById('philhealth_no');
+
+
+    if (philhealthNumber) {
+
+        philhealthNumber.addEventListener(
+            'input',
+            function () {
+
+                this.value =
+                    this.value
+                        .replace(/\D/g, '')
+                        .slice(0, 30);
 
             }
         );
