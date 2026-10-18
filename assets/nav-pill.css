@@ -1,0 +1,192 @@
+/* ==========================================================
+   Floating pill navigation + minimal footer
+   Save as: assets/nav-pill.css
+   Colors come from the global theme variables (header.php),
+   so the page colors stay exactly as the theme editor sets them.
+   ========================================================== */
+
+/* ---------- Navigation ---------- */
+
+.sdms-nav-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    padding: 12px 16px;
+    pointer-events: none;           /* page background stays clickable around the pill */
+}
+
+.sdms-nav {
+    pointer-events: auto;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 8px 10px 8px 24px;
+    border-radius: 999px;
+    background: var(--theme-header, #fff);
+    border: 1px solid var(--theme-border, #e2e8f0);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .10);
+}
+
+.sdms-brand {
+    font-weight: 700;
+    color: var(--theme-primary, #0d6efd);
+    margin-right: 1rem;
+}
+
+.sdms-brand:hover {
+    color: var(--theme-primary, #0d6efd);
+}
+
+.sdms-nav .navbar-nav .nav-link {
+    padding: .55rem 1.1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--theme-font, #334155);
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.sdms-nav .navbar-nav .nav-link:hover,
+.sdms-nav .navbar-nav .nav-link:focus-visible,
+.sdms-nav .navbar-nav .nav-link.show {
+    background: color-mix(in srgb, var(--theme-primary, #0d6efd) 12%, transparent);
+    color: var(--theme-primary, #0d6efd);
+}
+
+/* active page pill */
+.sdms-nav .navbar-nav .nav-link.active,
+.sdms-nav .navbar-nav .nav-link.active:hover,
+.sdms-nav .navbar-nav .nav-link.active:focus-visible {
+    background: var(--theme-primary, #0d6efd);
+    color: var(--theme-on-primary, #fff) !important;
+}
+
+/* some theme rules color icons/text with the primary color, which hides them on the pill */
+.sdms-nav .navbar-nav .nav-link.active i,
+.sdms-nav .navbar-nav .nav-link.active .bi {
+    color: var(--theme-on-primary, #fff) !important;
+}
+
+/* dropdown panel */
+.sdms-dropdown {
+    margin-top: .6rem;
+    padding: .5rem;
+    border-radius: 16px;
+    border: 1px solid var(--theme-border, #e2e8f0);
+    background: var(--theme-card, #fff);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
+}
+
+.sdms-dropdown .dropdown-item {
+    padding: .6rem .9rem;
+    border-radius: 10px;
+    font-weight: 500;
+    color: var(--theme-font, #334155);
+}
+
+.sdms-dropdown .dropdown-item:hover,
+.sdms-dropdown .dropdown-item:focus {
+    background: color-mix(in srgb, var(--theme-primary, #0d6efd) 12%, transparent);
+    color: var(--theme-primary, #0d6efd);
+}
+
+.sdms-dropdown {
+    --bs-dropdown-link-active-bg: var(--theme-primary, #0d6efd);
+    --bs-dropdown-link-active-color: var(--theme-on-primary, #fff);
+}
+
+body .sdms-nav .sdms-dropdown a.dropdown-item.active,
+body .sdms-nav .sdms-dropdown a.dropdown-item.active:hover,
+body .sdms-nav .sdms-dropdown a.dropdown-item.active:focus,
+body .sdms-nav .sdms-dropdown a.dropdown-item:active {
+    background: var(--theme-primary, #0d6efd);
+    color: var(--theme-on-primary, #fff) !important;
+}
+
+body .sdms-nav .sdms-dropdown a.dropdown-item.active i,
+body .sdms-nav .sdms-dropdown a.dropdown-item.active .bi {
+    background: transparent;
+    color: var(--theme-on-primary, #fff) !important;
+}
+
+/* user chip */
+.sdms-user {
+    display: inline-flex;
+    align-items: center;
+    padding: .5rem 1rem;
+    border-radius: 999px;
+    font-size: .875rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--theme-font, #334155);
+    background: color-mix(in srgb, var(--theme-primary, #0d6efd) 10%, transparent);
+}
+
+.sdms-user:hover {
+    color: var(--theme-primary, #0d6efd);
+}
+
+/* small screens: the opened menu needs a softer corner than a full pill */
+@media (max-width: 991.98px) {
+    .sdms-nav {
+        border-radius: 28px;
+        padding: 10px 16px;
+    }
+
+    .sdms-nav .navbar-collapse {
+        padding-top: .75rem;
+    }
+
+    .sdms-dropdown {
+        box-shadow: none;
+        margin-top: .25rem;
+    }
+}
+
+/* ---------- Footer (minimal, centered) ---------- */
+
+.sdms-footer {
+    border-top: 1px solid var(--theme-border, #e2e8f0);
+    background: var(--theme-card, #fff);
+    color: var(--theme-font, #334155);
+}
+
+.sdms-footer-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+}
+
+.sdms-footer-brand {
+    font-size: 1.15rem;
+}
+
+.sdms-footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .5rem 1.75rem;
+    margin: 1.1rem 0;
+    font-weight: 600;
+    font-size: .95rem;
+}
+
+.sdms-footer-links a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.sdms-footer-links a:hover {
+    color: var(--theme-primary, #0d6efd);
+}
+
+.sdms-footer-contact {
+    margin: 0 0 .5rem;
+    font-size: .875rem;
+    opacity: .8;
+}
+
+.sdms-footer-copy {
+    margin: 0;
+    font-size: .8rem;
+    opacity: .7;
+}

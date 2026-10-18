@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 26, 2026 at 10:00 AM
+-- Generation Time: Oct 18, 2026 at 12:47 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,60 @@ SET time_zone = "+00:00";
 --
 -- Database: `school_data_management`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `bulletin_announcements`
+--
+
+CREATE TABLE `bulletin_announcements` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `description` text NOT NULL,
+  `image_path` varchar(255) NOT NULL,
+  `image_alt` varchar(255) DEFAULT NULL,
+  `category` varchar(50) DEFAULT 'General',
+  `status` enum('Draft','Published') NOT NULL DEFAULT 'Draft',
+  `is_featured` tinyint(1) NOT NULL DEFAULT 0,
+  `publish_date` datetime DEFAULT NULL,
+  `created_by` int(10) UNSIGNED NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `bulletin_announcements`
+--
+
+INSERT INTO `bulletin_announcements` (`id`, `title`, `description`, `image_path`, `image_alt`, `category`, `status`, `is_featured`, `publish_date`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 'Tessting', 'Tester', 'uploads/bulletins/36045f8c19b59b4491c878c4fba5bc14.jpg', 'This is a graduated image', 'Academics', 'Published', 1, '2026-10-18 10:37:00', 3, '2026-10-18 08:37:41', '2026-10-18 08:59:34');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `calendar_events`
+--
+
+CREATE TABLE `calendar_events` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `description` text DEFAULT NULL,
+  `event_date` date NOT NULL,
+  `start_time` time DEFAULT NULL,
+  `end_time` time DEFAULT NULL,
+  `location` varchar(200) DEFAULT NULL,
+  `category` enum('Notice','Event','Academics','Community') NOT NULL DEFAULT 'Event',
+  `created_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `calendar_events`
+--
+
+INSERT INTO `calendar_events` (`id`, `title`, `description`, `event_date`, `start_time`, `end_time`, `location`, `category`, `created_by`, `created_at`) VALUES
+(1, 'Testing', 'General Cleaning for Instrams event.', '2026-10-19', '08:00:00', '17:00:00', 'SE Integrated School', 'Academics', 3, '2026-10-18 09:06:42');
 
 -- --------------------------------------------------------
 
@@ -65,7 +119,7 @@ CREATE TABLE `information` (
 --
 
 INSERT INTO `information` (`id`, `title`, `category`, `description`, `school_year`, `date_posted`, `status`, `file_name`, `file_path`, `file_type`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(1, 'Test', 'Inventory', 'Test Test', '2027-2028', '2026-08-26', 'Published', 'Personal Data Sheet (PDS) 2025 - CS Form 212 Revised 2025.pdf', 'uploads/information/info_6a8e96978da089.49788080_Personal_Data_Sheet__PDS__2025_-_CS_Form_212_Revised_2025.pdf', 'application/pdf', 3, 3, '2026-08-26 07:32:39', '2026-08-26 07:33:50');
+(1, 'Test', 'Inventory', 'Test Test', '2027-2028', '2026-08-26', 'Draft', 'Personal Data Sheet (PDS) 2025 - CS Form 212 Revised 2025.pdf', 'uploads/information/info_6a8e96978da089.49788080_Personal_Data_Sheet__PDS__2025_-_CS_Form_212_Revised_2025.pdf', 'application/pdf', 3, 3, '2026-08-26 07:32:39', '2026-09-08 04:50:37');
 
 -- --------------------------------------------------------
 
@@ -177,6 +231,34 @@ INSERT INTO `students` (`id`, `lrn`, `photo`, `full_name`, `date_of_birth`, `gen
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `system_theme_settings`
+--
+
+CREATE TABLE `system_theme_settings` (
+  `id` tinyint(3) UNSIGNED NOT NULL,
+  `primary_color` char(7) NOT NULL DEFAULT '#0d6efd',
+  `button_color` char(7) NOT NULL DEFAULT '#0d6efd',
+  `header_color` char(7) NOT NULL DEFAULT '#ffffff',
+  `card_color` char(7) NOT NULL DEFAULT '#ffffff',
+  `background_color` char(7) NOT NULL DEFAULT '#f5f8fc',
+  `text_color` char(7) NOT NULL DEFAULT '#172b4d',
+  `border_color` char(7) NOT NULL DEFAULT '#e5eaf0',
+  `updated_by` int(11) DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `font_color` char(7) NOT NULL DEFAULT '#172b4d',
+  `icon_color` char(7) NOT NULL DEFAULT '#0d6efd'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `system_theme_settings`
+--
+
+INSERT INTO `system_theme_settings` (`id`, `primary_color`, `button_color`, `header_color`, `card_color`, `background_color`, `text_color`, `border_color`, `updated_by`, `updated_at`, `font_color`, `icon_color`) VALUES
+(1, '#087e8b', '#087e8b', '#ffffff', '#ffffff', '#edfafa', '#153b43', '#d3e9e9', 3, '2026-10-18 10:38:32', '#153b43', '#087e8b');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `teachers`
 --
 
@@ -251,7 +333,7 @@ CREATE TABLE `transparency` (
 --
 
 INSERT INTO `transparency` (`id`, `title`, `category`, `description`, `school_year`, `date_posted`, `file_name`, `file_path`, `file_type`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(2, 'Test', NULL, 'Test', NULL, NULL, 'PARQPlus2025ImageFile.pdf', 'uploads/transparency/dd5b6adf05f2e730830ce248.pdf', 'application/pdf', 'Published', 3, 3, '2026-08-26 07:57:14', '2026-08-26 07:58:57');
+(2, 'Test', NULL, 'Test', NULL, NULL, 'PARQPlus2025ImageFile.pdf', 'uploads/transparency/dd5b6adf05f2e730830ce248.pdf', 'application/pdf', 'Archived', 3, 3, '2026-08-26 07:57:14', '2026-09-08 04:50:47');
 
 -- --------------------------------------------------------
 
@@ -280,6 +362,21 @@ INSERT INTO `users` (`id`, `full_name`, `username`, `password`, `role`, `created
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `bulletin_announcements`
+--
+ALTER TABLE `bulletin_announcements`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_bulletin_status_date` (`status`,`publish_date`),
+  ADD KEY `idx_bulletin_featured` (`is_featured`);
+
+--
+-- Indexes for table `calendar_events`
+--
+ALTER TABLE `calendar_events`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_calendar_event_date` (`event_date`);
 
 --
 -- Indexes for table `documents`
@@ -318,6 +415,12 @@ ALTER TABLE `students`
   ADD KEY `idx_students_school_year` (`school_year`);
 
 --
+-- Indexes for table `system_theme_settings`
+--
+ALTER TABLE `system_theme_settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `teachers`
 --
 ALTER TABLE `teachers`
@@ -346,6 +449,18 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `bulletin_announcements`
+--
+ALTER TABLE `bulletin_announcements`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `calendar_events`
+--
+ALTER TABLE `calendar_events`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `documents`
@@ -387,7 +502,7 @@ ALTER TABLE `teachers`
 -- AUTO_INCREMENT for table `transparency`
 --
 ALTER TABLE `transparency`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
