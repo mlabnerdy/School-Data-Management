@@ -376,1192 +376,281 @@ include 'header.php';
 
 ?>
 
-<link
-    rel="stylesheet"
-    href="assets/dashboard.css"
->
+<link rel="stylesheet" href="assets/dashboard.css">
 
+<?php
 
-<!-- Dashboard welcome -->
+/*
+ * Renders the rows of one "recent records" table.
+ * $idKey is the column that holds the record number
+ * (record_id for students/teachers, employee_id for staff).
+ */
+function sdms_record_rows(array $rows, string $idKey, string $emptyText): void
+{
+    if (!$rows) {
+        echo '<tr><td colspan="4" class="sdms-empty">' . e($emptyText) . '</td></tr>';
+        return;
+    }
 
-<div class="mb-4">
-
-    <h2 class="fw-bold mb-1">
-        Dashboard
-    </h2>
-
-    <p class="text-muted mb-0">
-        Welcome back,
-        <?= e($_SESSION['full_name'] ?? 'User') ?>.
-    </p>
-
-</div>
-
-
-<!-- ==========================================================
-     DASHBOARD STATISTICS
-=========================================================== -->
-
-<div class="dashboard-statistics mb-4">
-
-
-    <!-- Main statistics -->
-
-    <div class="row g-4 justify-content-center">
-
-
-        <!-- Students -->
-
-        <div class="col-12 col-sm-6 col-lg-3">
-
-            <a
-                href="students.php"
-                class="dashboard-stat-link"
-            >
-
-                <div class="dashboard-stat-card">
-
-                    <div class="stat-content">
-
-                        <span class="stat-label">
-                            Students
-                        </span>
-
-                        <span class="stat-number">
-                            <?= e($students) ?>
-                        </span>
-
-                        <span class="stat-description">
-                            Registered students
-                        </span>
-
-                    </div>
-
-                    <div class="stat-icon stat-icon-blue">
-
-                        <i class="bi bi-mortarboard-fill"></i>
-
-                    </div>
-
+    foreach ($rows as $r) {
+        $name = (string)($r['full_name'] ?? '');
+        $by   = (string)($r['action_by'] ?? 'Unknown User');
+        ?>
+        <tr>
+            <td>
+                <div class="sdms-person">
+                    <span class="sdms-avatar"><?= e(mb_strtoupper(mb_substr($name !== '' ? $name : 'U', 0, 1))) ?></span>
+                    <?= e($name) ?>
                 </div>
+            </td>
+            <td><span class="sdms-pill"><?= e($r[$idKey] ?? '') ?></span></td>
+            <td class="sdms-muted"><?= e($r['activity_date'] ?? '') ?></td>
+            <td class="sdms-muted"><?= e($by) ?></td>
+        </tr>
+        <?php
+    }
+}
 
-            </a>
-
+/* Renders one board list (Information / Transparency). */
+function sdms_board_card(string $title, string $subtitle, string $href, array $items, string $emptyText): void
+{
+    ?>
+    <section class="sdms-card">
+        <div class="sdms-card-head">
+            <div>
+                <h2 class="sdms-card-title"><?= e($title) ?></h2>
+                <p class="sdms-muted sdms-small"><?= e($subtitle) ?></p>
+            </div>
+            <a class="sdms-link" href="<?= e($href) ?>">View all</a>
         </div>
 
-
-        <!-- Teachers -->
-
-        <?php if ($isAdmin || $isStaff): ?>
-
-            <div class="col-12 col-sm-6 col-lg-3">
-
-                <a
-                    href="teachers.php"
-                    class="dashboard-stat-link"
-                >
-
-                    <div class="dashboard-stat-card">
-
-                        <div class="stat-content">
-
-                            <span class="stat-label">
-                                Teachers
-                            </span>
-
-                            <span class="stat-number">
-                                <?= e($teachers) ?>
-                            </span>
-
-                            <span class="stat-description">
-                                Registered teachers
-                            </span>
-
+        <?php if (!$items): ?>
+            <p class="sdms-empty"><?= e($emptyText) ?></p>
+        <?php else: ?>
+            <ul class="sdms-feed">
+                <?php foreach ($items as $r): ?>
+                    <li>
+                        <div class="sdms-feed-main">
+                            <div class="sdms-feed-title"><?= e($r['title']) ?></div>
+                            <div class="sdms-muted sdms-small">
+                                <?= e(!empty($r['category']) ? $r['category'] : 'General') ?>
+                                &middot; <?= e($r['activity_date']) ?>
+                            </div>
                         </div>
-
-                        <div class="stat-icon stat-icon-blue">
-
-                            <i class="bi bi-person-workspace"></i>
-
-                        </div>
-
-                    </div>
-
-                </a>
-
-            </div>
-
+                        <span class="sdms-muted sdms-small"><?= e($r['action_by'] ?? 'Unknown User') ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
         <?php endif; ?>
+    </section>
+    <?php
+}
+
+$showTeachers = $isAdmin || $isStaff;
+$showStaff    = $isAdmin;
+$showBoards   = $isAdmin || $isStaff || $isTeacher;
+
+/*
+ * Header button colors. The text color is picked from the button color
+ * (white on dark, dark on light) and applied inline, so no theme or
+ * navigation stylesheet can turn the label the same color as the button.
+ */
+$dashBtnBg  = (string)($sdmsGlobalTheme['button_color'] ?? '#0d6efd');
+$dashBtnHex = ltrim($dashBtnBg, '#');
+if (strlen($dashBtnHex) === 3) {
+    $dashBtnHex = preg_replace('/(.)/', '$1$1', $dashBtnHex);
+}
+$dashBtnFg = '#ffffff';
+if (preg_match('/^[0-9a-fA-F]{6}$/', $dashBtnHex)) {
+    $dashBtnLuma = (
+        0.299 * hexdec(substr($dashBtnHex, 0, 2)) +
+        0.587 * hexdec(substr($dashBtnHex, 2, 2)) +
+        0.114 * hexdec(substr($dashBtnHex, 4, 2))
+    ) / 255;
+    $dashBtnFg = $dashBtnLuma > 0.6 ? '#111827' : '#ffffff';
+}
+
+?>
+
+<div class="sdms-dashboard">
+
+    <!-- Page header -->
+    <header class="sdms-page-head">
+        <div>
+            <h1 class="sdms-page-title">Dashboard</h1>
+            <p class="sdms-muted">
+                Welcome back, <?= e($_SESSION['full_name'] ?? 'User') ?>.
+            </p>
+        </div>
+        <a class="sdms-dash-btn" id="recordsAction" href="students.php"
+           style="background: <?= e($dashBtnBg) ?> !important; color: <?= e($dashBtnFg) ?> !important; border: 0 !important;">
+            <i class="bi bi-mortarboard" id="recordsActionIcon"
+               style="color: inherit !important;"></i>
+            <span id="recordsActionLabel"
+                  style="color: inherit !important;">Manage students</span>
+        </a>
+    </header>
 
 
-        <!-- Staff -->
+    <!-- Statistics -->
+    <div class="sdms-stats">
 
-        <?php if ($isAdmin): ?>
-
-            <div class="col-12 col-sm-6 col-lg-3">
-
-                <a
-                    href="staff.php"
-                    class="dashboard-stat-link"
-                >
-
-                    <div class="dashboard-stat-card">
-
-                        <div class="stat-content">
-
-                            <span class="stat-label">
-                                Staff
-                            </span>
-
-                            <span class="stat-number">
-                                <?= e($staff) ?>
-                            </span>
-
-                            <span class="stat-description">
-                                Registered staff
-                            </span>
-
-                        </div>
-
-                        <div class="stat-icon stat-icon-blue">
-
-                            <i class="bi bi-people-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </a>
-
+        <a class="sdms-card sdms-stat" href="students.php">
+            <div>
+                <div class="sdms-stat-label">Students</div>
+                <div class="sdms-stat-number"><?= e($students) ?></div>
+                <div class="sdms-stat-sub">Registered students</div>
             </div>
+            <span class="sdms-stat-icon"><i class="bi bi-mortarboard"></i></span>
+        </a>
 
-        <?php endif; ?>
-
-
-        <!-- Documents -->
-
-        <?php if ($isAdmin): ?>
-
-            <div class="col-12 col-sm-6 col-lg-3">
-
-                <div class="dashboard-stat-card">
-
-                    <div class="stat-content">
-
-                        <span class="stat-label">
-                            Documents
-                        </span>
-
-                        <span class="stat-number">
-                            <?= e($docs) ?>
-                        </span>
-
-                        <span class="stat-description">
-                            Stored documents
-                        </span>
-
-                    </div>
-
-                    <div class="stat-icon stat-icon-blue">
-
-                        <i class="bi bi-file-earmark-text-fill"></i>
-
-                    </div>
-
+        <?php if ($showTeachers): ?>
+            <a class="sdms-card sdms-stat" href="teachers.php">
+                <div>
+                    <div class="sdms-stat-label">Teachers</div>
+                    <div class="sdms-stat-number"><?= e($teachers) ?></div>
+                    <div class="sdms-stat-sub">Registered teachers</div>
                 </div>
+                <span class="sdms-stat-icon"><i class="bi bi-person-workspace"></i></span>
+            </a>
+        <?php endif; ?>
 
+        <?php if ($showStaff): ?>
+            <a class="sdms-card sdms-stat" href="staff.php">
+                <div>
+                    <div class="sdms-stat-label">Staff</div>
+                    <div class="sdms-stat-number"><?= e($staff) ?></div>
+                    <div class="sdms-stat-sub">Registered staff</div>
+                </div>
+                <span class="sdms-stat-icon"><i class="bi bi-person-badge"></i></span>
+            </a>
+
+            <div class="sdms-card sdms-stat">
+                <div>
+                    <div class="sdms-stat-label">Documents</div>
+                    <div class="sdms-stat-number"><?= e($docs) ?></div>
+                    <div class="sdms-stat-sub">Stored documents</div>
+                </div>
+                <span class="sdms-stat-icon"><i class="bi bi-file-earmark-text"></i></span>
             </div>
-
         <?php endif; ?>
 
     </div>
 
 
-    <!-- Information and Transparency -->
-
-    <?php if ($isAdmin || $isStaff || $isTeacher): ?>
-
-        <div class="row g-4 justify-content-center mt-1">
-
-
-            <!-- Information Board -->
-
-            <div class="col-12 col-sm-6 col-lg-4">
-
-                <a
-                    href="information.php"
-                    class="dashboard-stat-link"
-                >
-
-                    <div class="dashboard-stat-card">
-
-                        <div class="stat-content">
-
-                            <span class="stat-label">
-                                Information Board
-                            </span>
-
-                            <span class="stat-number stat-number-small">
-
-                                <?= e($informationPublished) ?>
-
-                                <span class="stat-inline-label">
-                                    Published
-                                </span>
-
-                            </span>
-
-                            <span class="stat-description">
-
-                                <?= e($informationDocuments) ?>
-
-                                Document<?= $informationDocuments == 1 ? '' : 's' ?>
-
-                            </span>
-
-                        </div>
-
-                        <div class="stat-icon stat-icon-blue">
-
-                            <i class="bi bi-info-circle-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </a>
-
+    <!-- Recently added records (tabbed) -->
+    <section class="sdms-card">
+        <div class="sdms-card-head">
+            <div>
+                <h2 class="sdms-card-title">Recently added records</h2>
+                <p class="sdms-muted sdms-small">Latest activity across people records</p>
             </div>
 
-
-            <!-- Transparency Board -->
-
-            <div class="col-12 col-sm-6 col-lg-4">
-
-                <a
-                    href="transparency.php"
-                    class="dashboard-stat-link"
-                >
-
-                    <div class="dashboard-stat-card">
-
-                        <div class="stat-content">
-
-                            <span class="stat-label">
-                                Transparency Board
-                            </span>
-
-                            <span class="stat-number stat-number-small">
-
-                                <?= e($transparencyPublished) ?>
-
-                                <span class="stat-inline-label">
-                                    Published
-                                </span>
-
-                            </span>
-
-                            <span class="stat-description">
-
-                                <?= e($transparencyDocuments) ?>
-
-                                Document<?= $transparencyDocuments == 1 ? '' : 's' ?>
-
-                            </span>
-
-                        </div>
-
-                        <div class="stat-icon stat-icon-blue">
-
-                            <i class="bi bi-megaphone-fill"></i>
-
-                        </div>
-
-                    </div>
-
-                </a>
-
-            </div>
-
-
+            <ul class="nav sdms-tabs" id="recordTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-students" data-bs-toggle="pill"
+                            data-href="students.php" data-label="Manage students" data-icon="bi-mortarboard"
+                            data-bs-target="#pane-students" type="button" role="tab"
+                            aria-controls="pane-students" aria-selected="true">Students</button>
+                </li>
+                <?php if ($showTeachers): ?>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-teachers" data-bs-toggle="pill"
+                                data-href="teachers.php" data-label="Manage teachers" data-icon="bi-person-workspace"
+                                data-bs-target="#pane-teachers" type="button" role="tab"
+                                aria-controls="pane-teachers" aria-selected="false">Teachers</button>
+                    </li>
+                <?php endif; ?>
+                <?php if ($showStaff): ?>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-staff" data-bs-toggle="pill"
+                                data-href="staff.php" data-label="Manage staff" data-icon="bi-person-badge"
+                                data-bs-target="#pane-staff" type="button" role="tab"
+                                aria-controls="pane-staff" aria-selected="false">Staff</button>
+                    </li>
+                <?php endif; ?>
+            </ul>
         </div>
 
+        <div class="tab-content">
+
+            <div class="tab-pane fade show active" id="pane-students" role="tabpanel" aria-labelledby="tab-students" tabindex="0">
+                <div class="table-responsive">
+                    <table class="table sdms-table">
+                        <thead><tr><th>Name</th><th>LRN</th><th>Date</th><th>Created / Updated by</th></tr></thead>
+                        <tbody><?php sdms_record_rows($recentStudents, 'record_id', 'No student records yet.'); ?></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <?php if ($showTeachers): ?>
+                <div class="tab-pane fade" id="pane-teachers" role="tabpanel" aria-labelledby="tab-teachers" tabindex="0">
+                    <div class="table-responsive">
+                        <table class="table sdms-table">
+                            <thead><tr><th>Name</th><th>Employee No.</th><th>Date</th><th>Created / Updated by</th></tr></thead>
+                            <tbody><?php sdms_record_rows($recentTeachers, 'record_id', 'No teacher records yet.'); ?></tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($showStaff): ?>
+                <div class="tab-pane fade" id="pane-staff" role="tabpanel" aria-labelledby="tab-staff" tabindex="0">
+                    <div class="table-responsive">
+                        <table class="table sdms-table">
+                            <thead><tr><th>Name</th><th>Employee ID</th><th>Date</th><th>Created / Updated by</th></tr></thead>
+                            <tbody><?php sdms_record_rows($recentStaff, 'employee_id', 'No staff records yet.'); ?></tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+        </div>
+    </section>
+
+
+    <!-- Boards -->
+    <?php if ($showBoards): ?>
+        <div class="sdms-two">
+            <?php
+            sdms_board_card(
+                'Information Board',
+                $informationPublished . ' published · ' . $informationDocuments . ' with documents',
+                'information.php',
+                $recentInformation,
+                'No published information yet.'
+            );
+
+            sdms_board_card(
+                'Transparency Board',
+                $transparencyPublished . ' published · ' . $transparencyDocuments . ' with documents',
+                'transparency.php',
+                $recentTransparency,
+                'No published transparency records yet.'
+            );
+            ?>
+        </div>
     <?php endif; ?>
 
 </div>
 
-
-<!-- ==========================================================
-     RECENT STUDENTS
-=========================================================== -->
-
-<div class="dashboard-record-card mb-4">
-
-    <div class="records-header">
-
-        <div>
-
-            <h5 class="records-title">
-                Recent Students
-            </h5>
-
-            <p class="records-subtitle">
-                Latest student records
-            </p>
-
-        </div>
-
-        <div class="records-icon">
-
-            <i class="bi bi-mortarboard"></i>
-
-        </div>
-
-    </div>
-
-
-    <div class="table-responsive">
-
-        <table class="table dashboard-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        LRN
-                    </th>
-
-                    <th>
-                        Name
-                    </th>
-
-                    <th>
-                        Date Added
-                    </th>
-
-                    <th>
-                        Created / Updated By
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                <?php foreach ($recentStudents as $r): ?>
-
-                    <tr>
-
-                        <td>
-
-                            <span class="record-id">
-                                <?= e($r['record_id']) ?>
-                            </span>
-
-                        </td>
-
-
-                        <td>
-
-                            <div class="record-name">
-
-                                <div class="record-avatar">
-
-                                    <?= e(
-                                        strtoupper(
-                                            substr(
-                                                $r['full_name'] ?? 'U',
-                                                0,
-                                                1
-                                            )
-                                        )
-                                    ) ?>
-
-                                </div>
-
-                                <?= e($r['full_name']) ?>
-
-                            </div>
-
-                        </td>
-
-
-                        <td>
-
-                            <span class="record-date">
-
-                                <i class="bi bi-calendar3"></i>
-
-                                <?= e($r['activity_date']) ?>
-
-                            </span>
-
-                        </td>
-
-
-                        <td>
-
-                            <div class="record-name">
-
-                                <div class="record-avatar">
-
-                                    <?= e(
-                                        strtoupper(
-                                            substr(
-                                                $r['action_by'] ?? 'U',
-                                                0,
-                                                1
-                                            )
-                                        )
-                                    ) ?>
-
-                                </div>
-
-                                <?= e(
-                                    $r['action_by']
-                                    ?? 'Unknown User'
-                                ) ?>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                <?php endforeach; ?>
-
-
-                <?php if (!$recentStudents): ?>
-
-                    <tr>
-
-                        <td
-                            colspan="4"
-                            class="text-center text-muted py-4"
-                        >
-
-                            No student records yet.
-
-                        </td>
-
-                    </tr>
-
-                <?php endif; ?>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-
-<!-- ==========================================================
-     RECENT TEACHERS
-=========================================================== -->
-
-<?php if ($isAdmin || $isStaff): ?>
-
-    <div class="dashboard-record-card mb-4">
-
-        <div class="records-header">
-
-            <div>
-
-                <h5 class="records-title">
-                    Recent Teachers
-                </h5>
-
-                <p class="records-subtitle">
-                    Latest teacher records
-                </p>
-
-            </div>
-
-            <div class="records-icon">
-
-                <i class="bi bi-person-workspace"></i>
-
-            </div>
-
-        </div>
-
-
-        <div class="table-responsive">
-
-            <table class="table dashboard-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Employee No.
-                        </th>
-
-                        <th>
-                            Name
-                        </th>
-
-                        <th>
-                            Date Added
-                        </th>
-
-                        <th>
-                            Created / Updated By
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    <?php foreach ($recentTeachers as $r): ?>
-
-                        <tr>
-
-                            <td>
-
-                                <span class="record-id">
-                                    <?= e($r['record_id']) ?>
-                                </span>
-
-                            </td>
-
-
-                            <td>
-
-                                <div class="record-name">
-
-                                    <div class="record-avatar">
-
-                                        <?= e(
-                                            strtoupper(
-                                                substr(
-                                                    $r['full_name'] ?? 'U',
-                                                    0,
-                                                    1
-                                                )
-                                            )
-                                        ) ?>
-
-                                    </div>
-
-                                    <?= e($r['full_name']) ?>
-
-                                </div>
-
-                            </td>
-
-
-                            <td>
-
-                                <span class="record-date">
-
-                                    <i class="bi bi-calendar3"></i>
-
-                                    <?= e($r['activity_date']) ?>
-
-                                </span>
-
-                            </td>
-
-
-                            <td>
-
-                                <div class="record-name">
-
-                                    <div class="record-avatar">
-
-                                        <?= e(
-                                            strtoupper(
-                                                substr(
-                                                    $r['action_by'] ?? 'U',
-                                                    0,
-                                                    1
-                                                )
-                                            )
-                                        ) ?>
-
-                                    </div>
-
-                                    <?= e(
-                                        $r['action_by']
-                                        ?? 'Unknown User'
-                                    ) ?>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    <?php endforeach; ?>
-
-
-                    <?php if (!$recentTeachers): ?>
-
-                        <tr>
-
-                            <td
-                                colspan="4"
-                                class="text-center text-muted py-4"
-                            >
-
-                                No teacher records yet.
-
-                            </td>
-
-                        </tr>
-
-                    <?php endif; ?>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-<?php endif; ?>
-
-
-<!-- ==========================================================
-     RECENT STAFF
-=========================================================== -->
-
-<?php if ($isAdmin): ?>
-
-    <div class="dashboard-record-card mb-4">
-
-        <div class="records-header">
-
-            <div>
-
-                <h5 class="records-title">
-                    Recent Staff
-                </h5>
-
-                <p class="records-subtitle">
-                    Latest staff records
-                </p>
-
-            </div>
-
-            <div class="records-icon">
-
-                <i class="bi bi-people-fill"></i>
-
-            </div>
-
-        </div>
-
-
-        <div class="table-responsive">
-
-            <table class="table dashboard-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Employee ID
-                        </th>
-
-                        <th>
-                            Name
-                        </th>
-
-                        <th>
-                            Date Added
-                        </th>
-
-                        <th>
-                            Created / Updated By
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                <?php foreach ($recentStaff as $r): ?>
-
-                    <tr>
-
-                        <td>
-
-                            <span class="record-id">
-                                <?= e($r['employee_id']) ?>
-                            </span>
-
-                        </td>
-
-
-                        <td>
-
-                            <div class="record-name">
-
-                                <div class="record-avatar">
-
-                                    <?= e(
-                                        strtoupper(
-                                            substr(
-                                                $r['full_name'] ?? 'U',
-                                                0,
-                                                1
-                                            )
-                                        )
-                                    ) ?>
-
-                                </div>
-
-                                <?= e($r['full_name']) ?>
-
-                            </div>
-
-                        </td>
-
-
-                        <td>
-
-                            <span class="record-date">
-
-                                <i class="bi bi-calendar3"></i>
-
-                                <?= e($r['activity_date']) ?>
-
-                            </span>
-
-                        </td>
-
-
-                        <td>
-
-                            <div class="record-name">
-
-                                <div class="record-avatar">
-
-                                    <?= e(
-                                        strtoupper(
-                                            substr(
-                                                $r['action_by'] ?? 'U',
-                                                0,
-                                                1
-                                            )
-                                        )
-                                    ) ?>
-
-                                </div>
-
-                                <?= e(
-                                    $r['action_by']
-                                    ?? 'Unknown User'
-                                ) ?>
-
-                            </div>
-
-                        </td>
-
-                    </tr>
-
-                <?php endforeach; ?>
-
-
-                <?php if (!$recentStaff): ?>
-
-                    <tr>
-
-                        <td
-                            colspan="4"
-                            class="text-center text-muted py-4"
-                        >
-
-                            No staff records yet.
-
-                        </td>
-
-                    </tr>
-
-                <?php endif; ?>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-<?php endif; ?>
-
-
-<!-- ==========================================================
-     RECENT INFORMATION BOARD
-=========================================================== -->
-
-<?php if ($isAdmin || $isStaff || $isTeacher): ?>
-
-    <div class="dashboard-record-card mb-4">
-
-        <div class="records-header">
-
-            <div>
-
-                <h5 class="records-title">
-                    Recent Information Board
-                </h5>
-
-                <p class="records-subtitle">
-                    Latest published information
-                </p>
-
-            </div>
-
-            <div class="records-icon">
-
-                <i class="bi bi-info-circle"></i>
-
-            </div>
-
-        </div>
-
-
-        <div class="table-responsive">
-
-            <table class="table dashboard-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Title
-                        </th>
-
-                        <th>
-                            Category
-                        </th>
-
-                        <th>
-                            Date Posted
-                        </th>
-
-                        <th>
-                            Published By
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    <?php foreach ($recentInformation as $r): ?>
-
-                        <tr>
-
-                            <td>
-
-                                <div class="record-name">
-
-                                    <div class="record-avatar">
-
-                                        <i class="bi bi-info-circle"></i>
-
-                                    </div>
-
-                                    <?= e($r['title']) ?>
-
-                                </div>
-
-                            </td>
-
-
-                            <td>
-
-                                <?php if (!empty($r['category'])): ?>
-
-                                    <span class="record-id">
-                                        <?= e($r['category']) ?>
-                                    </span>
-
-                                <?php else: ?>
-
-                                    <span class="text-muted">
-                                        General
-                                    </span>
-
-                                <?php endif; ?>
-
-                            </td>
-
-
-                            <td>
-
-                                <span class="record-date">
-
-                                    <i class="bi bi-calendar3"></i>
-
-                                    <?= e($r['activity_date']) ?>
-
-                                </span>
-
-                            </td>
-
-
-                            <td>
-
-                                <div class="record-name">
-
-                                    <div class="record-avatar">
-
-                                        <?= e(
-                                            strtoupper(
-                                                substr(
-                                                    $r['action_by'] ?? 'U',
-                                                    0,
-                                                    1
-                                                )
-                                            )
-                                        ) ?>
-
-                                    </div>
-
-                                    <?= e(
-                                        $r['action_by']
-                                        ?? 'Unknown User'
-                                    ) ?>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    <?php endforeach; ?>
-
-
-                    <?php if (!$recentInformation): ?>
-
-                        <tr>
-
-                            <td
-                                colspan="4"
-                                class="text-center text-muted py-4"
-                            >
-
-                                <i
-                                    class="bi bi-info-circle fs-3 d-block mb-2"
-                                ></i>
-
-                                No published information yet.
-
-                            </td>
-
-                        </tr>
-
-                    <?php endif; ?>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-<?php endif; ?>
-
-
-<!-- ==========================================================
-     RECENT TRANSPARENCY BOARD
-=========================================================== -->
-
-<?php if ($isAdmin || $isStaff || $isTeacher): ?>
-
-    <div class="dashboard-record-card">
-
-        <div class="records-header">
-
-            <div>
-
-                <h5 class="records-title">
-                    Recent Transparency Board
-                </h5>
-
-                <p class="records-subtitle">
-                    Latest published transparency records
-                </p>
-
-            </div>
-
-            <div class="records-icon">
-
-                <i class="bi bi-megaphone"></i>
-
-            </div>
-
-        </div>
-
-
-        <div class="table-responsive">
-
-            <table class="table dashboard-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Title
-                        </th>
-
-                        <th>
-                            Category
-                        </th>
-
-                        <th>
-                            Date Posted
-                        </th>
-
-                        <th>
-                            Published By
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    <?php foreach ($recentTransparency as $r): ?>
-
-                        <tr>
-
-                            <td>
-
-                                <div class="record-name">
-
-                                    <div class="record-avatar">
-
-                                        <i class="bi bi-megaphone"></i>
-
-                                    </div>
-
-                                    <?= e($r['title']) ?>
-
-                                </div>
-
-                            </td>
-
-
-                            <td>
-
-                                <?php if (!empty($r['category'])): ?>
-
-                                    <span class="record-id">
-                                        <?= e($r['category']) ?>
-                                    </span>
-
-                                <?php else: ?>
-
-                                    <span class="text-muted">
-                                        General
-                                    </span>
-
-                                <?php endif; ?>
-
-                            </td>
-
-
-                            <td>
-
-                                <span class="record-date">
-
-                                    <i class="bi bi-calendar3"></i>
-
-                                    <?= e($r['activity_date']) ?>
-
-                                </span>
-
-                            </td>
-
-
-                            <td>
-
-                                <div class="record-name">
-
-                                    <div class="record-avatar">
-
-                                        <?= e(
-                                            strtoupper(
-                                                substr(
-                                                    $r['action_by'] ?? 'U',
-                                                    0,
-                                                    1
-                                                )
-                                            )
-                                        ) ?>
-
-                                    </div>
-
-                                    <?= e(
-                                        $r['action_by']
-                                        ?? 'Unknown User'
-                                    ) ?>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    <?php endforeach; ?>
-
-
-                    <?php if (!$recentTransparency): ?>
-
-                        <tr>
-
-                            <td
-                                colspan="4"
-                                class="text-center text-muted py-4"
-                            >
-
-                                <i
-                                    class="bi bi-megaphone fs-3 d-block mb-2"
-                                ></i>
-
-                                No published transparency records yet.
-
-                            </td>
-
-                        </tr>
-
-                    <?php endif; ?>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-<?php endif; ?>
-
+<script>
+/* The header button follows whichever records tab is active. */
+document.addEventListener('DOMContentLoaded', function () {
+    var action = document.getElementById('recordsAction');
+    var label  = document.getElementById('recordsActionLabel');
+    var icon   = document.getElementById('recordsActionIcon');
+
+    if (!action || !label || !icon) { return; }
+
+    document.querySelectorAll('#recordTabs [data-bs-toggle="pill"]').forEach(function (tab) {
+        tab.addEventListener('shown.bs.tab', function () {
+            action.setAttribute('href', tab.dataset.href);
+            label.textContent = tab.dataset.label;
+            icon.className = 'bi ' + tab.dataset.icon;
+        });
+    });
+});
+</script>
 
 <?php include 'footer.php'; ?>

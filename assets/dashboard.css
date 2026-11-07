@@ -1,746 +1,275 @@
 /* =========================================================
-   SCHOOL DATA MANAGEMENT SYSTEM
-   DASHBOARD CSS
-   Blue & White Theme
+   SCHOOL DATA MANAGEMENT SYSTEM - DASHBOARD
+   Clean layout, follows the colors set in Theme Settings.
+   Falls back to the original blue & white theme.
    ========================================================= */
 
+.sdms-dashboard {
+    --d-primary: var(--theme-primary, #0d6efd);
+    --d-tint:    color-mix(in srgb, var(--d-primary) 12%, #ffffff);
+    --d-card:    var(--theme-card, #ffffff);
+    --d-border:  var(--theme-border, #e5eaf0);
+    --d-text:    var(--theme-font, #172b4d);
+    --d-muted:   #667085;
 
-/* ---------------------------------------------------------
-   Dashboard Statistics
-   --------------------------------------------------------- */
-
-.dashboard-stats,
-.dashboard-statistics {
-    margin-top: 5px;
-    width: 100%;
-}
-
-
-/* Remove default link styling */
-
-.dashboard-stat-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    height: 100%;
-}
-
-
-/* Make statistic columns equal height */
-
-.dashboard-statistics .row {
-    align-items: stretch;
-}
-
-
-/* ---------------------------------------------------------
-   Statistic Card
-   --------------------------------------------------------- */
-
-.dashboard-stat-card {
-    position: relative;
-
-    min-height: 175px;
-
-    height: 100%;
-
-    background: #ffffff;
-
-    border: 1px solid #e5eaf0;
-
-    border-radius: 16px;
-
-    padding: 24px;
-
+    max-width: 1200px;
+    margin: 0 auto;
     display: flex;
-
-    align-items: flex-start;
-
-    justify-content: space-between;
-
-    overflow: hidden;
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        border-color 0.2s ease;
-}
-
-
-/* Small blue line at the top */
-
-.dashboard-stat-card::before {
-    content: "";
-
-    position: absolute;
-
-    top: 0;
-    left: 0;
-
-    width: 100%;
-    height: 4px;
-
-    background: #0d6efd;
-}
-
-
-/* Hover */
-
-.dashboard-stat-link:hover .dashboard-stat-card {
-    transform: translateY(-4px);
-
-    border-color: #b8d4f7;
-
-    box-shadow:
-        0 10px 30px rgba(13, 110, 253, 0.10);
-}
-
-
-/* ---------------------------------------------------------
-   Statistic Rows
-   --------------------------------------------------------- */
-
-/*
-   First row:
-   Students | Teachers | Staff | Documents
-
-   Second row:
-   Information Board | Transparency Board
-*/
-
-.dashboard-statistics > .row + .row {
-    margin-top: 4px;
-}
-
-
-/*
-   Keep Information and Transparency cards
-   equal in height.
-*/
-
-.dashboard-statistics > .row + .row .dashboard-stat-card {
-    min-height: 175px;
-}
-
-
-/* ---------------------------------------------------------
-   Statistic Content
-   --------------------------------------------------------- */
-
-.stat-content {
-    display: flex;
-
     flex-direction: column;
-
-    min-width: 0;
+    gap: 28px;
+    color: var(--d-text);
 }
 
+.sdms-muted { color: var(--d-muted); margin: 0; }
+.sdms-small { font-size: 13px; }
 
-.stat-label {
-    font-size: 14px;
-
-    font-weight: 600;
-
-    color: #6c757d;
-
-    margin-bottom: 6px;
-}
-
-
-.stat-number {
-    font-size: 36px;
-
-    line-height: 1.1;
-
-    font-weight: 700;
-
-    color: #172b4d;
-
-    margin-bottom: 8px;
-}
-
-
-.stat-description {
-    font-size: 12px;
-
-    color: #8a94a6;
-}
-
-
-/* ---------------------------------------------------------
-   Inline Board Statistics
-   --------------------------------------------------------- */
-
-.stat-number-small {
+/* ---------- Page header ---------- */
+.sdms-page-head {
     display: flex;
-
-    align-items: baseline;
-
-    gap: 6px;
-
-    flex-wrap: wrap;
-}
-
-
-.stat-inline-label {
-    font-size: 14px;
-
-    font-weight: 500;
-
-    color: #6c757d;
-}
-
-
-/* ---------------------------------------------------------
-   Statistic Icon
-   --------------------------------------------------------- */
-
-.stat-icon {
-    width: 54px;
-    height: 54px;
-
-    flex-shrink: 0;
-
-    border-radius: 14px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 23px;
-
-    margin-left: 15px;
-}
-
-
-.stat-icon-blue {
-    color: #0d6efd;
-
-    background: #eaf3ff;
-
-    border: 1px solid #d7e8ff;
-}
-
-
-/* ---------------------------------------------------------
-   Recently Added Records Card
-   --------------------------------------------------------- */
-
-.dashboard-record-card {
-    background: #ffffff;
-
-    border: 1px solid #e5eaf0;
-
-    border-radius: 16px;
-
-    overflow: hidden;
-
-    box-shadow:
-        0 4px 15px rgba(20, 50, 90, 0.04);
-}
-
-
-/* ---------------------------------------------------------
-   Records Header
-   --------------------------------------------------------- */
-
-.records-header {
-    padding: 22px 24px;
-
-    display: flex;
-
-    align-items: center;
-
     justify-content: space-between;
-
-    border-bottom: 1px solid #edf0f4;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
-
-.records-title {
-    margin: 0;
-
-    font-size: 18px;
-
+.sdms-page-title {
+    margin: 0 0 4px;
+    font-size: 28px;
     font-weight: 700;
-
-    color: #172b4d;
 }
 
-
-.records-subtitle {
-    margin: 4px 0 0;
-
-    font-size: 13px;
-
-    color: #7b8794;
-}
-
-
-.records-icon {
-    width: 42px;
-    height: 42px;
-
-    border-radius: 12px;
-
-    display: flex;
-
+.sdms-dashboard a.sdms-dash-btn {
+    display: inline-flex;
     align-items: center;
-
-    justify-content: center;
-
-    color: #0d6efd;
-
-    background: #eaf3ff;
-
-    font-size: 18px;
+    gap: 6px;
+    padding: 11px 20px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--theme-button, #0d6efd);
+    color: var(--theme-on-primary, #ffffff);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    box-shadow: none;
+    transition: opacity .15s ease;
 }
 
+.sdms-dashboard a.sdms-dash-btn:hover { opacity: .9; color: var(--theme-on-primary, #ffffff); }
 
-/* ---------------------------------------------------------
-   Dashboard Table
-   --------------------------------------------------------- */
+.sdms-dashboard a.sdms-dash-btn:focus-visible {
+    outline: 2px solid var(--d-primary);
+    outline-offset: 2px;
+}
 
-.dashboard-table {
+.sdms-dashboard a.sdms-dash-btn i,
+.sdms-dashboard a.sdms-dash-btn span {
+    color: inherit;
     margin: 0;
+}
 
+/* ---------- Cards ---------- */
+.sdms-card {
+    background: var(--d-card);
+    border: 1px solid var(--d-border);
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(20, 50, 90, .04);
+    overflow: hidden;
+}
+
+.sdms-card-head {
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.sdms-card-title {
+    margin: 0 0 2px;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.sdms-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--d-primary);
+    text-decoration: none;
+}
+.sdms-link:hover { text-decoration: underline; }
+
+/* ---------- Statistics ---------- */
+.sdms-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.sdms-stat {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    color: inherit;
+    text-decoration: none;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+a.sdms-stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(13, 110, 253, .10);
+    color: inherit;
+}
+
+.sdms-stat-label  { font-size: 14px; font-weight: 600; color: var(--d-muted); }
+.sdms-stat-number { font-size: 34px; font-weight: 700; line-height: 1.15; margin: 6px 0 2px; }
+.sdms-stat-sub    { font-size: 13px; color: var(--d-muted); }
+
+.sdms-stat-icon {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: var(--d-tint);
+    color: var(--d-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+/* ---------- Tabs ---------- */
+.sdms-tabs {
+    background: #f2f6fb;
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.sdms-tabs .nav-link {
+    padding: 8px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--d-muted);
+    background: transparent;
+    border: 0;
+}
+
+.sdms-tabs .nav-link.active {
+    background: #ffffff;
+    color: #172b4d;
+    box-shadow: 0 1px 3px rgba(20, 50, 90, .12);
+}
+
+/* ---------- Table ---------- */
+.sdms-table {
+    margin: 0;
+    min-width: 640px;
     vertical-align: middle;
 }
 
-
-/* Table header */
-
-.dashboard-table thead th {
-    padding: 15px 24px;
-
+.sdms-table thead th {
+    padding: 12px 24px;
     background: #f8fafc;
-
-    border-bottom: 1px solid #e5eaf0;
-
-    color: #6c757d;
-
+    border-top: 1px solid #edf0f4;
+    border-bottom: 1px solid #edf0f4;
+    color: var(--d-muted);
     font-size: 12px;
-
-    font-weight: 700;
-
-    text-transform: uppercase;
-
-    letter-spacing: 0.4px;
-
+    font-weight: 600;
     white-space: nowrap;
 }
 
-
-/* Table body */
-
-.dashboard-table tbody td {
+.sdms-table tbody td {
     padding: 16px 24px;
-
-    border-bottom: 1px solid #edf0f4;
-
-    color: #344054;
-
+    border-bottom: 1px solid #f1f4f8;
     font-size: 14px;
 }
 
+.sdms-table tbody tr:last-child td { border-bottom: 0; }
+.sdms-table tbody tr:hover { background: #f8fbff; }
 
-/* Remove border from last row */
-
-.dashboard-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-
-/* Row hover */
-
-.dashboard-table tbody tr {
-    transition: background-color 0.15s ease;
-}
-
-
-.dashboard-table tbody tr:hover {
-    background: #f8fbff;
-}
-
-
-/* ---------------------------------------------------------
-   Record ID
-   --------------------------------------------------------- */
-
-.record-id {
-    font-size: 13px;
-
-    font-weight: 600;
-
-    color: #0d6efd;
-
-    background: #eef6ff;
-
-    padding: 6px 10px;
-
-    border-radius: 7px;
-
-    white-space: nowrap;
-}
-
-
-/* ---------------------------------------------------------
-   Record Name
-   --------------------------------------------------------- */
-
-.record-name {
+.sdms-person {
     display: flex;
-
     align-items: center;
-
-    gap: 10px;
-
+    gap: 12px;
     font-weight: 600;
-
-    color: #172b4d;
 }
 
-
-.record-avatar {
+.sdms-avatar {
     width: 34px;
     height: 34px;
-
     flex-shrink: 0;
-
     border-radius: 50%;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    background: #eaf3ff;
-
-    color: #0d6efd;
-
+    background: var(--d-tint);
+    color: var(--d-primary);
     font-size: 13px;
-
     font-weight: 700;
-
-    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-
-/* ---------------------------------------------------------
-   Record Badges
-   --------------------------------------------------------- */
-
-.record-badge {
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    padding: 6px 10px;
-
-    border-radius: 20px;
-
+.sdms-pill {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--d-tint);
+    color: var(--d-primary);
     font-size: 12px;
-
     font-weight: 600;
-
     white-space: nowrap;
 }
 
-
-/* Student */
-
-.student-badge {
-    color: #0d6efd;
-
-    background: #eaf3ff;
-}
-
-
-/* Teacher */
-
-.teacher-badge {
-    color: #1558a6;
-
-    background: #edf5ff;
-}
-
-
-/* Staff */
-
-.staff-badge {
-    color: #365a8a;
-
-    background: #f0f5fa;
-}
-
-
-/* ---------------------------------------------------------
-   Date
-   --------------------------------------------------------- */
-
-.record-date {
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 7px;
-
-    color: #667085;
-
-    font-size: 13px;
-
-    white-space: nowrap;
-}
-
-
-.record-date i {
-    color: #0d6efd;
-}
-
-
-/* ---------------------------------------------------------
-   Empty State
-   --------------------------------------------------------- */
-
-.empty-records {
-    padding: 45px 20px;
-
+.sdms-empty {
+    padding: 36px 24px;
     text-align: center;
-}
-
-
-.empty-icon {
-    width: 58px;
-    height: 58px;
-
-    margin: 0 auto 12px;
-
-    border-radius: 50%;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    background: #eaf3ff;
-
-    color: #0d6efd;
-
-    font-size: 24px;
-}
-
-
-.empty-records h6 {
-    margin-bottom: 5px;
-
-    color: #344054;
-
-    font-weight: 700;
-}
-
-
-.empty-records p {
+    color: var(--d-muted);
+    font-size: 14px;
     margin: 0;
-
-    color: #98a2b3;
-
-    font-size: 13px;
 }
 
+/* ---------- Boards ---------- */
+.sdms-two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
 
-/* =========================================================
-   RESPONSIVE DESIGN
-   ========================================================= */
+.sdms-feed {
+    list-style: none;
+    margin: 0;
+    padding: 0 24px 8px;
+}
 
+.sdms-feed li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid #f1f4f8;
+}
 
-/* ---------------------------------------------------------
-   Tablet
-   --------------------------------------------------------- */
+.sdms-feed-main  { min-width: 0; }
+.sdms-feed-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
 
+/* ---------- Responsive ---------- */
 @media (max-width: 991.98px) {
-
-    .dashboard-stat-card {
-        min-height: 160px;
-
-        padding: 20px;
-    }
-
-
-    .stat-number {
-        font-size: 32px;
-    }
-
-
-    .records-header {
-        padding: 20px;
-    }
-
-
-    .dashboard-table thead th,
-    .dashboard-table tbody td {
-        padding-left: 20px;
-
-        padding-right: 20px;
-    }
-
+    .sdms-two { grid-template-columns: 1fr; }
 }
-
-
-/* ---------------------------------------------------------
-   Mobile
-   --------------------------------------------------------- */
 
 @media (max-width: 575.98px) {
-
-    .dashboard-stats,
-    .dashboard-statistics {
-        margin-left: -6px;
-
-        margin-right: -6px;
-    }
-
-
-    .dashboard-statistics > .row {
-        margin-left: 0;
-
-        margin-right: 0;
-    }
-
-
-    .dashboard-statistics > .row > div {
-        padding-left: 6px;
-
-        padding-right: 6px;
-    }
-
-
-    .dashboard-statistics > .row + .row {
-        margin-top: 0;
-    }
-
-
-    .dashboard-stat-card {
-        min-height: 145px;
-
-        padding: 18px;
-
-        border-radius: 14px;
-    }
-
-
-    .stat-label {
-        font-size: 13px;
-    }
-
-
-    .stat-number {
-        font-size: 30px;
-    }
-
-
-    .stat-number-small {
-        font-size: 28px;
-    }
-
-
-    .stat-inline-label {
-        font-size: 12px;
-    }
-
-
-    .stat-description {
-        font-size: 11px;
-    }
-
-
-    .stat-icon {
-        width: 46px;
-
-        height: 46px;
-
-        border-radius: 12px;
-
-        font-size: 19px;
-
-        margin-left: 10px;
-    }
-
-
-    .records-header {
-        padding: 18px;
-    }
-
-
-    .records-title {
-        font-size: 16px;
-    }
-
-
-    .records-subtitle {
-        font-size: 12px;
-    }
-
-
-    .records-icon {
-        width: 38px;
-
-        height: 38px;
-
-        font-size: 16px;
-    }
-
-
-    /*
-       Make the table horizontally scrollable
-       instead of breaking the layout.
-    */
-
-    .dashboard-table {
-        min-width: 700px;
-    }
-
-
-    .dashboard-table thead th,
-    .dashboard-table tbody td {
-        padding: 13px 16px;
-    }
-
-}
-
-
-/* ---------------------------------------------------------
-   Very Small Screens
-   --------------------------------------------------------- */
-
-@media (max-width: 380px) {
-
-    .dashboard-stat-card {
-        padding: 16px;
-    }
-
-
-    .stat-number {
-        font-size: 27px;
-    }
-
-
-    .stat-number-small {
-        font-size: 25px;
-    }
-
-
-    .stat-icon {
-        width: 42px;
-
-        height: 42px;
-
-        font-size: 17px;
-    }
-
+    .sdms-dashboard { gap: 20px; }
+    .sdms-page-title { font-size: 24px; }
+    .sdms-card-head { padding: 18px; }
+    .sdms-stat { padding: 20px; }
+    .sdms-stat-number { font-size: 30px; }
+    .sdms-table thead th,
+    .sdms-table tbody td { padding: 13px 16px; }
+    .sdms-feed { padding: 0 18px 8px; }
 }
